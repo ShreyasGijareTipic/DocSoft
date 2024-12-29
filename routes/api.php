@@ -37,6 +37,9 @@ use App\Http\Controllers\TimeslotController;
 
 
 
+
+
+
 use App\Http\Controllers\PrescriptionController;
 Route::post('/prescriptions', [PrescriptionController::class, 'store']);
 Route::get('/prescriptions/{id}', [PrescriptionController::class, 'show']);
@@ -233,3 +236,14 @@ Route::get('/webhook', [AppointmetWhatsappController::class, 'verifyToken']);
 
 
 Route::get('/sendurlbuttons/{phone}', [AppointmetWhatsappController::class, 'xyz']);
+
+
+
+Route::post('/timeslotadd', [TimeslotController::class, 'store']);
+Route::get('/tiemslot/{doctor_id}', [TimeslotController::class, 'show']);
+Route::put('/timeslotUpdate/{id}', [TimeslotController::class, 'update']);
+Route::delete('/timeslotDestroy/{id}', [TimeslotController::class, 'destroy']);
+Route::get('/doctorTiemslot/{doctor_id}', [TimeslotController::class, 'forDoctorSlot']);
+Route::get('/allDataTimeSlot/{doctor_id}', [TimeslotController::class, 'allData']);
+
+

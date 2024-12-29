@@ -13,6 +13,7 @@ const PrescriptionView = React.lazy(() => import('./views/theme/prescription/Pre
 const prescriptionTable = React.lazy(() => import('./views/theme/prescription/prescriptionTable'))
 const prescriptiondata = React.lazy(() => import('./views/theme/prescription/prescriptiondata'))
 const medicines = React.lazy(() => import('./views/theme/Medicines/medicines'))
+const timeslots = React.lazy(() => import('./views/theme/timeslots/timeslots'))
 
 
 
@@ -90,6 +91,8 @@ const routes = [
   { path: '/theme/prescriptiondata' , name : 'presciptiondata' , element : prescriptiondata},
 
   { path: '/theme/medicines' , name : 'medicines' , element : medicines},
+
+  { path: '/theme/timeslots' , name : 'timeslots' , element : timeslots},
 
 
 

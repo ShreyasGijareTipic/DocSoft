@@ -94,7 +94,12 @@ const _nav = [
     to: '/theme/medicines',
     icon: <CIcon icon={cilStorage} customClassName="nav-icon" />,
   },
- 
+  {
+    component: CNavItem,
+    name: 'Time Slots',
+    to: '/theme/timeslots',
+    icon: <CIcon icon={cilStorage} customClassName="nav-icon" />,
+  }
   
  
   // {
