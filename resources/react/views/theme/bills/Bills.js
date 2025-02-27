@@ -359,7 +359,7 @@ if (validateRowss()) {
     const prescriptionPromises = rowss.map((row) => {
       const prescriptionData = {
         p_p_i_id: `${billno}`, // Replace with dynamic bill number
-        medicine: row.description,
+        medicine: medicines.find(med => med.id === parseInt(row.description, 10))?.drug_name || "",
         strength: row.strength,
         dosage: row.dosage,
         timing: row.timing,
