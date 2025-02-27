@@ -227,6 +227,57 @@ const inv = () => {
               </div>
             </div>
           </div>
+          <hr/>
+
+          {/* Patient Examination */}
+{/* Patient Examination */}
+<div className="row mt-8 mb-2">
+  <div>
+    <div>
+      {PatientExaminations.length > 0 ? (
+        <div>
+          <h6><strong>Medical Observation:</strong></h6>
+
+          <div className="container">
+            <table className="table table-bordered text-center">
+              <colgroup>
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "25%" }} />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td><strong>BP</strong></td>
+                  <td>{PatientExaminations[0].bp || "N/A"}</td>
+                  <td><strong>Pulse</strong></td>
+                  <td>{PatientExaminations[0].pulse || "N/A"}</td>
+                </tr>
+                <tr>
+                  <td><strong>Past History</strong></td>
+                  <td>{PatientExaminations[0].past_history || "N/A"}</td>
+                  <td><strong>Complaints</strong></td>
+                  <td>{PatientExaminations[0].complaints || "N/A"}</td>
+                </tr>
+                <tr>
+                  <td><strong>Systemic Examination</strong></td>
+                  <td>{PatientExaminations[0].systemic_exam_general || "N/A"}</td>
+                  <td><strong>Diagnosis</strong></td>
+                  <td>{PatientExaminations[0].systemic_exam_pa || "N/A"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <p>No patient examination data available</p>
+      )}
+    </div>
+  </div>
+</div>
+
+<hr/>
+
 
           <div className="row section">
             <div className="col-md-12">
@@ -274,70 +325,6 @@ const inv = () => {
 
 {/* -------------------------------------------------------------------------------------------------------------------------  */}
 
-{/* Patient Examination  */}
-
-<div className="row mt-10 mb-4">
-  <div>
-    <div>
-      {PatientExaminations.length > 0 ? (
-        <div>
-          <h6 style={{ fontWeight: 'bold' }} className='mb-4'>Medical Observation:</h6>
-
-
-          <div className="container">
-              <div className="row mt-10">
-                <div className="col-md-6">
-                <p><strong>BP:</strong> {PatientExaminations[0].bp || "N/A"}</p>
-
-                 </div>
-               <div className="col-md-6">
-               <p><strong>Pulse:</strong> {PatientExaminations[0].pulse || "N/A"}</p>
-
-                 </div>
-               </div>
-          </div>
-
-
-
-          <div className="container">
-        <div className="row mt-10">
-        <div className="col-md-6">
-          <p><strong>Past History:</strong> {PatientExaminations[0].past_history || "N/A"}</p>
-
-        </div>
-        <div className="col-md-6">
-          <p><strong>Complaints:</strong> {PatientExaminations[0].complaints || "N/A"}</p>
-
-        </div>
-        </div></div>
-          
-          
-        <div className="container">
-        <div className="row mt-10">
-        <div className="col-md-6">
-        <p><strong>Systemic Examination:</strong> {PatientExaminations[0].systemic_exam_general || "N/A"}</p>
-
-        </div>
-        <div className="col-md-6">
-        <p><strong> Diagnosis:</strong> {PatientExaminations[0].systemic_exam_pa || "N/A"}</p>
-
-        </div>
-        </div>
-        </div>
-        
-        </div>
-      ) : (
-        <p>No patient examination data available</p>
-      )}
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
 
 
 {/* health Directives Data  */}
@@ -361,7 +348,7 @@ const inv = () => {
                       healthDirectives.map((healthDirectives, index) => (
                      <tr key={index} >
                       <td className='text-center'>{index + 1}</td>
-                       <td className='text-center'>{healthDirectives.drug_name}</td>
+                       <td className='text-center'>{healthDirectives.medicine}</td>
                     <td className='text-center'>{healthDirectives.strength}</td>
                     <td className='text-center'>{healthDirectives.dosage}</td>
                     <td className='text-center'>{healthDirectives.timing}</td>
