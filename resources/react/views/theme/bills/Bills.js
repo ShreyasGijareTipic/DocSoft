@@ -863,7 +863,7 @@ const [selectedOption, setSelectedOption] = useState('');
       {showTable && (
         <CCardBody>
           {/* Close button at the top right corner */}
-          <div style={{ textAlign: "right" }}>
+          <div style={{ textAlign: "left" ,marginBottom:"10px"}}>
             <CButton
               color="danger"
               onClick={() => setShowTable(false)} // Close the table
