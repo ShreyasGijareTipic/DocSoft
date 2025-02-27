@@ -1230,9 +1230,9 @@ const [selectedOption, setSelectedOption] = useState('');
             Submit
           </CButton> &nbsp;&nbsp;
 
-          <CButton color="primary" className="mt-0" onClick={handleCreatePrescription}>
+          {/* <CButton color="primary" className="mt-0" onClick={handleCreatePrescription}>
            Create Prescription
-          </CButton>
+          </CButton> */}
         </CCardBody>
 
         {/* <CCardBody>
