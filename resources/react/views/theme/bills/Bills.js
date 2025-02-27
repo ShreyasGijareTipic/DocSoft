@@ -679,7 +679,7 @@ const [selectedOption, setSelectedOption] = useState('');
             </div>
           )}
 
-          {data && (
+          {/* {data && (
             <CCard className="mt-4">
               <CCardHeader>Fetched Data:</CCardHeader>
               <CCardBody>
@@ -688,7 +688,7 @@ const [selectedOption, setSelectedOption] = useState('');
                 </CCardText>
               </CCardBody>
             </CCard>
-          )}
+          )} */}
         </CForm>
       </CCardBody>
     </CCard>

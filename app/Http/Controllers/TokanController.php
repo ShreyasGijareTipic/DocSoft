@@ -23,7 +23,7 @@ class TokanController extends Controller
     {
         $validatedData = $request->validate([
             'clinic_id' => 'required|integer',
-            'doctor_id' => 'integer',
+            'doctor_id' => '',
             'patient_id' => 'required|integer',
             'tokan_number' => 'integer',
             'date' => 'date',
