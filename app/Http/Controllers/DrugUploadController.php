@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
-class CsvUploadController extends Controller
+class DrugUploadController extends Controller
 {
-     /**
+    /**
      * Handle CSV upload and store data into the database.
      */
     public function uploadDrugs(Request $request)

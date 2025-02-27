@@ -20,7 +20,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'logo',
-        'clinic_name',
+        'clinic_id',
         'name',
         'email',
         'mobile',
@@ -56,4 +56,11 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+
+//     public function clinic()
+// {
+//     return $this->belongsTo(Clinic::class, 'clinic_name'); // Use 'clinic_id' as the foreign key
+// }
 }
+

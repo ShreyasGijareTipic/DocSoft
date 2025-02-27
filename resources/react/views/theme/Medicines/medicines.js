@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import {
   CCard, CCardHeader, CCardBody, CFormInput, CButton, CRow, CTable,
-  CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CFormSelect
+  CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CFormSelect,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
+  CCol,
+  CAlert
 } from '@coreui/react';
-import { post } from '../../../util/api'; // Replace with your actual API utility
+import { post, postFormData } from '../../../util/api'; // Replace with your actual API utility
 
 const DrugForm = () => {
   const [drugData, setDrugData] = useState({
@@ -14,6 +20,7 @@ const DrugForm = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [rowErrors, setRowErrors] = useState({});
   const [rows, setRows] = useState([
     {
       drug_id: '',
@@ -38,6 +45,7 @@ const DrugForm = () => {
     const formErrors = {};
     let isValid = true;
 
+    // Validate `drugData`
     if (!drugData.drug_name) {
       formErrors.drug_name = 'Drug name is required.';
       isValid = false;
@@ -56,14 +64,42 @@ const DrugForm = () => {
     }
 
     setErrors(formErrors);
+
+    // Validate `rows`
+    const rowErrorsTemp = {};
+    rows.forEach((row, index) => {
+      const rowError = {};
+      if (!row.dosage_form) {
+        rowError.dosage_form = 'Dosage form is required.';
+        isValid = false;
+      }
+      if (!row.strength) {
+        rowError.strength = 'Strength is required.';
+        isValid = false;
+      }
+      if (!row.price) {
+        rowError.price = 'Price is required.';
+        isValid = false;
+      }
+      if (!row.stock_quantity) {
+        rowError.stock_quantity = 'Stock quantity is required.';
+        isValid = false;
+      }
+      if (!row.expiration_date) {
+        rowError.expiration_date = 'Expiration date is required.';
+        isValid = false;
+      }
+      rowErrorsTemp[index] = rowError;
+    });
+
+    setRowErrors(rowErrorsTemp);
+
     return isValid;
   };
 
   const handleRowChange = (index, field, value) => {
     const updatedRows = [...rows];
     updatedRows[index][field] = value;
-
-
     setRows(updatedRows);
   };
 
@@ -71,7 +107,7 @@ const DrugForm = () => {
     setRows([
       ...rows,
       {
-       
+        drug_id: '',
         dosage_form: '',
         strength: '',
         price: '',
@@ -80,87 +116,166 @@ const DrugForm = () => {
         side_effects: '',
         usage_instructions: '',
         storage_conditions: '',
-        
       },
     ]);
   };
 
   const handleRemoveRow = (index) => {
-    const updatedRows = rows.filter((_, i) => i !== index);
-    setRows(updatedRows);
+    if (index === 0) {
+      
+      return;
+      
+    }
+    setRows(rows.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;  // Ensure the form is valid before proceeding
- 
-    try {
-        // Create the drug first
-        const response = await post('/api/drugs', drugData); 
-        console.log('Drug added successfully:', response.id);
-        alert('Drug added successfully!');
- 
-        const drugId = response.id; 
-        console.log("Drug ID:", drugId);
- 
-        // Create drug details after drug is added
-        const drugdetailsdata = rows.map(row => ({
-           
-            drug_id: drugId, 
-            dosage_form: row.dosage_form,
-            strength: row.strength,
-            price: row.price,
-            stock_quantity: row.stock_quantity,
-            expiration_date: row.expiration_date,
-            side_effects: row.side_effects,
-            usage_instructions: row.usage_instructions,
-            storage_conditions: row.storage_conditions,
-          
-        })); 
-
-
-
-        const dataToSend = {
-          drugs_details: drugdetailsdata,
-        };
- 
-        // Submit drug details
-        const drugDetailsstore = await post('/api/drugdetails', dataToSend);
- 
-        console.log("Drug details added:", drugDetailsstore);
-        alert("Drug details added successfully!");
-
-
-          // Clear the form fields after successful submission
-    setDrugData({
-      drug_name: '',
-      generic_name: '',
-      category: '',
-      manufacturer: '',
-    });
-
-    // Reset rows to empty or default values
-    setRows([{
-      drug_id: '',
-      dosage_form: '',
-      strength: '',
-      price: '',
-      stock_quantity: '',
-      expiration_date: '',
-      side_effects: '',
-      usage_instructions: '',
-      storage_conditions: '',
-      total: 0,
-    }]);
-
-
-    } catch (error) {
-        console.error('Error adding drug or details:', error);
-        alert('Failed to add drug or drug details. Please try again.');
+    if (!validateForm()) {
+      alert('Please fill all required fields.');
+      return;
     }
-  }; 
-  return (
 
-    <>
+    try {
+      const response = await post('/api/drugs', drugData);
+      alert('Drug added successfully!');
+      const drugId = response.id;
+
+      const drugdetailsdata = rows.map((row) => ({
+        drug_id: drugId,
+        dosage_form: row.dosage_form,
+        strength: row.strength,
+        price: row.price,
+        stock_quantity: row.stock_quantity,
+        expiration_date: row.expiration_date,
+        side_effects: row.side_effects,
+        usage_instructions: row.usage_instructions,
+        storage_conditions: row.storage_conditions,
+      }));
+
+      await post('/api/drugdetails', { drugs_details: drugdetailsdata });
+      alert('Drug details added successfully!');
+
+      // Clear the form
+      setDrugData({
+        drug_name: '',
+        generic_name: '',
+        category: '',
+        manufacturer: '',
+      });
+      setRows([
+        {
+          drug_id: '',
+          dosage_form: '',
+          strength: '',
+          price: '',
+          stock_quantity: '',
+          expiration_date: '',
+          side_effects: '',
+          usage_instructions: '',
+          storage_conditions: '',
+          total: 0,
+        },
+      ]);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to add drug or details. Please try again.');
+    }
+  };
+
+
+
+
+const [file, setFile] = useState(null);
+const [loading, setLoading] = useState(false);
+const [message, setMessage] = useState('');
+
+// Handle file selection
+const handleFileChange = (e) => {
+  console.log('Selected file:', e.target.files[0]); 
+    setFile(e.target.files[0]);
+};
+
+// Handle file upload
+const handleUpload = async () => {
+  if (!file) {
+    setMessage('Please select a file to upload.');
+    return;
+  }
+  
+  console.log('Selected file:', file);
+
+  const formData = new FormData();
+  formData.append('csv_file', file);
+
+  // Log the FormData content
+  console.log("FormData content:");
+  for (let pair of formData.entries()) {
+    // console.log("tttttttt",pair[0] + ': ' + pair[1]);
+  }
+
+  setLoading(true);
+
+  try {
+    // Send the file as form data to the backend
+    const response = await postFormData('/api/uploadDrugs', formData);
+
+    // Check if the response status is 200 (success)
+    if (response.status === 201) {
+      setMessage('File uploaded successfully!');
+    } else {
+      setMessage('File uploaded successfully!');
+    }
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    setMessage('Error uploading file.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+return (
+  <>
+    <div style={{ padding: '20px' }}>
+
+<CRow>
+  <CCol xs={12} sm={6} lg={4} className="">
+
+<CFormInput
+        type="file"
+        onChange={handleFileChange}
+        accept=".csv"
+      /> <br/>
+  </CCol>
+ 
+  <CCol xs={12} sm={6} lg={4} className="">
+
+<CButton color="success" style={{ marginLeft: '10px' }} 
+        onClick={handleUpload}
+        disabled={loading}
+      >
+        {loading ? 'Uploading...' : 'Upload File'} <span></span>
+      </CButton>
+      </CCol>
+
+      <CCol xs={12} sm={6} lg={4} className="">
+      <div>
+      {message && (
+        <CAlert  color="primary" onClose={() => setMessage('')} className='justify-center'>
+          {message}
+        </CAlert>
+      )}
+      </div>
+  </CCol>
+</CRow>
+</div>
+
+
+      
+   
+  
+
+
+
     <CCard className="mb-4">
       <CCardHeader>Add New Drug</CCardHeader>
       <CCardBody>
@@ -171,7 +286,7 @@ const DrugForm = () => {
           onChange={handleChange}
           placeholder="Enter drug name"
         />
-        {errors.name && <div style={{ color: 'red' }}>{errors.name}</div>}
+        {errors.drug_name && <div style={{ color: 'red' }}>{errors.drug_name}</div>}
 
         <CFormInput
           label="Generic Name"
@@ -237,6 +352,9 @@ const DrugForm = () => {
               value={row.dosage_form}
               onChange={(e) => handleRowChange(index, 'dosage_form', e.target.value)}
             />
+             {rowErrors[index]?.dosage_form && (
+                      <div style={{ color: 'red' }}>{rowErrors[index].dosage_form}</div>
+                    )}
              
           </CTableDataCell>
 
@@ -245,9 +363,18 @@ const DrugForm = () => {
               type="text"
               value={row.strength}
               min="1"
-              onChange={(e) => handleRowChange(index, 'strength', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Ensure that only positive numbers or empty strings are entered
+                if (value >= 0) {
+                  handleRowChange(index, 'strength', value);
+                }
+              }}
             //   disabled={index === rows.length - 1}
             />
+             {rowErrors[index]?.strength && (
+                      <div style={{ color: 'red' }}>{rowErrors[index].strength}</div>
+                    )}
           </CTableDataCell>
 
           <CTableDataCell>
@@ -256,14 +383,26 @@ const DrugForm = () => {
               value={row.price}
               onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
             />
+            {rowErrors[index]?.price && (
+                      <div style={{ color: 'red' }}>{rowErrors[index].price}</div>
+                    )}
           </CTableDataCell>
 
           <CTableDataCell>
             <CFormInput
               type="text"
               value={row.stock_quantity}
-              onChange={(e) => handleRowChange(index, 'stock_quantity', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow positive numbers (including 0)
+                if (value >= 0) {
+                  handleRowChange(index, 'stock_quantity', value);
+                }
+              }}
             />
+            {rowErrors[index]?.stock_quantity && (
+                      <div style={{ color: 'red' }}>{rowErrors[index].stock_quantity}</div>
+                    )}
           </CTableDataCell>
 
           <CTableDataCell>
@@ -272,6 +411,9 @@ const DrugForm = () => {
               value={row.expiration_date}
               onChange={(e) => handleRowChange(index, 'expiration_date', e.target.value)}
             />
+            {rowErrors[index]?.expiration_date && (
+                      <div style={{ color: 'red' }}>{rowErrors[index].expiration_date}</div>
+                    )}
           </CTableDataCell>
 
 
@@ -309,6 +451,8 @@ const DrugForm = () => {
                 color="danger"
                 className="me-2"
                 onClick={() => handleRemoveRow(index)}
+                disabled={index === 0}
+
               >
                 Remove
               </CButton>

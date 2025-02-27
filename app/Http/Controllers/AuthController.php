@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;;
+use App\Models\Clinic;
+
 
 class AuthController extends Controller
 {
@@ -55,49 +57,91 @@ class AuthController extends Controller
     public function registers(Request $request)
     {
         // Validate the incoming request data
-        $request->validate([
-            'logo'=>'required|string',
-            'clinic_name' => 'required|string|max:255',
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255|unique:users,email', // Ensure email is unique if provided
-            'mobile' => 'required|string|unique:users,mobile|digits:10|regex:/^\d{10}$/',
-            'address' => 'required|string|max:255',
-            'registration_number' => 'required|string|max:255',
-            'speciality' => 'required|string|max:255',
-            'education' => 'required|string|max:255',
-            'password' => 'required|string|min:8|confirmed', // Ensure password confirmation
-            'profilepic' => 'nullable|string', // Nullable string for profile picture URL or file path
-            'blocked' => 'boolean', // Boolean field
-            'type' => 'integer', // Integer field for user type
-        ]);
-
-        // Create the user
-        $user = User::create([
-            'logo'=> $request->logo,
-            'clinic_name'=> $request->clinic_name,
-
-            'name' => $request->name,
-            'email' => $request->email,
-            'mobile' => $request->mobile,
+        try {
+            Log::info('Starting validation for user registration', ['request_data' => $request->all()]);
+    
+            $request->validate([
+                'clinic_id' => 'required|exists:clinic,id', // Validate that clinic_id exists in clinics table
+                'name' => 'required|string|max:255',
+                'email' => 'nullable|email|max:255|unique:users,email', // Ensure email is unique if provided
+                'mobile' => 'required|string|unique:users,mobile|digits:10|regex:/^\d{10}$/',
+                'address' => 'required|string|max:255',
+                'registration_number' => 'required|string|max:255',
+                'speciality' => 'required|string|max:255',
+                'education' => 'required|string|max:255',
+                'password' => 'required|string|min:8|confirmed', // Ensure password confirmation
+                'profilepic' => 'nullable|string', // Nullable string for profile picture URL or file path
+                'blocked' => 'boolean', // Boolean field
+                'type' => 'integer', // Integer field for user type
+            ]);
+    
+            Log::info('Validation passed successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log validation failure
+            Log::error('Validation failed during user registration.', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
             
-            'address' => $request->address,
-
+            // Return validation errors if validation fails
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ],201 ); // 422 for validation errors
+        }
+        
+        // Log the incoming request data before user creation
+        Log::info('User registration request received.', ['request_data' => $request->all()]);
+    
+        try {
+            // Check if the clinic exists before creating the user (this is a validation check)
+            $clinic = Clinic::find($request->clinic_id);
+            if (!$clinic) {
+                return response()->json([
+                    'message' => 'Clinic not found',
+                ], 404); // Return 404 if clinic is not found
+            }
+    
+            // Create the user with the clinic_id field
+            $user = User::create([
+                'clinic_id' => $request->clinic_id, // Clinic ID passed as a field
+                'name' => $request->name,
+                'email' => $request->email,
+                'mobile' => $request->mobile,
+                'address' => $request->address,
+                'registration_number' => $request->registration_number,
+                'speciality' => $request->speciality,
+                'education' => $request->education,
+                'password' => Hash::make($request->password), // Hashing the password
+                'profilepic' => $request->profilepic,
+                'blocked' => $request->blocked ?? false,
+                'type' => $request->type ?? 0,
+            ]);
             
-            'registration_number' => $request->registration_number,
-            'speciality' => $request->speciality,
-            'education' => $request->education,
-            'password' => Hash::make($request->password), // Hashing the password
-            'profilepic' => $request->profilepic, // Can be null if not provided
-            'blocked' => $request->blocked ?? false, // Defaults to false if not provided
-            'type' => $request->type ?? 0, // Defaults to 0 if not provided
-        ]);
-
-        // Return a success response with the created user
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user
-        ], 201);
+            // Log successful user creation
+            Log::info('User registered successfully', ['user_id' => $user->id, 'user_name' => $user->name]);
+    
+            // Return success response
+            return response()->json([
+                'message' => 'User registered successfully',
+                'user' => $user
+            ], 201); // 201 for successful resource creation
+            
+        } catch (\Exception $e) {
+            // Log the exception error during user creation
+            Log::error('User registration failed', [
+                'error_message' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+            
+            // If something goes wrong, return a 500 Internal Server Error status
+            return response()->json([
+                'message' => 'Failed to register user',
+                'error' => $e->getMessage()
+            ], 500); // 500 for internal server error
+        }
     }
+    
 
       
 
@@ -371,6 +415,7 @@ public function login(Request $request)
         return response($response,200);
     }
 
+
     public function allUsers(Request $request)
     {
         if($request->customers == 'true'){
@@ -378,12 +423,15 @@ public function login(Request $request)
         }
         return User::where('type','<',10)->paginate(50);
     }
+
+
     public function update(Request $request)
     {
         $obj = User::find($request->id);
         $obj->update($request->all());
         return $obj;
     }
+    
 
     function registerUser(Request $request){
         $fields = $request->validate([
@@ -503,6 +551,27 @@ public function login(Request $request)
 
         return response()->json($user, 200);
     }
+
+
+
+    public function showdoctordatabyclinicid($clinicid)
+{
+    // Fetch the users whose 'clinic' field matches the provided clinicid
+    $users = User::where('clinic_id', $clinicid)->get(); // This fetches all users with the specified clinic ID
+
+    // Check if any users were found
+    if ($users->isEmpty()) {
+        return response()->json(['error' => 'No users found for this clinic'], 404);
+    }
+
+    // Return the users data
+    return response()->json($users);
+}
+
+    
+
+
+
 
 }
 

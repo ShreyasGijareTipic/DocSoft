@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Patient;
+use App\Models\User;
+use App\Models\Tokan;
+use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Controllers\Controller;
@@ -45,25 +49,115 @@ class PatientController extends Controller
     //     return response()->json($patient, 201);
     // }
 
-    public function store(Request $request)
-    {
+//     public function store(Request $request)
+// {
+//     // Validate the request data 
+//     $request->validate([
+//         'clinic_id' => 'string',
+//         'name' => 'required|min:1',
+//         'email' => 'required|email',  // |unique:patients,email'
+//         'phone' => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/','unique:patients,phone'],
+//         'address' => 'required',
+//         'dob' => 'required|date',
+//     ]);
+
+//     // Get the authenticated user's clinic_id
+//     $clinicId = Auth::user()->clinic_id;
+
+//     // Check if clinic_id is available
+//     if (!$clinicId) {
+//         return response()->json(['error' => 'Clinic ID not found'], 403);
+//     }
+
+//     // Create the patient, including clinic_id
+//     $patient = Patient::create([
+//         'clinic_id' => $clinicId,
+//         'name' => $request->name,
+//         'email' => $request->email,
+//         'phone' => $request->phone,
+//         'address' => $request->address,
+//         'dob' => $request->dob,
+//     ]);
+
+//     return response()->json($patient, 201);
+// }
+
+
+
+public function store(Request $request)
+{
+    try {
         // Validate the request data
         $request->validate([
-            'name' => 'required|min:1', // 'required' instead of 'require'
-            'email' => 'required|email|unique:patients,email',
-            'phone' => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/'],
+            'clinic_id' => 'string',
+            'name' => 'required|min:1',
+            'email' => 'required|email',  // |unique:patients,email'
+            'phone' => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/','unique:patients,phone'],
             'address' => 'required',
             'dob' => 'required|date',
-            // Uncomment and validate gender if necessary
-            // 'gender' => 'required',
+            'doctor_id' => 'string', // Ensure doctor_id is passed and valid
         ]);
-    
-        // Create the patient using mass assignment
-        $patient = Patient::create($request->only(['name', 'email', 'phone', 'address', 'dob']));
-    
-        // Return a JSON response with the created patient data
-        return response()->json($patient, 201);
+
+        // Get the authenticated user's clinic_id and doctor_id
+        $clinicId = Auth::user()->clinic_id;
+        $doctorId = $request->doctor_id;
+
+        // Check if clinic_id is available
+        if (!$clinicId) {
+            return response()->json(['error' => 'Clinic ID not found'], 403);
+        }
+
+        // Create the patient, including clinic_id
+        $patient = Patient::create([
+            'clinic_id' => $clinicId,
+            'doctor_id' => $doctorId,
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'dob' => $request->dob,
+        ]);
+
+        // Determine today's date
+        $today = now()->toDateString();
+
+        // Fetch the last token number for today
+        $lastToken = Tokan::whereDate('date', $today)
+            ->where('clinic_id', $clinicId)
+            ->where('doctor_id', $doctorId)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        // Calculate the new token number
+        $newTokenNumber = $lastToken ? ((int) $lastToken->tokan_number + 1) : 1;
+
+        // Create a new token for the patient with the doctor and clinic association
+        $token = Tokan::create([
+            'clinic_id' => $clinicId,          // Clinic of the logged-in doctor
+            'doctor_id' => $doctorId,          // Allocated doctor for the patient
+            'patient_id' => $patient->id,      // Newly created patient ID
+            'tokan_number' => $newTokenNumber, // Incremental token number for today
+            'date' => $today,                  // Current date
+            'status' => 'pending',             // Or any other status you define
+        ]);
+
+        // Return response if everything goes well
+        return response()->json(['patient' => $patient, 'token' => $token], 201);
+
+    } catch (\Exception $e) {
+        // Handle the error and log the exception
+        \Log::error('Error creating patient or token: ' . $e->getMessage());
+
+        // Return a generic error message
+        return response()->json([
+            'error' => 'An error occurred while processing your request.',
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
+
+
+    
 
 
 
@@ -150,5 +244,104 @@ class PatientController extends Controller
 
         return response()->json($patients);
     }
+
+    public function searchPatientByMobile(Request $request)
+    {
+        // Validate the mobile query parameter
+        $request->validate([
+            'phone' => 'required|numeric',
+        ]);
+
+        // Search for the patient by mobile number
+        $patient = Patient::where('phone', $request->phone)->get();
+
+        if ($patient) {
+            return response()->json($patient, 200);  // Return the found patient
+        } else {
+            return response()->json(['message' => 'Patient not found'], 404); // Return not found message
+        }
+    }
+
+
+
+    public function getDoctorsByLoggedInClinic()
+    {
+        // Get the logged-in user's clinic_id
+        $clinicId = Auth::user()->clinic_id;
+    
+        // Fetch users with the `type` field set to 'doctor' in the same clinic
+        $doctors = User::where('clinic_id', $clinicId)
+                       ->where('type', 'doctor') // Using `type` to identify doctors
+                       ->get(['id', 'name', 'speciality', 'education']); // Fetch only necessary fields
+    
+        // Return the doctors as a JSON response
+        return response()->json($doctors);
+    }
+
+
+    public function getPatientInfoForBill(Request $request)
+    {
+        try {
+            // Validate the request to ensure a valid 'tokan_number' is provided
+            $request->validate([
+                'tokan_number' => 'required|integer',
+            ]);
+    
+            // Get the 'tokan_number' from the request
+            $tokanNumber = $request->input('tokan_number');
+    
+            // Fetch the token and its associated patient data
+            $tokan = Tokan::where('tokan_number', $tokanNumber)
+                ->whereDate('date', now()->toDateString()) // Ensure the token is valid for today
+                ->with('patient') // Assuming a 'patient' relationship exists in the Tokan model
+                ->first();
+    
+            // Check if the token exists
+            if (!$tokan) {
+                return response()->json(['message' => 'Token not found or expired'], 404);
+            }
+    
+            // Check if patient data is associated with the token
+            if (!$tokan->patient) {
+                return response()->json(['message' => 'No patient data found for this token'], 404);
+            }
+    
+            // Return the patient and token data
+            return response()->json([
+                'tokan' => $tokan,
+                'patient' => $tokan->patient,
+            ], 200);
+    
+        } catch (\Exception $e) {
+            // Handle any unexpected errors and log them
+            \Log::error('Error fetching patient info by token: ' . $e->getMessage());
+    
+            return response()->json([
+                'error' => 'An error occurred while fetching patient data',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    
+
+
+
+    public function checkPatient(Request $request)
+    {
+        $tokenId = $request->input('id');
+
+        try {
+            $exists = Patient::where('id', $tokenId)->exists();
+            return response()->json(['exists' => $exists], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to check patient'], 500);
+        }
+    }
+
+
+
+
+    
+
 }
 

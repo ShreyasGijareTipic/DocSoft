@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\HealthDirective;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class HealthDirectiveController extends Controller
 {
@@ -20,20 +22,31 @@ class HealthDirectiveController extends Controller
      * Store a new health directive.
      */
     public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'bill_id' => 'required|exists:bills,id',
-            'medicine' => 'required|string',
-            'strength' => 'required|string',
-            'dosage' => 'required|string',
-            'timing' => 'required|string',
-            'frequency' => 'required|string',
-            'duration' => 'required|string',
-        ]);
+{
+    \Log::info('Request Data:', $request->all()); // Log the incoming data
 
-        $healthDirective = HealthDirective::create($validatedData);
-        return response()->json($healthDirective, 201);
-    }
+    // Validate the incoming request data
+    $validatedData = $request->validate([
+        'p_p_i_id' => 'required|exists:Bills,id',
+        'medicine' => 'required|string',
+        'strength' => 'required|string',
+        'dosage' => 'required|string',
+        'timing' => 'required|string',
+        'frequency' => 'required|string',
+        'duration' => 'required|string',
+    ]);
+
+    \Log::info('Validated Data:', $validatedData); // Log validated data
+
+    // Create the health directive
+    $healthDirective = HealthDirective::create($validatedData);
+    
+    // Log the health directive created
+    \Log::info('Created Health Directive:', $healthDirective->toArray());
+
+    return response()->json($healthDirective, 201);
+}
+
 
     /**
      * Display the specified health directive.
@@ -74,12 +87,52 @@ class HealthDirectiveController extends Controller
         return response()->json(['message' => 'Health directive deleted successfully']);
     }
 
-    public function getByBillId($bill_id)
+    public function getByBillId($id)
 {
-    // Assuming you have a `HealthDirective` model that relates to the `health_directives` table
-    $healthDirectives = HealthDirective::where('bill_id', $bill_id)->get();
+    try {
+        // Perform the query to join health_directives and drugs tables
+        $healthDirectives = DB::table('health_directives')
+            ->join('drugs', 'health_directives.medicine', '=', 'drugs.id')
+            ->where('health_directives.p_p_i_id', $id)  // Filter by the ID
+            ->select('health_directives.*', 'drugs.drug_name')
+            ->get();
 
-    return response()->json($healthDirectives);
+        // Return the result as a JSON response
+        return response()->json($healthDirectives);
+
+    } catch (\Exception $e) {
+        // Log the error message
+        \Log::error('Error fetching health directives: ' . $e->getMessage());
+
+        // Return a response with the error message
+        return response()->json(['error' => 'Failed to fetch health directives', 'message' => $e->getMessage()], 500);
+    }
+}
+
+
+
+
+public function getPrescriptionsByBillId($p_p_i_id) {
+    try {
+        // Fetching data from health_directives table using Eloquent
+        $healthDirectives = DB::table('health_directives')
+            ->where('p_p_i_id', $p_p_i_id)
+            ->get();
+
+        // Check if the data exists
+        if ($healthDirectives->isEmpty()) {
+            return response()->json(['message' => 'Prescription not found'], 404);
+        }
+
+        // Return the data as JSON
+        return response()->json($healthDirectives, 200);
+    } catch (\Exception $e) {
+        // Handle any exceptions and return an error response
+        return response()->json([
+            'error' => 'An error occurred while fetching prescriptions.',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
 }
 
 }

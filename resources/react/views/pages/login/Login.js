@@ -124,7 +124,7 @@ const handleLogin = async (event) => {
       storeUserData(resp); // Assume storeUserData handles any user data
 
       // Navigate to the next page (e.g., /theme/bills)
-      navigate('/theme/prescriptionForm');
+      navigate('/Prescription');
     }
   } catch (error) {
     // Set error message if login fails

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MantineReactTable } from 'mantine-react-table';
 import { Button } from '@mantine/core';
 import { CButton, CFormSelect, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from '@coreui/react';
-import { deleteAPICall, post, put } from '../../../util/api';
+import { deleteAPICall, getAPICall, post, put } from '../../../util/api';
 
 function Timeslots() {
 
@@ -29,10 +29,22 @@ function Timeslots() {
   // Table Columns
   const columns = useMemo(
     () => [
-      { accessorKey: 'id', header: 'ID' },
+      // { accessorKey: 'id', header: '' },
     
       { accessorKey: 'time', header: 'Time' },
-      { accessorKey: 'slot', header: 'Slots' },
+      // { accessorKey: 'slot', header: 'Slots' },
+      {
+        accessorKey: 'slot',
+        header: 'Slots',
+        Cell: ({ row }) => {
+         
+          let slotName = handleSlotName(row.original.slot);
+          console.log(slotName);
+          
+          
+          return <span>{slotName}</span>;
+    },
+      },
       {
         header: 'Action',
         accessorKey: 'actions',
@@ -74,9 +86,10 @@ function Timeslots() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/allDataTimeSlot/7');
-      const result = await response.json();
-      setData(result); // Update state with fetched data
+      const response = await getAPICall('/api/allDataTimeSlot');
+      console.log("All Data",response);
+     
+      setData(response); // Update state with fetched data
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -96,14 +109,11 @@ function Timeslots() {
     if (confirmDelete) {
       try {
         // Make DELETE API call
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/timeslotDestroy/${rowData.id}`,
-          { method: 'DELETE' } // DELETE Method
-        );
+        const response = await deleteAPICall(`/api/timeslotDestroy/${rowData.id}`);
 
-        if (!response.ok) {
-          throw new Error('Failed to delete timeslot.');
-        }
+        // if (!response.ok) {
+          // throw new Error('Failed to delete timeslot.');
+        // } 
 
         alert('Timeslot deleted successfully!');
         fetchData(); // Re-fetch data after successful deletion
@@ -120,11 +130,12 @@ function Timeslots() {
   useEffect(() => {
     const fetchTimeSlots = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/doctorTiemslot/7`);
-        const data = await response.json(); // Get data in JSON format
-        setTimeSlots(data); // Set fetched data in state
+        const response = await getAPICall('/api/doctorTiemslot');
+       
+      
+        setTimeSlots(response); // Set available time slots
       } catch (error) {
-        console.error('Error fetching time slots:', error); // Handle errors
+        console.error('Error fetching time slots:', error);
       }
     };
 
@@ -133,38 +144,27 @@ function Timeslots() {
     }
   }, []); // Dependency array to re-fetch data when doctorId changes
 
+console.log("babababab",timeSlots);
+
+
   // Handle dropdown change
   const handleDropdown2Change = (e) => {
     setDropdown2(e.target.value);
   };
 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:8000/api/allDataTimeSlot/7'); // API call
-        const result = await response.json(); // Parse response to JSON
-        setData(result); // Update state with data
-        setLoading(false); // Set loading to false
-      } catch (error) {
-        console.error('Error fetching data:', error); // Handle error
-        setLoading(false);
-      }
-    };
-
-    fetchData(); // Call the fetch function when component loads
-  }, []);
+  
 
 
 
   const handleSubmitData = () => {
     const requestData = {
-      doctor_id: 7, // Example doctor ID, replace dynamically as needed
+      // doctor_id: 7, // Example doctor ID, replace dynamically as needed
       time: dropdown2,
       slot: dropdown1,
     };
 
-    post('http://127.0.0.1:8000/api/timeslotadd', requestData)
+    post('/api/timeslotadd', requestData)
       .then(response => {
         console.log('Success:', response.data);
         alert('Timeslot added successfully!');
@@ -179,22 +179,62 @@ function Timeslots() {
 
 
   // Update timeslot
-  const handleUpdate = (id) => {
-    const requestData = {
-      doctor_id: 7, // Replace with dynamic doctor_id if required
-      time: dropdown2,
-      slot: dropdown1,
-    };
+  
+  const [refreshData, setRefreshData] = useState(false); // State to trigger re-fetch
 
-    put(`http://127.0.0.1:8000/api/timeslotUpdate/${id}`, requestData)
-      .then(response => {
-        alert('Timeslot updated successfully!');
-        setVisible(false);
-      })
-      .catch(error => {
-        console.error('Error updating timeslot:', error);
-        alert('Failed to update timeslot.');
-      });
+const handleUpdate = async (id) => {
+  const requestData = {
+    time: dropdown2,
+    slot: dropdown1,
+  };
+
+  try {
+    const response = await put(`/api/timeslotUpdate/${id}`, requestData);
+
+    alert('Timeslot updated successfully!');
+    setVisible(false);
+
+    // Trigger data re-fetch
+    setRefreshData((prev) => !prev);
+  } catch (error) {
+    console.error('Error updating timeslot:', error);
+    alert('Failed to update timeslot.');
+  }
+};
+
+// Fetch data whenever `refreshData` changes
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await getAPICall('/api/allDataTimeSlot');
+      setData(response); // Update the table data
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  fetchData();
+}, [refreshData]);
+
+
+  const handleSlotName = (slots) => {
+    let slotName = '';
+    switch(slots){
+      case 1: 
+      slotName = 'Morning';
+      break;
+      case 2: 
+      slotName = 'Afternoon';
+      break;
+      case 3: 
+      slotName = 'Evening';
+      break;
+      default:
+      slotName = 'Undefined';
+
+    }
+    return slotName;
+
   };
 
 
@@ -217,7 +257,7 @@ function Timeslots() {
       />
     </div>
 
-
+{/* update  */}
     
     <CModal
   alignment="center"
@@ -272,7 +312,7 @@ function Timeslots() {
 
 
 
-
+{/* post  */}
 
       <CModal
       alignment="center"

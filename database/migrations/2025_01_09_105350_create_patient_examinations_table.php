@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('patient_examinations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('bill_id'); // Foreign key referencing bills table
+            $table->string('p_p_i_id')->constrained('prescription_patient_info')->onDelete('cascade');  // Foreign key referencing bills table
             $table->string('bp')->nullable(); // Blood Pressure
             $table->string('pulse')->nullable(); // Pulse
             $table->text('past_history')->nullable(); // Past History
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Define foreign key relationship with bills table
-            $table->foreign('bill_id')->references('id')->on('bills')->onDelete('cascade');
+           // $table->foreign('bill_id')->references('id')->on('bills')->onDelete('cascade');
         });
     }
 

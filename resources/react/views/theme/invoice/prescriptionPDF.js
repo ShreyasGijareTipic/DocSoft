@@ -2,7 +2,7 @@ import React from 'react';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-export function generatePDF(grandTotal, invoiceNo, patient_name, formDataa, remainingAmount, totalAmountWords, bills, descriptions, doctorData,patientExaminations) {
+export function generatePDF(grandTotal, invoiceNo, patient_name, formDataa, remainingAmount, totalAmountWords, bills, descriptions, doctorData,patientExaminations,clinicData) {
     const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -24,13 +24,13 @@ export function generatePDF(grandTotal, invoiceNo, patient_name, formDataa, rema
 
     // Clinic logo
     const img = new Image();
-    img.src = doctorData.logo;
-    pdf.addImage(img, "PNG", marginLeft, y, 30, 30);
+    img.src = clinicData?.logo;
+    pdf.addImage(img, marginLeft, y, 30, 30);
     y += 20; // Move Y position down after image
 
     // Clinic Name
     pdf.setFontSize(25);
-    pdf.text(doctorData.clinic_name, pdf.internal.pageSize.getWidth() / 2, y, { align: "center" });
+    pdf.text(clinicData?.clinic_name, pdf.internal.pageSize.getWidth() / 2, y, { align: "center" });
     y += lineHeight * 2; // Add more space after title
 
     // Doctor Details
@@ -175,7 +175,7 @@ export function generatePDF(grandTotal, invoiceNo, patient_name, formDataa, rema
     y = pdf.autoTable.previous.finalY + lineHeight;
 
     // Footer (message at the bottom)
-    const additionalMessage = "This bill has been computer-generated and is authorized.";
+    const additionalMessage = "This prescription has been computer-generated and is authorized.";
     pdf.setFontSize(10);
     pdf.text(additionalMessage, marginLeft, pdf.internal.pageSize.getHeight() - 10);
 

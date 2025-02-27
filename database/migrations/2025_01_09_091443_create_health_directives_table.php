@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('health_directives', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('bill_id'); // Foreign key to the patients table
+            $table->string('p_p_i_id')->constrained('prescription_patient_info')->onDelete('cascade'); // Foreign key to the patients table
             $table->string('medicine');              // Name of the medicine
             $table->string('dosage');                // Dosage (e.g., 500mg)
             $table->string('timing');                // Timing (e.g., Morning, Night)
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Define the foreign key constraint
-            $table->foreign('bill_id')->references('id')->on('bills')->onDelete('cascade');
+            // $table->foreign('p_p_i_id')->references('id')->on('prescription_patient_info')->onDelete('cascade');
         });
     }
 

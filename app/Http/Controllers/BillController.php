@@ -22,7 +22,7 @@ class BillController extends Controller
             'patient_name' => 'required|string',
             'address' => 'required|string',
             'email' => 'email',
-            'contact' => [ 'string', 'digits:10', 'regex:/^\d{10}$/'],
+            'contact' =>  'required|string|max:12',
             'dob' => 'date',
 
             'doctor_name' => 'string',
@@ -199,6 +199,8 @@ public function getBillsByDoctorId()
 
     return response()->json($bills); // Return bills as JSON
 }
+
+
 
 
 }

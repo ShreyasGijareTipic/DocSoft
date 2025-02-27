@@ -14,19 +14,25 @@ import {
   CTableBody,
   CTableDataCell,
   CFormSelect,
+  CListGroup,
+  CListGroupItem,
 } from '@coreui/react';
 import { getUser } from '../../../util/session';
 import { getAPICall, post } from '../../../util/api';
 import { useNavigate } from 'react-router-dom';
 
 const PrescriptionForm = () => {
+
+  const today = new Date().toISOString().split('T')[0];
+
+
   // State for patient and doctor details
   const [patientName, setPatientName] = useState('');
   const [doctor_name, setDoctorName] = useState('');
-  const [visitDate, setVisitDate] = useState('');
+  const [visitDate, setVisitDate] = useState(today);
   const [patientAddress, setPatientAddress] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setContactNumber] = useState('');
   const [dob, setDob] = useState('');
   const [registration_number, setRegistrationNumber] = useState('');
   const [billId, setBillId] = useState('');
@@ -57,7 +63,12 @@ const PrescriptionForm = () => {
   
   // Remove a row
   const handleRemoveRow = (index) => {
-    setRows((prevRows) => prevRows.filter((_, rowIndex) => rowIndex !== index));
+    if (index === 0) {
+      
+      return;
+      
+    }
+    setRows(rows.filter((_, i) => i !== index));
   };
 
 
@@ -66,9 +77,131 @@ const PrescriptionForm = () => {
   }, [rows]);
 
 
+  const [errors, setErrors] = useState({
+    patientName: '',
+    patientAddress: '',
+    phone: '',
+    email: '',
+    dob: '',
+    visitDate: '',
+    
+  });
+
+
+  const validateForm = () => {
+    let formErrors = {};
+    let isValid = true;
+  
+    // Validate patient details
+    if (!patientName) {
+      formErrors.patientName = 'Patient name is required';
+      isValid = false;
+    }
+  
+    if (!patientAddress) {
+      formErrors.patientAddress = 'Patient address is required';
+      isValid = false;
+    }
+  
+    if (!phone) {
+      formErrors.phone = 'Contact number is required';
+      isValid = false;
+    }
+  
+    if (!email) {
+      formErrors.email = 'Email is required';
+      isValid = false;
+    }
+  
+    if (!dob) {
+      formErrors.dob = 'Date of birth is required';
+      isValid = false;
+    }
+  
+    if (!visitDate) {
+      formErrors.visitDate = 'Visit date is required';
+      isValid = false;
+    }
+  
+    
+  
+    setErrors(formErrors); // Set errors in the state
+    return isValid;
+  };
+
+
+
+  const [rowErrors, setRowErrors] = useState([]);
+
+ 
+
+  const validateRows = (rows) => {
+    let errors = rows.map((row) => ({
+      description: !row.description ? 'Description is required' : '',
+      strength: !row.strength ? 'Strength is required' : '',
+      dosage: !row.dosage ? 'Dosage is required' : '',
+      timing: !row.timing ? 'Timing is required' : '',
+      frequency: !row.frequency ? 'Frequency' : '',
+      duration: !row.duration ? 'Duration ' : '',
+    }));
+  
+    // Check if there are any errors
+    const hasErrors = errors.some((error) =>
+      Object.values(error).some((err) => err)
+    );
+  
+    setRowErrors(errors); // Update the errors in state
+  
+    return !hasErrors; // Return true if no errors
+  };
+
+
+  const [suggestions, setSuggestions] = useState([]);
+
+
+    //Fetch patient suggestions
+    useEffect(() => {
+      const fetchSuggestions = async () => {
+        // Only fetch suggestions if patientName has at least 2 characters
+        if (patientName.length >= 2) {
+          try {
+            const response = await getAPICall(`/api/patients/search?name=${patientName}`);
+            setSuggestions(response);
+            console.log('p name', response);
+          } catch (error) {
+            console.error('Error fetching patient suggestions:', error);
+          }
+        } else {
+          // Clear suggestions if patientName is empty or too short
+          setSuggestions([]);
+        }
+      };
+      fetchSuggestions();
+    }, [patientName]);
+  
+    // Handle patient name suggestion click
+    const handleSuggestionClick = (patient) => {
+      setPatientName(patient.name);
+      setPatientAddress(patient.address);
+      setContactNumber(patient.phone);
+      setEmail(patient.email);
+      setDob(patient.dob);
+      setSuggestions([]);
+    };
+  
+  
+
+  
+
+
 
 
   const handleSubmit = async () => {
+
+
+    if (!validateForm()) return; 
+    if (validateRows(rows)) {
+
     // Field-specific validation
     const phoneRegex = /^[0-9]{10}$/; // Adjust regex based on phone number format requirements
     // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -83,10 +216,7 @@ const PrescriptionForm = () => {
       return;
     }
   
-    // if (!emailRegex.test(email)) {
-    //   alert('Please enter a valid email address.');
-    //   return;
-    // }
+    
   
     const today = new Date();
     const dobDate = new Date(dob);
@@ -97,10 +227,7 @@ const PrescriptionForm = () => {
       return;
     }
   
-    // if (visitDateObj > today) {
-    //   alert('Visit date cannot be in the future.');
-    //   return;
-    // }
+   
   
     if (!doctor_name && !user.name) {
       alert('Doctor Name is required.');
@@ -150,7 +277,7 @@ const PrescriptionForm = () => {
   
     try {
       // API calls (unchanged from your existing logic)
-      const billResponse = await post('/api/bills', billData);
+      const billResponse = await post('/api/PrescriptionPatientInfo', billData);
       console.log('Bill Response:', billResponse);
   
       const billno = billResponse.id;
@@ -158,7 +285,7 @@ const PrescriptionForm = () => {
   
       if (bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA) {
         const patientExaminationData = {
-          bill_id: billno,
+          p_p_i_id: billno,
           bp,
           pulse,
           past_history: pastHistory,
@@ -173,7 +300,7 @@ const PrescriptionForm = () => {
   
       const prescriptionPromises = rows.map((row) => {
         const prescriptionData = {
-          bill_id: billno,
+        p_p_i_id: billno,
           medicine: row.description,
           strength: row.strength,
           dosage: row.dosage,
@@ -181,6 +308,9 @@ const PrescriptionForm = () => {
           frequency: row.frequency,
           duration: row.duration,
         };
+
+        console.log(prescriptionData);
+        
         return post('/api/healthdirectives', prescriptionData);
       });
   
@@ -190,9 +320,39 @@ const PrescriptionForm = () => {
       navigate('/theme/PrescriptionView', { state: { billId: billno } });
   
       alert('Bill, examination, and prescription details created successfully');
+
+
+
+
+const patientExists = suggestions.some((patient) => patient.name === patientName);
+
+    // If patient does not exist in suggestions, add them as a new patient
+    if (!patientExists) {
+      const newPatientData = {
+        name: patientName,
+        address: patientAddress,
+        email: email,
+        phone: phone,
+        dob: dob,
+      };
+  
+      try {
+        const patientResponse = await post('/api/patients', newPatientData);
+        console.log('New Patient added:', patientResponse);
+        alert('New patient added successfully!');
+      } catch (error) {
+        console.error('Error adding new patient:', error);
+        alert('Failed to add new patient');
+        return;
+      }
+    }
+
+
+
     } catch (error) {
       console.error('Error creating bill, examination, or prescriptions:', error);
       alert('There was an error processing the data. Please check your input and try again.');
+    }
     }
   };
   
@@ -200,26 +360,25 @@ const PrescriptionForm = () => {
 
 
 
-  // A placeholder function to calculate the grand total (implement your actual calculation)
   const calculateGrandTotal = () => {
-    // Implement the logic to calculate the grand total based on other form inputs or external data
-    return 100; // Placeholder
+    return 100; 
   };
 
 
 
 
-  const [medicines, setMedicines] = useState([]);
-
+  const [medicines, setMedicines] = useState(null);
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
         const response = await getAPICall('/api/drugs');
         console.log("Drugs fetched data:", response);
-
+        
         // Ensure response is valid and contains the expected data
-        if (response && Array.isArray(response)) {
-          setMedicines(response);
+        if (response) {
+          console.log("setMedicines",response) ;
+         setMedicines(response);
+          
         } else {
           console.warn('Unexpected response structure:', response);
         }
@@ -246,7 +405,7 @@ const PrescriptionForm = () => {
     try {
       const responsee = await getAPICall(`/api/drugdetails/drug_id/${drugId}`);
       setDrugDetails(responsee);
-      console.log("fffffffff",responsee.strength);
+      // console.log(,responsee.strength);
       
       setRows((prevRows) => {
         const updatedRows = [...prevRows];
@@ -259,8 +418,9 @@ const PrescriptionForm = () => {
     } catch (error) {
       console.error('Error fetching drug details:', error);
     }
+  
   };
-  console.log("jksjas",drugDetails);
+  console.log("drugDetails",drugDetails);
   
 
 
@@ -277,7 +437,7 @@ const PrescriptionForm = () => {
 
 
     const handlebillpage = () =>{
-      navigate('/theme/Bills');
+      navigate('/Bills');
     }
 
 
@@ -293,7 +453,6 @@ const PrescriptionForm = () => {
       
 
 
-
       
 
   return (
@@ -302,34 +461,68 @@ const PrescriptionForm = () => {
         <CCardHeader>Patient Information</CCardHeader>
         <CCardBody>
           <CRow className="mb-4">
-            <CCol xs={8}>
+            <CCol xs={12} md={8}>
+              <CCol>
+                                <CFormInput
+                                  label="Patient Name"
+                                  value={patientName}
+                                  onChange={(e) => setPatientName(e.target.value)}
+                                  placeholder="Enter patient name"
+                                  required
+                                />
+                            {Array.isArray(suggestions) && suggestions.length > 0 && (
+                            <CListGroup style={{ maxHeight: '200px', overflowY: 'auto', marginTop: '10px' }}>
+                              {suggestions.map((patient) => (
+                                <CListGroupItem
+                                  key={patient.id}
+                                  onClick={() => handleSuggestionClick(patient)}
+                                  style={{
+                                    cursor: 'pointer',
+                                    backgroundColor: '#f8f9fa',
+                                  }}
+                                >
+                                  {patient.name}
+                                </CListGroupItem>
+                              ))}
+                            </CListGroup>
+                          )}
+                          {errors.patientName && <div style={{ color: 'red' }}>{errors.patientName}</div>}
+                              </CCol>
+
+
+
+              <CCol  className="pt-3">
               <CFormInput
-                label="Patient Name"
-                value={patientName}
-                onChange={(e) => setPatientName(e.target.value)}
-                placeholder="Enter patient name"
-                required
-              />
-              <CFormInput
-                className="mt-3"
+                className=""
                 label="Patient Address"
                 value={patientAddress}
                 onChange={(e) => setPatientAddress(e.target.value)}
                 placeholder="Full Address / Pincode"
                 required
               />
+                   {errors.patientAddress && <div style={{ color: 'red' }}>{errors.patientAddress}</div>}
+             </CCol>   
+
+
               <CRow className="mt-3">
-                <CCol xs={4}>
+                <CCol xs={12} md={4} className="mb-3">
                   <CFormInput
                     label="Contact Number"
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    onInput={(e) => {
+                      if (e.target.value.length > 10) {
+                        e.target.value = e.target.value.slice(0, 10); // Limit to 10 digits
+                      }
+                    }}
                     placeholder="Enter contact number"
                     required
                   />
+                {errors.phone && <div style={{ color: 'red' }}>{errors.phone}</div>}
+
                 </CCol>
-                <CCol xs={4}>
+                <CCol xs={12} md={4} className="mb-3">
                   <CFormInput
                     label="Email"
                     type="email"
@@ -338,21 +531,41 @@ const PrescriptionForm = () => {
                     placeholder="Enter email address"
                     required
                   />
-                </CCol>
-                <CCol xs={4}>
-                  <CFormInput
-                    label="Patient DOB"
-                    type="date"
-                    value={dob}
-                    onChange={(e) => setDob(e.target.value)}
-                    required
-                  />
+                        {errors.email && <div style={{ color: 'red' }}>{errors.email}</div>}
+                   </CCol>
+
+                <CCol xs={12} sm={6} lg={3} className="">
+                  <CCol>
+                    <CFormInput
+                      label="Patient DOB"
+                      type="date" // Keep the date input
+                      value={dob}
+                      onChange={(e) => {
+                        const input = e.target.value;
+                        const year = new Date(input).getFullYear();
+                        
+                        // Ensure the year is a valid 4-digit number
+                        if (/^\d{4}$/.test(year) && year >= 1900 && year <= new Date().getFullYear()) {
+                          setDob(input);
+                          if (errors.dob) {
+                            setErrors((prev) => ({ ...prev, dob: "" })); // Clear any previous errors
+                          }
+                        } else {
+                          setDob(""); // Clear invalid value
+                          setErrors((prev) => ({ ...prev, dob: "Please enter a valid year (YYYY format)." }));
+                        }
+                      }}
+                      placeholder="Enter patient DOB"
+                      required
+                    />
+                    {errors.dob && <div style={{ color: 'red' }}>{errors.dob}</div>}
+                  </CCol>
                 </CCol>
                 
               </CRow>
             </CCol>
 
-            <CCol xs={4}>
+            <CCol xs={12} md={4}>
               <CFormInput
                 label="Doctor Name"
                 // value={doctor_name}  
@@ -360,22 +573,29 @@ const PrescriptionForm = () => {
                 placeholder={`${user.name}`}
                 required
               />
+
+                
+                <CCol  className="mt-3" >
               <CFormInput
-                className="mt-3"
+                className=""
                 label="Registration Number"
                 // value={registration_number}
                 onChange={(e) => setRegistrationNumber(e.target.value)}
                 placeholder={`${user.registration_number}`}
                 required
               />
+              </CCol>
+
+              <CCol  className="mt-3" >
               <CFormInput
-                className="mt-3"
+                className=""
                 label="Visit Date"
                 type="date"
                 value={visitDate}
                 onChange={(e) => setVisitDate(e.target.value)}
                 required
               />
+             </CCol>
             </CCol>
           </CRow>
         </CCardBody>
@@ -429,21 +649,22 @@ const PrescriptionForm = () => {
             </CCol>
           </CRow>
           <CRow className="mb-3">
-            <CCol>
-              <CFormInput
-                label="Systemic Examination - General"
-                value={sysExGeneral}
-                onChange={(e) => setSysExGeneral(e.target.value)}
-              />
-            </CCol>
-            <CCol>
-              <CFormInput
-                label="Diagnosis"
-                value={sysExPA}
-                onChange={(e) => setSysExPA(e.target.value)}
-              />
-            </CCol>
-          </CRow>
+  <CCol xs={12} sm={6}>
+    <CFormInput
+      label="Systemic Examination - General"
+      value={sysExGeneral}
+      onChange={(e) => setSysExGeneral(e.target.value)}
+    />
+  </CCol>
+  <CCol xs={12} sm={6}>
+    <CFormInput
+      label="Diagnosis"
+      value={sysExPA}
+      onChange={(e) => setSysExPA(e.target.value)}
+    />
+  </CCol>
+</CRow>
+
         </CCardBody>
       )}
     </CCard>
@@ -459,13 +680,13 @@ const PrescriptionForm = () => {
           <CTable hover responsive>
             <CTableHead>
               <CTableRow>
-                <CTableHeaderCell style={{ width: '20%' }}>Medicine</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '15%' }}>Strength</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '15%' }}>Dosage</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '15%' }}>Timing</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '15%' }}>Frequency</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '15%' }}>Duration</CTableHeaderCell>
-                <CTableHeaderCell style={{ width: '30%' }}>Actions</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '10%' }}>Medicine</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '10%' }}>Strength</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '10%' }}>Dosage</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '10%' }}>Timing</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '10%' }}>Frequency</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '10%' }}>Duration</CTableHeaderCell>
+                <CTableHeaderCell style={{ width: '10%' }}>Actions</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
@@ -477,8 +698,10 @@ const PrescriptionForm = () => {
                     <CFormSelect
                       value={row.description}
                       onChange={(e) => {
+                       
                         handleRowChange(index, 'description', e.target.value);
-                        handleMedicineChange(index, e.target.value); // Fetch drug details
+                        handleMedicineChange(index, e.target.value);
+                       // Fetch drug details
                       }}
                     >
                       <option value="">Select Medicine</option>
@@ -492,6 +715,10 @@ const PrescriptionForm = () => {
                         <option disabled>No medicines available</option>
                       )}
                     </CFormSelect>
+                    {rowErrors[index]?.description && (
+          <div className="text-danger">{rowErrors[index].description}</div>
+        )}
+
                   </CTableDataCell>
 
 
@@ -514,27 +741,39 @@ const PrescriptionForm = () => {
       ))}
       {/* <option>{drugDetails.strength}</option> */}
   </CFormSelect>
+  {rowErrors[index]?.strength && (
+          <div className="text-danger">{rowErrors[index].strength}</div>
+        )}
 </CTableDataCell>
 
 <CTableDataCell>
   <CFormSelect
-    value={row.dosage || '1-0-1'} // Set default value to "1-0-1" if row.dosage is undefined or null
+    // value={row.dosage || '1-0-1'} // Set default value to "1-0-1" if row.dosage is undefined or null
     onChange={(e) => handleRowChange(index, 'dosage', e.target.value)}
   >
-    <option value="1-0-1">1-0-1</option>
+    <option value="">Select</option>
+  <option value="1-0-1">1-0-1</option>
     <option value="0-1-0">0-1-0</option>
     <option value="1-1-1">1-1-1</option>
   </CFormSelect>
+  {rowErrors[index]?.dosage && (
+          <div className="text-danger">{rowErrors[index].dosage}</div>
+        )}
 </CTableDataCell>
 
 <CTableDataCell>
   <CFormSelect
-    value={row.timing || 'After Food'} // Default value is "After Food" if row.timing is undefined or null
+    // value={row.timing || 'After Food'} // Default value is "After Food" if row.timing is undefined or null
     onChange={(e) => handleRowChange(index, 'timing', e.target.value)}
   >
+    <option value="">Select</option>
+
     <option value="After Food">After Food</option>
     <option value="Before Food">Before Food</option>
   </CFormSelect>
+  {rowErrors[index]?.timing && (
+          <div className="text-danger">{rowErrors[index].timing}</div>
+        )}
 </CTableDataCell>
 
 
@@ -548,8 +787,12 @@ const PrescriptionForm = () => {
                       <option value="Daily">Daily</option>
                       <option value="SOS">SOS</option>
                       </CFormSelect>
-                  </CTableDataCell>
+                      {rowErrors[index]?.frequency && (
+          <div className="text-danger">{rowErrors[index].frequency}</div>
+        )}
 
+                  </CTableDataCell>
+                  
                   <CTableDataCell>
   {row.isCustom ? (
     <CFormInput
@@ -583,7 +826,14 @@ const PrescriptionForm = () => {
       <option value="SOS">Custom</option>
     </CFormSelect>
   )}
+ 
+
+ {rowErrors[index]?.frequency && (
+          <div className="text-danger">{rowErrors[index].frequency}</div>
+        )}
 </CTableDataCell>
+
+
 
                   <CTableDataCell>
                     <div className="d-flex">
@@ -591,6 +841,8 @@ const PrescriptionForm = () => {
                         color="danger"
                         className="me-2"
                         onClick={() => handleRemoveRow(index)}
+                        disabled={index === 0}
+
                       >
                         Remove
                       </CButton>
@@ -617,7 +869,7 @@ const PrescriptionForm = () => {
 
 
       <div className="mt-1 mb-1">
-        <CButton color="primary" onClick={handlebillpage}>Generate Bill</CButton>
+        {/* <CButton color="primary" onClick={handlebillpage}>Generate Bill</CButton> */}
         <CButton color="success" style={{ marginLeft: '5px' }} onClick={handleSubmit}>
           Submit Prescription
         </CButton>

@@ -6,6 +6,7 @@ import { AppContent, AppSidebar, AppFooter, AppHeader } from 'resources/react/co
 import { Router, useNavigate } from 'react-router-dom'
 // import { isLogIn } from '../../util/session'
 import { isLogIn } from '../../react/util/session'
+import AppBreadcrumb from '../components/AppBreadcrumb'
 
 
 const DefaultLayout = () => {
@@ -21,7 +22,11 @@ const DefaultLayout = () => {
       <AppSidebar />
       <div className="wrapper d-flex flex-column min-vh-100">
         <AppHeader />
+        
         <div className="body flex-grow-1">
+          <div className='ps-5 text-text-decoration-none'>
+         <AppBreadcrumb /><br/>
+         </div>
           <AppContent />
         </div>
         <AppFooter />

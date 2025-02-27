@@ -12,7 +12,7 @@ class PatientExamination extends Model
     protected $table = 'patient_examinations';
 
     protected $fillable = [
-        'bill_id',
+        'p_p_i_id',
         'bp',
         'pulse',
         'past_history',
@@ -26,6 +26,6 @@ class PatientExamination extends Model
      */
     public function bill()
     {
-        return $this->belongsTo(Bill::class);
+        return $this->belongsTo(PrescriptionPatientInfo::class);
     }
 }

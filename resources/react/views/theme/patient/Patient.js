@@ -73,7 +73,7 @@ const BasicMantineTable = () => {
         <MantineReactTable
           columns={columns} // Pass the defined columns
           data={data} // Pass the fetched data
-          initialState={{ density: 'compact' }} // Initial state settings
+          initialState={{ density: 'comfortable' }} // Initial state settings
           enableFullScreenToggle={false} // Disable fullscreen toggle
           enableDensityToggle={true} // Enable density toggle
         />

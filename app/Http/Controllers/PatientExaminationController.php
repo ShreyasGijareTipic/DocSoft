@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\PatientExamination;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class PatientExaminationController extends Controller
 {
@@ -25,7 +27,7 @@ class PatientExaminationController extends Controller
     {
         // Validate the request data
         $validatedData = $request->validate([
-            'bill_id' => 'required|exists:bills,id',
+            'p_p_i_id' => 'required|exists:Bills,id',
             'bp' => 'nullable|string',
             'pulse' => 'nullable|string',
             'past_history' => 'nullable|string',
@@ -58,7 +60,7 @@ class PatientExaminationController extends Controller
     {
         // Validate the request data
         $validatedData = $request->validate([
-            'bill_id' => 'required|exists:bills,id',
+            'p_p_i_id' => 'required|exists:Bills,id',
             'bp' => 'nullable|string',
             'pulse' => 'nullable|string',
             'past_history' => 'nullable|string',
@@ -92,7 +94,7 @@ class PatientExaminationController extends Controller
 {
     try {
         // Fetch patient examination data based on bill_id
-        $patientExaminations = PatientExamination::where('bill_id', $billId)->get();
+        $patientExaminations = PatientExamination::where('p_p_i_id', $billId)->get();
 
         // Return the data as a JSON response
         return response()->json($patientExaminations, 200);
@@ -103,4 +105,42 @@ class PatientExaminationController extends Controller
         ], 500);
     }
 }
+
+
+
+
+
+public function getPatientExaminationsByBillId($p_p_i_id) {
+    try {
+        // Validate the input ID (ensure it's not empty and is numeric)
+        if (empty($p_p_i_id) || !is_numeric($p_p_i_id)) {
+            return response()->json(['message' => 'Invalid p_p_i_id provided'], 400);
+        }
+
+        // Fetch data from the 'patient_examinations' table using Query Builder
+        $patientExaminations = DB::table('patient_examinations')
+            ->where('p_p_i_id', $p_p_i_id)
+            ->get();
+
+        // Check if any data exists for the given p_p_i_id
+        if ($patientExaminations->isEmpty()) {
+            return response()->json(['message' => 'PatientExaminations not found'], 404);
+        }
+
+        // Return the fetched data as a JSON response
+        return response()->json($patientExaminations, 200);
+    } catch (\Exception $e) {
+        // Log the error for debugging purposes
+        \Log::error('Error fetching PatientExaminations: ' . $e->getMessage());
+
+        // Return a generic error response
+        return response()->json([
+            'error' => 'An error occurred while fetching PatientExaminations.',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+
 }

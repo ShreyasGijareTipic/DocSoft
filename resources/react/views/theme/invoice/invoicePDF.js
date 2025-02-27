@@ -2,7 +2,7 @@ import React from 'react';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-export function generatePDF(grandTotal, invoiceNo, patient_name, formData, remainingAmount, totalAmountWords, bills, descriptions, doctorData) {
+export function generatePDF(grandTotal, invoiceNo, patient_name, formData, remainingAmount, totalAmountWords, bills, descriptions, doctorData,clinicData) {
     const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -23,13 +23,13 @@ export function generatePDF(grandTotal, invoiceNo, patient_name, formData, remai
 
     // Clinic logo
     const img = new Image();
-    img.src = doctorData.logo;
+    img.src = clinicData.logo;
     pdf.addImage(img, "PNG", marginLeft, y, 30, 30);
     y += 20; // Move Y position down after image
 
     // Clinic Name
     pdf.setFontSize(25);
-    pdf.text(doctorData.clinic_name, pdf.internal.pageSize.getWidth() / 2, y, { align: "center" });
+    pdf.text(clinicData.clinic_name, pdf.internal.pageSize.getWidth() / 2, y, { align: "center" });
     y += lineHeight * 2; // Add more space after title
 
     // Doctor Details
@@ -44,10 +44,10 @@ export function generatePDF(grandTotal, invoiceNo, patient_name, formData, remai
     y += lineHeight;
     pdf.text(`Speciality :${doctorData.speciality}`, pdf.internal.pageSize.getWidth() - 65, y);
     y += lineHeight;
-    pdf.text(`Address :${doctorData.address}`, pdf.internal.pageSize.getWidth() - 65, y);
-    y += lineHeight;
-    pdf.text(`Contact No. :${doctorData.mobile}`, pdf.internal.pageSize.getWidth() - 65, y);
-    y += lineHeight * 2; // Add extra space after doctor details
+    // pdf.text(`Address :${doctorData.address}`, pdf.internal.pageSize.getWidth() - 65, y);
+    // y += lineHeight;
+    // pdf.text(`Contact No. :${doctorData.mobile}`, pdf.internal.pageSize.getWidth() - 65, y);
+    // y += lineHeight * 2; // Add extra space after doctor details
 
     // Bill to section (Patient Details)
     pdf.setFontSize(13);
@@ -122,14 +122,42 @@ export function generatePDF(grandTotal, invoiceNo, patient_name, formData, remai
         margin: { bottom: 30 },
     });
 
-    y = pdf.autoTable.previous.finalY + lineHeight;
+    
+    y = pdf.autoTable.previous.finalY + lineHeight + 50;
+
+    pdf.setFontSize(13);
+    pdf.text(`Signature`, marginLeft + 150, y );
+    y += lineHeight;
+    
+    y = pdf.autoTable.previous.finalY + lineHeight + 115;
+
+
+    pdf.setFontSize(11);
+    pdf.text(`Address. : ${clinicData.clinic_address}`, pdf.internal.pageSize.getWidth() - 195, y);
+    y += lineHeight;
+    pdf.text(
+        `Registration No. : ${clinicData.clinic_registration_no} | Contact: ${clinicData.clinic_mobile}`, 
+        pdf.internal.pageSize.getWidth() - 195, 
+        y
+      );
+      y += lineHeight;
+
+      pdf.line(10, y, pdf.internal.pageSize.getWidth() - 15, y); // (x1, y1, x2, y2)
+      y += lineHeight;
+
 
     // Footer (message at the bottom)
     const additionalMessage = "This bill has been computer-generated and is authorized.";
     pdf.setFontSize(10);
-    pdf.text(additionalMessage, marginLeft, pdf.internal.pageSize.getHeight() - 10);
-
-    pdf.save(`${patient_name}.pdf`);
+    
+    // Calculate center position horizontally
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const textWidth = pdf.getTextWidth(additionalMessage);
+    const centerX = (pageWidth - textWidth) / 2;
+    
+    // Position the text at the bottom and center
+    pdf.text(additionalMessage, centerX, pdf.internal.pageSize.getHeight() - 10);
+    pdf.save(`${invoiceNo}-${patient_name}.pdf`);
 }
 
 function InvoicePdf() {

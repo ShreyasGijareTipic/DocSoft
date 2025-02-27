@@ -17,6 +17,8 @@ const inv = () => {
   const [doctorData, setDoctorData] = useState({});
   const [file, setFile] = useState(null); // State to hold the file
   const fileInputRef = useRef(null); // Ref for triggering file input programmatically
+    const [clinicData, setClinicData] = useState(null);
+  
 
   const [patientExaminations , setPatientExaminations] = useState({});
 console.log("vfsfsfsf",patientExaminations);
@@ -42,7 +44,7 @@ const navigate = useNavigate();
 
   const fetchProduct = async () => {
     try {
-      const response = await getAPICall(`/api/bill/${billId}`);
+      const response = await getAPICall(`/api/PrescriptionPatientInfo/${billId}`);
       setFormData(response);
       const finalAmount = Math.round(response.finalAmount);
       const remaining = finalAmount - response.paidAmount;
@@ -50,6 +52,13 @@ const navigate = useNavigate();
 
       const doctorResponse = await getAPICall(`/api/users/${response.doctor_id}`);
       setDoctorData(doctorResponse);
+
+      if (doctorResponse && doctorResponse.clinic_id) {
+              const clinicResponse = await getAPICall(`/api/clinic/${doctorResponse.clinic_id}`);
+              setClinicData(clinicResponse);
+              // console.log(clinicResponse.logo);
+              
+            }
 
       
 
@@ -62,8 +71,10 @@ const navigate = useNavigate();
 
   const fetchDescriptions = async () => {
     try {
-      const response = await getAPICall(`/api/healthdirectives/bill_id/${billId}`);
+      const response = await getAPICall(`/api/healthdirectives/p_p_i_id/${billId}`);
       setDescriptions(response);
+      console.log("setDescriptions",response);
+      
     } catch (error) {
       console.error('Error fetching description data:', error);
     }
@@ -73,7 +84,7 @@ const navigate = useNavigate();
 
   const fetchpatientexaminations = async () => {
     try {
-      const patient = await getAPICall(`/api/patientexaminations/bill_id/${billId}`);
+      const patient = await getAPICall(`/api/patientexaminations/p_p_i_id/${billId}`);
       setPatientExaminations(patient);
       console.log("Patient Examination data 1",patient);
       
@@ -137,12 +148,12 @@ const navigate = useNavigate();
 
 
   const handleDownload = () => {
-    generatePDF(grandTotal, formDataa.id, formDataa.patient_name, formDataa, remainingAmount, totalAmountWords, formDataa.bills, descriptions, doctorData, patientExaminations);
-    navigate('/theme/Bills' , { state: { formDataa} });
+    generatePDF(grandTotal, formDataa.id, formDataa.patient_name, formDataa, remainingAmount, totalAmountWords, formDataa.bills, descriptions, doctorData, patientExaminations, clinicData);
+    navigate('/Bills' , { state: { formDataa} });
   };
 
   const handleDownloadPDF = () =>{
-    generatePDF(grandTotal, formDataa.id, formDataa.patient_name, formDataa, remainingAmount, totalAmountWords, formDataa.bills, descriptions, doctorData, patientExaminations);
+    generatePDF(grandTotal, formDataa.id, formDataa.patient_name, formDataa, remainingAmount, totalAmountWords, formDataa.bills, descriptions, doctorData, patientExaminations, clinicData);
 
   }
 
@@ -161,7 +172,7 @@ const navigate = useNavigate();
     formDataa.append("messaging_product", "whatsapp");
 
     try {
-      const response = await postFormData("http://localhost:8000/api/sendBill", formDataa);
+      const response = await postFormData("/api/sendBill", formDataa);
       console.log("WhatsApp message sent successfully!", response.data);
     } catch (error) {
       if (error.response) {
@@ -184,10 +195,10 @@ const navigate = useNavigate();
           </div>
           <div className="d-flex flex-row mb-3">
             <div className="flex-fill col-4">
-              <img src={doctorData.logo} width="150" height="150" alt="Logo" />
+              <img src={clinicData?.logo} width="150" height="150" alt="Logo" />
             </div>
             <div className="flex-fill col-5 mt-5">
-              <h1>{doctorData.clinic_name}</h1>
+              <h1>{clinicData?.clinic_name}</h1>
             </div>
             <div className="ml-3 pt-5 col-3">
               <h6 style={{ fontWeight: 'bold' }}>Doctor Details:</h6>
@@ -206,7 +217,7 @@ const navigate = useNavigate();
           <div className="row mt-10">
             <div className="flex-fill col-6">
               <div className="col-md-12">
-                <h6 style={{ fontWeight: 'bold' }}>Bills To:</h6>
+                <h6 style={{ fontWeight: 'bold' }}>Prescription To:</h6>
                 <p style={{ fontWeight: 'bold' }}>Name: {formDataa.patient_name}</p>
                 <p style={{ fontWeight: 'bold' }}>Address: {formDataa.patient_address}</p>
                 <p style={{ fontWeight: 'bold' }}>Number: {formDataa.patient_contact}</p>
@@ -216,7 +227,7 @@ const navigate = useNavigate();
             <div className='col-2'></div>
             <div className='col-4'>
               <div className="flex-fill col-md-8">
-                <h6 style={{ fontWeight: 'bold' }}>Bill NO.: {billId}</h6>
+                <h6 style={{ fontWeight: 'bold' }}>Prescription No.: {billId}</h6>
                 <p style={{ fontWeight: 'bold' }}> Date: {formDataa.visit_date}</p>
                 {formDataa.InvoiceType === 2 && <p style={{ fontWeight: 'bold' }}>Delivery Date: {formDataa.DeliveryDate}</p>}
               </div>
@@ -268,7 +279,7 @@ const navigate = useNavigate();
                   {descriptions.map((product, index) => (
                     <tr key={index}>
                       <td className='text-center'>{index + 1}</td>
-                      <td>{product.medicine}</td>
+                      <td  className='text-center'>{product.drug_name}</td>
                       <td className='text-center'>{product.strength}</td>
                       <td className='text-center'>{product.dosage}</td>
                       <td className='text-center'>{product.timing}</td>

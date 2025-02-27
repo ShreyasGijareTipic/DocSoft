@@ -1,8 +1,10 @@
 import React, { Suspense, useEffect } from 'react'
-import { HashRouter, Route, Routes, Navigate } from 'react-router-dom'
+import { HashRouter, Route, Routes, Navigate, BrowserRouter  } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
+import AppBreadcrumb from './components/AppBreadcrumb'
+// import EditWhatsappClinicRegister from './views/pages/register/EditwhatsappClinicRegister'
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -12,6 +14,11 @@ const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Register = React.lazy(() => import('./views/pages/register/Register'))
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
+
+const ClinicRegister = React.lazy(() => import('./views/pages/register/ClinicRegister'))
+const WhatsappClinicRegister = React.lazy(() => import('./views/pages/register/WhatsappClinicRegister'))
+const EditWhatsappClinicRegister = React.lazy(() => import('./views/pages/register/EditwhatsappClinicRegister'))
+
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -33,6 +40,8 @@ const App = () => {
 
   return (
     <HashRouter>
+
+
       <Suspense
         fallback={
           <div className="pt-3 text-center">
@@ -40,13 +49,16 @@ const App = () => {
           </div>
         }
       >
+        {/* <AppBreadcrumb /> */}
         <Routes>
           {/* Redirect from root to login */}
           <Route exact path="/" element={<Navigate to="/login" />} /> 
 
           {/* Login and Register Routes */}
           <Route exact path="/login" name="Login Page" element={<Login />} /> 
-          <Route exact path="/register" name="Register Page" element={<Register />} />
+          {/* <Route exact path="/register" name="Register Page" element={<Register />} />
+          <Route exact path="/clinicRegister" name="Clinic Register Page" element={<ClinicRegister />} />
+          <Route exact path="/whatsappClinicRegister" name="Whatsapp Clinic Register Page" element={<WhatsappClinicRegister />} /> */}
           
           {/* Error Pages */}
           <Route exact path="/404" name="Page 404" element={<Page404 />} />
@@ -54,6 +66,9 @@ const App = () => {
           
           {/* Fallback to Default Layout */}
           <Route path="*" name="Home" element={<DefaultLayout />} />
+
+     
+        
         </Routes>
       </Suspense>
     </HashRouter>

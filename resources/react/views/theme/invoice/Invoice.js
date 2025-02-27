@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CButton, CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react';
 import { generatePDF } from './invoicePDF';
-import { getAPICall, postFormData } from '../../../util/api';
+import { getAPICall, post, postFormData } from '../../../util/api';
 import { useParams, useLocation } from 'react-router-dom';
 
 const inv = () => {
@@ -17,6 +17,11 @@ const inv = () => {
   const [doctorData, setDoctorData] = useState({});
   const [file, setFile] = useState(null); // State to hold the file
   const fileInputRef = useRef(null); // Ref for triggering file input programmatically
+  const [clinicData, setClinicData] = useState(null);
+  const [healthDirectives, setHealthDirectives] = useState({})
+  const [PatientExaminations, setpatientexaminations] = useState({}); 
+  console.log("Patientexaminations",PatientExaminations)
+  
 
   // Trigger file input dialog
   const handleFileInputClick = () => {
@@ -44,7 +49,15 @@ const inv = () => {
 
       const doctorResponse = await getAPICall(`/api/users/${response.doctor_id}`);
       setDoctorData(doctorResponse);
+      console.log("doctorResponse",doctorResponse.clinic_id);
 
+      if (doctorResponse && doctorResponse.clinic_id) {
+        const clinicResponse = await getAPICall(`/api/clinic/${doctorResponse.clinic_id}`);
+        setClinicData(clinicResponse);
+        // console.log(clinicResponse.logo);
+        
+      }
+      
       setGrandTotal(finalAmount);
       setTotalAmountWords(numberToWords(finalAmount));
     } catch (error) {
@@ -61,9 +74,38 @@ const inv = () => {
     }
   };
 
+  // ------------------------------------------------------------------------------------------------- 
+
+  // Fetch Health Directives
+
+  const fetchHealthDirectives = async () => {
+    try {
+      const response = await getAPICall(`/api/healthdirectivesData/${billId}`);
+      setHealthDirectives(response);
+    } catch (error) {
+      console.error('Error fetching description data:', error);
+    }
+  };
+
+  // Fetch Patient Examinations 
+
+  const fetchPatientExaminations = async () => {
+    try {
+      const response = await getAPICall(`/api/patientexaminationsData/${billId}`);
+      setpatientexaminations(response);
+    } catch (error) {
+      console.error('Error fetching patientexaminationsData data:', error);
+    }
+  };
+
+
+ // --------------------------------------------------------------------------------------------------- 
+
   useEffect(() => {
     fetchProduct();
     fetchDescriptions();
+    fetchHealthDirectives();
+    fetchPatientExaminations();
   }, [billId]);
 
   const numberToWords = (number) => {
@@ -110,7 +152,7 @@ const inv = () => {
 
 
   const handleDownload = () => {
-    generatePDF(grandTotal, formData.id, formData.patient_name, formData, remainingAmount, totalAmountWords, formData.bills, descriptions, doctorData);
+    generatePDF(grandTotal, formData.id, formData.patient_name, formData, remainingAmount, totalAmountWords, formData.bills, descriptions, doctorData, clinicData);
   };
 
   
@@ -121,14 +163,14 @@ const inv = () => {
       return;
     }
 
-    const formDataa = new FormData();
-    formDataa.append("phone_number", `+91${formData.patient_contact}`); // Ensure correct format `+91${formData.patient_contact}`
-    formDataa.append("bill_file", selectedFile); // Ensure `file` is a valid file object
-    // formDataa.append("bill_file", file);
-    formDataa.append("messaging_product", "whatsapp"); 
-
+    const formDataToSend = new FormData();
+    
+    // Append the phone number and the selected file
+    formDataToSend.append("phone_number", formData.patient_contact); 
+    formDataToSend.append("bill_file", selectedFile); // Attach the PDF file
+    
     try {
-      const response = await postFormData("http://localhost:8000/api/sendBill", formDataa);
+      const response = await postFormData("/api/sendBill", formDataToSend);
       console.log("WhatsApp message sent successfully!", response.data);
     } catch (error) {
       if (error.response) {
@@ -151,18 +193,18 @@ const inv = () => {
           </div>
           <div className="d-flex flex-row mb-3">
             <div className="flex-fill col-4">
-              <img src={doctorData.logo} width="150" height="150" alt="Logo" />
+              <img src={clinicData?.logo} width="150" height="150" alt="Logo" />
             </div>
             <div className="flex-fill col-5 mt-5">
-              <h1>{doctorData.clinic_name}</h1>
+              <h1>{clinicData?.clinic_name}</h1>
             </div>
             <div className="ml-3 pt-5 col-3">
               <h6 style={{ fontWeight: 'bold' }}>Doctor Details:</h6>
               <p style={{ fontWeight: 'bold' }}>Name: {doctorData.name} ({doctorData.education})</p>
               <p style={{ fontWeight: 'bold' }}>Registration No.: {doctorData.registration_number}</p>
               <p style={{ fontWeight: 'bold' }}>Specialty: {doctorData.speciality}</p>
-              <p style={{ fontWeight: 'bold' }}>Address: {doctorData.address}</p>
-              <p style={{ fontWeight: 'bold' }}>Contact No.: {doctorData.mobile}</p>
+              {/* <p style={{ fontWeight: 'bold' }}>Address: {doctorData.address}</p>
+              <p style={{ fontWeight: 'bold' }}>Contact No.: {doctorData.mobile}</p> */}
             </div>
           </div>
 
@@ -203,7 +245,7 @@ const inv = () => {
                   {descriptions.map((product, index) => (
                     <tr key={index}>
                       <td className='text-center'>{index + 1}</td>
-                      <td>{product.description}</td>
+                      <td className='text-center'>{product.description}</td>
                       <td className='text-center'>{product.quantity}</td>
                       <td className='text-center'>{product.price}</td>
                       <td className='text-center'>{product.gst}</td>
@@ -226,7 +268,143 @@ const inv = () => {
                 </div>
               </div> */}
             </div>
+          </div> <hr/>
+
+
+
+{/* -------------------------------------------------------------------------------------------------------------------------  */}
+
+{/* Patient Examination  */}
+
+<div className="row mt-10 mb-4">
+  <div>
+    <div>
+      {PatientExaminations.length > 0 ? (
+        <div>
+          <h6 style={{ fontWeight: 'bold' }} className='mb-4'>Medical Observation:</h6>
+
+
+          <div className="container">
+              <div className="row mt-10">
+                <div className="col-md-6">
+                <p><strong>BP:</strong> {PatientExaminations[0].bp || "N/A"}</p>
+
+                 </div>
+               <div className="col-md-6">
+               <p><strong>Pulse:</strong> {PatientExaminations[0].pulse || "N/A"}</p>
+
+                 </div>
+               </div>
           </div>
+
+
+
+          <div className="container">
+        <div className="row mt-10">
+        <div className="col-md-6">
+          <p><strong>Past History:</strong> {PatientExaminations[0].past_history || "N/A"}</p>
+
+        </div>
+        <div className="col-md-6">
+          <p><strong>Complaints:</strong> {PatientExaminations[0].complaints || "N/A"}</p>
+
+        </div>
+        </div></div>
+          
+          
+        <div className="container">
+        <div className="row mt-10">
+        <div className="col-md-6">
+        <p><strong>Systemic Examination:</strong> {PatientExaminations[0].systemic_exam_general || "N/A"}</p>
+
+        </div>
+        <div className="col-md-6">
+        <p><strong> Diagnosis:</strong> {PatientExaminations[0].systemic_exam_pa || "N/A"}</p>
+
+        </div>
+        </div>
+        </div>
+        
+        </div>
+      ) : (
+        <p>No patient examination data available</p>
+      )}
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+{/* health Directives Data  */}
+
+<div className="row section">
+            <div className="col-md-12">
+              <table className="table table-bordered border-black">
+                <thead className='table-success border-black'>
+                  <tr>
+                    <th className=' text-center'>Sr No</th>
+                    <th className='text-center'>Medicine</th>
+                    <th className='text-center'>Strength</th>
+                    <th className='text-center'>Dosage</th>
+                    <th className='text-center'>Timing</th>
+                    <th className='text-center'>Frequency</th>
+                    <th className='text-center'>Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {Array.isArray(healthDirectives) && healthDirectives.length > 0 ? (
+                      healthDirectives.map((healthDirectives, index) => (
+                     <tr key={index} >
+                      <td className='text-center'>{index + 1}</td>
+                       <td className='text-center'>{healthDirectives.drug_name}</td>
+                    <td className='text-center'>{healthDirectives.strength}</td>
+                    <td className='text-center'>{healthDirectives.dosage}</td>
+                    <td className='text-center'>{healthDirectives.timing}</td>
+                    <td className='text-center'>{healthDirectives.frequency}</td>
+                    <td className='text-center'>{healthDirectives.duration}</td>
+                    </tr>
+                  
+                    ))
+                       ) : (
+                   <p>No prescriptions available.</p>
+                 )}
+                </tbody>
+              </table>
+              {/* <div className="row">
+                <div className="col-md-12">
+                  <div className="row">
+                    <div className="col-md-6"></div>
+                    <div className="col-md-3">
+                      <h5>Total: {grandTotal}</h5>
+                    </div>
+                    <div className="col-md-3">
+                      <h5>Total Words: {totalAmountWords}</h5>
+                    </div>
+                  </div>
+                </div>
+              </div> */}
+            </div>
+          </div>
+
+{/* ------------------------------------------------------------------------------------------------------------------------------  */}
+
+                
+          <div className="d-flex flex-row mb-3">
+            
+            <div className="flex-fill col-5 mt-5"><hr/> 
+            <p style={{ fontWeight: 'bold' }}>Registration No. : {clinicData?.clinic_registration_no}</p>
+            <p style={{ fontWeight: 'bold' }}>Address: {clinicData?.clinic_address}</p>
+            <p style={{ fontWeight: 'bold' }}>Contact: {clinicData?.clinic_mobile}</p>
+            <hr/>
+            </div>
+            
+          </div>
+
 
           <div className="d-flex justify-content-center">
             <CButton color="success" onClick={handleDownload}>Download</CButton>&nbsp;&nbsp;

@@ -168,7 +168,33 @@ public function store(Request $request)
 }
 
 
+// public function getMedicinesByDoctor(Request $request)
+// {
+//     try {
+//         // Get the logged-in doctor's ID
+//         $doctorId = Auth::id();
 
+//         if (!$doctorId) {
+//             return response()->json(['error' => 'Unauthorized'], 401);
+//         }
+
+//         // Fetch medicines associated with the doctor
+//         $medicines = Drug::where('doctor_id', $doctorId)
+//                          ->with('details') // Assuming a relation exists to fetch drug details
+//                          ->get();
+
+//         return response()->json(['medicines' => $medicines], 200);
+//     } catch (\Exception $e) {
+//         return response()->json(['error' => 'Failed to fetch medicines'], 500);
+//     }
+// }
+
+
+public function getMedicinesByDoctor($doctorId)
+{
+    $medicines = Drug::where('doctor_id', $doctorId)->get();
+    return response()->json($medicines);
+}
 
 
 

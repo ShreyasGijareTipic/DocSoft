@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TIVA</title>
+    <title>DocSoft</title>
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
     @viteReactRefresh
     @vite('resources/react/index.js')

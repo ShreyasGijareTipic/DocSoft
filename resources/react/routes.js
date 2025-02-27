@@ -1,9 +1,21 @@
 import React from 'react'
 
+
+// Admin TIPIC Dashboard
+const Register = React.lazy(() => import('./views/pages/register/Register'))
+const ClinicRegister = React.lazy(() => import('./views/pages/register/ClinicRegister'))
+const WhatsappClinicRegister = React.lazy(() => import('./views/pages/register/WhatsappClinicRegister'))
+const EditwhatsappClinicRegister = React.lazy(() => import('./views/pages/register/EditwhatsappClinicRegister'))
+const EditWhatsappClinicInfo = React.lazy(() => import('./views/pages/register/EditWhatsappClinicInfo'))
+
+
+
+
 // const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 const Patient = React.lazy(() => import('./views/theme/patient/Patient'))
+const PatientTokanForm = React.lazy(() => import('./views/theme/patient/patientTokanForm'))
 const Bills = React.lazy(() => import('./views/theme/bills/Bills'))
 const Billstable = React.lazy(() => import('./views/theme/bills/billstable'))
 const invoices = React.lazy(() => import('./views/theme/invoice/Invoice'))
@@ -14,6 +26,7 @@ const prescriptionTable = React.lazy(() => import('./views/theme/prescription/pr
 const prescriptiondata = React.lazy(() => import('./views/theme/prescription/prescriptiondata'))
 const medicines = React.lazy(() => import('./views/theme/Medicines/medicines'))
 const timeslots = React.lazy(() => import('./views/theme/timeslots/timeslots'))
+const medicinesShow = React.lazy(() => import('./views/theme/Medicines/medicinesShow'))
 
 
 
@@ -76,23 +89,34 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   { path: '/', exact: true, name: 'home' },
   // { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/theme', name: 'Theme', element: Colors, exact: true },
+  { path: '/register/Register/:storeid', name: 'Register', element: Register},
+  { path: '/register/ClinicRegister', name: 'Clinic Register', element: ClinicRegister },
+  { path: '/register/WhatsappClinicRegister', name: 'Clinics', element: WhatsappClinicRegister },
+  { path: '/register/EditwhatsappClinicRegister/:id', name: 'EditwhatsappClinicRegister', element: EditwhatsappClinicRegister },
+  { path: '/register/EditwhatsappClinicRegister', name: 'Clinic Details', element: EditwhatsappClinicRegister },
+  { path: '/register/EditWhatsappClinicInfo/:storeid', name: 'EditWhatsappClinicInfo', element: EditWhatsappClinicInfo },
+
+
+  // { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },
-  { path: '/theme/patient', name: 'Patient', element: Patient },
-  { path: '/theme/bills', name: 'Bills', element: Bills },
-  { path: '/theme/billstable', name: 'billstable', element: Billstable },
-  { path: '/theme/invoice', name: 'Invoice', element: invoices },
-  { path: '/theme/docDashboard', name: 'docDashboard', element: docDashboard },
+  { path: '/Patient', name: 'Patient', element: Patient },
+  { path: '/PatientTokanForm', name: 'PatientTokanForm', element: PatientTokanForm },
+  { path: '/Bills', name: 'Bills', element: Bills },
+  { path: '/Billstable', name: 'Billstable', element: Billstable },
+  { path: '/Invoice', name: 'Invoice', element: invoices },
+  { path: '/Dashboard', name: 'Dashboard', element: docDashboard },
 
-  { path: '/theme/prescriptionForm' , name  :'prescriptionForm',element : prescriptionForm},
+  { path: '/Prescription' , name  :'Prescription',element : prescriptionForm},
   { path: '/theme/PrescriptionView' , name : 'PrescriptionView' ,element :PrescriptionView},
   { path: '/theme/prescriptionTable' , name : 'presciptionTable' , element : prescriptionTable},
   { path: '/theme/prescriptiondata' , name : 'presciptiondata' , element : prescriptiondata},
 
-  { path: '/theme/medicines' , name : 'medicines' , element : medicines},
+  { path: '/Medicines' , name : 'Medicines' , element : medicines},
+  { path: '/MedicinesShow' , name : 'MedicinesShow' , element : medicinesShow},
 
-  { path: '/theme/timeslots' , name : 'timeslots' , element : timeslots},
+
+  { path: '/Timeslots' , name : 'Timeslots' , element : timeslots},
 
 
 
