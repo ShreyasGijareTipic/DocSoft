@@ -40,13 +40,13 @@ const _nav = [
     icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
     
   },
-  {
-    component: CNavItem,
-    name: 'Create Prescription',
-    to: '/Prescription',
-    icon: <CIcon icon={cilUserPlus} customClassName="nav-icon" />,
+  // {
+  //   component: CNavItem,
+  //   name: 'Create Prescription',
+  //   to: '/Prescription',
+  //   icon: <CIcon icon={cilUserPlus} customClassName="nav-icon" />,
     
-  },
+  // },
   {
     component: CNavItem,
     name: 'Patients',
