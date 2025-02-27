@@ -181,110 +181,147 @@ const inv = () => {
     }
   };
 
- 
-
   return (
     <CCard className="mb-4">
       <CCardBody>
         <CContainer className="container-md invoice-content">
-          <div className="row">
-            <div className="col-4"></div>
-            <div className="col-4"></div>
-          </div>
-          <div className="d-flex flex-row mb-3">
-            <div className="flex-fill col-4">
+          {/* Clinic Header */}
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div>
               <img src={clinicData?.logo} width="150" height="150" alt="Logo" />
             </div>
-            <div className="flex-fill col-5 mt-5">
+            <div className="text-center">
               <h1>{clinicData?.clinic_name}</h1>
             </div>
-            <div className="ml-3 pt-5 col-3">
-              <h6 style={{ fontWeight: 'bold' }}>Doctor Details:</h6>
-              <p style={{ fontWeight: 'bold' }}>Name: {doctorData.name} ({doctorData.education})</p>
-              <p style={{ fontWeight: 'bold' }}>Registration No.: {doctorData.registration_number}</p>
-              <p style={{ fontWeight: 'bold' }}>Specialty: {doctorData.speciality}</p>
-              {/* <p style={{ fontWeight: 'bold' }}>Address: {doctorData.address}</p>
-              <p style={{ fontWeight: 'bold' }}>Contact No.: {doctorData.mobile}</p> */}
-            </div>
-          </div>
-
-          <div className="row mt-10">
-            <div className="flex-fill col-6">
-              <div className="col-md-12">
-                <h6 style={{ fontWeight: 'bold' }}>Bills To:</h6>
-                <p style={{ fontWeight: 'bold' }}>Name: {formData.patient_name}</p>
-                <p style={{ fontWeight: 'bold' }}>Address: {formData.patient_address}</p>
-                <p style={{ fontWeight: 'bold' }}>Number: {formData.patient_contact}</p>
-                <p style={{ fontWeight: 'bold' }}>Email Id: {formData.patient_email}</p>
-              </div>
-            </div>
-            <div className='col-2'></div>
-            <div className='col-4'>
-              <div className="flex-fill col-md-8">
-                <h6 style={{ fontWeight: 'bold' }}>Bill NO.: {billId}</h6>
-                <p style={{ fontWeight: 'bold' }}> Date: {formData.visit_date}</p>
-                {formData.InvoiceType === 2 && <p style={{ fontWeight: 'bold' }}>Delivery Date: {formData.DeliveryDate}</p>}
-              </div>
+            <div className="text-right">
+              <h6 style={{ fontWeight: 'bold' }}>Clinic Registration No.: {clinicData?.clinic_registration_no}</h6>
+              <p style={{ fontWeight: 'bold' }}>Clinic Address: {clinicData?.clinic_address}</p>
+              <p style={{ fontWeight: 'bold' }}>Clinic Contact No: {clinicData?.clinic_mobile}</p>
             </div>
           </div>
           <hr/>
+  {/* Patient & Doctor Details */}
+<div className="row mt-3">
+  {/* Patient Details - Left */}
+  <div className="col-md-5 text-md-start">
+    <h6 className="fw-bold">Bills To:</h6>
+    <p><strong>Name:</strong> {formData.patient_name}</p>
+    <p><strong>Address:</strong> {formData.patient_address}</p>
+    <p><strong>Number:</strong> {formData.patient_contact}</p>
+    <p><strong>Email Id:</strong> {formData.patient_email}</p>
+  </div>
 
-          {/* Patient Examination */}
-{/* Patient Examination */}
-<div className="row mt-8 mb-2">
-  <div>
-    <div>
-      {PatientExaminations.length > 0 ? (
-        <div>
-          <h6><strong>Medical Observation:</strong></h6>
+  {/* Center Divider */}
+  <div className="col-md-1 d-flex justify-content-center">
+    <div className="border-end border-2 h-100"></div>
+  </div>
 
-          <div className="container">
-            <table className="table table-bordered text-center">
-              <colgroup>
-                <col style={{ width: "25%" }} />
-                <col style={{ width: "25%" }} />
-                <col style={{ width: "25%" }} />
-                <col style={{ width: "25%" }} />
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td><strong>BP</strong></td>
-                  <td>{PatientExaminations[0].bp || "N/A"}</td>
-                  <td><strong>Pulse</strong></td>
-                  <td>{PatientExaminations[0].pulse || "N/A"}</td>
-                </tr>
-                <tr>
-                  <td><strong>Past History</strong></td>
-                  <td>{PatientExaminations[0].past_history || "N/A"}</td>
-                  <td><strong>Complaints</strong></td>
-                  <td>{PatientExaminations[0].complaints || "N/A"}</td>
-                </tr>
-                <tr>
-                  <td><strong>Systemic Examination</strong></td>
-                  <td>{PatientExaminations[0].systemic_exam_general || "N/A"}</td>
-                  <td><strong>Diagnosis</strong></td>
-                  <td>{PatientExaminations[0].systemic_exam_pa || "N/A"}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <p>No patient examination data available</p>
-      )}
-    </div>
+  {/* Doctor Details - Right */}
+  <div className="col-md-5 text-right">
+    <h6 className="fw-bold">Doctor Details:</h6>
+    <p><strong>Name:</strong> {doctorData.name} ({doctorData.education})</p>
+    <p><strong>Registration No.:</strong> {doctorData.registration_number}</p>
+    <p><strong>Specialty:</strong> {doctorData.speciality}</p>
   </div>
 </div>
-
 <hr/>
 
-
-          <div className="row section">
+  
+          {/* Invoice Details */}
+          <div className="row mt-3">
+            <div className="col-6">
+              <h6 style={{ fontWeight: 'bold' }}>Bill NO.: {billId}</h6>
+              <p style={{ fontWeight: 'bold' }}><strong style={{ fontWeight: 'bold' }}>Date:</strong> {formData.visit_date}</p>
+              {formData.InvoiceType === 2 && <p><strong style={{ fontWeight: 'bold' }}>Delivery Date:</strong> {formData.DeliveryDate}</p>}
+            </div>
+          </div>
+  
+          <hr />
+  
+          {/* Patient Examination */}
+          <div className="row mt-3">
+            <div className="col-12">
+              {PatientExaminations.length > 0 ? (
+                <>
+                  <h6><strong>Medical Observation:</strong></h6>
+                  <table className="table table-bordered text-center">
+                    <tbody>
+                      <tr>
+                        <td><strong>BP</strong></td>
+                        <td>{PatientExaminations[0].bp || "N/A"}</td>
+                        <td><strong>Pulse</strong></td>
+                        <td>{PatientExaminations[0].pulse || "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Past History</strong></td>
+                        <td>{PatientExaminations[0].past_history || "N/A"}</td>
+                        <td><strong>Complaints</strong></td>
+                        <td>{PatientExaminations[0].complaints || "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Systemic Examination</strong></td>
+                        <td>{PatientExaminations[0].systemic_exam_general || "N/A"}</td>
+                        <td><strong>Diagnosis</strong></td>
+                        <td>{PatientExaminations[0].systemic_exam_pa || "N/A"}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </>
+              ) : (
+                <p>No patient examination data available</p>
+              )}
+            </div>
+          </div>
+  
+          <hr />
+  
+          {/* Prescription Section */}
+          <div className="row">
             <div className="col-md-12">
+              <h6><strong>Prescription :</strong></h6>
               <table className="table table-bordered border-black">
                 <thead className='table-success border-black'>
                   <tr>
-                    <th className=' text-center'>Sr No</th>
+                    <th className='text-center'>Sr No</th>
+                    <th className='text-center'>Medicine</th>
+                    <th className='text-center'>Strength</th>
+                    <th className='text-center'>Dosage</th>
+                    <th className='text-center'>Timing</th>
+                    <th className='text-center'>Frequency</th>
+                    <th className='text-center'>Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(healthDirectives) && healthDirectives.length > 0 ? (
+                    healthDirectives.map((item, index) => (
+                      <tr key={index}>
+                        <td className='text-center'>{index + 1}</td>
+                        <td className='text-center'>{item.medicine}</td>
+                        <td className='text-center'>{item.strength}</td>
+                        <td className='text-center'>{item.dosage}</td>
+                        <td className='text-center'>{item.timing}</td>
+                        <td className='text-center'>{item.frequency}</td>
+                        <td className='text-center'>{item.duration}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr><td colSpan="7" className="text-center">No prescriptions available.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+  
+          <hr />
+  
+          {/* Billing Section */}
+          <div className="row">
+            <div className="col-md-12">
+              <h6><strong>Bill :</strong></h6>
+              <table className="table table-bordered border-black">
+                <thead className='table-success border-black'>
+                  <tr>
+                    <th className='text-center'>Sr No</th>
                     <th className='text-center'>Description</th>
                     <th className='text-center'>Quantity</th>
                     <th className='text-center'>Price</th>
@@ -305,94 +342,12 @@ const inv = () => {
                   ))}
                 </tbody>
               </table>
-              {/* <div className="row">
-                <div className="col-md-12">
-                  <div className="row">
-                    <div className="col-md-6"></div>
-                    <div className="col-md-3">
-                      <h5>Total: {grandTotal}</h5>
-                    </div>
-                    <div className="col-md-3">
-                      <h5>Total Words: {totalAmountWords}</h5>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
-            </div>
-          </div> <hr/>
-
-
-
-{/* -------------------------------------------------------------------------------------------------------------------------  */}
-
-
-
-{/* health Directives Data  */}
-
-<div className="row section">
-            <div className="col-md-12">
-              <table className="table table-bordered border-black">
-                <thead className='table-success border-black'>
-                  <tr>
-                    <th className=' text-center'>Sr No</th>
-                    <th className='text-center'>Medicine</th>
-                    <th className='text-center'>Strength</th>
-                    <th className='text-center'>Dosage</th>
-                    <th className='text-center'>Timing</th>
-                    <th className='text-center'>Frequency</th>
-                    <th className='text-center'>Duration</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {Array.isArray(healthDirectives) && healthDirectives.length > 0 ? (
-                      healthDirectives.map((healthDirectives, index) => (
-                     <tr key={index} >
-                      <td className='text-center'>{index + 1}</td>
-                       <td className='text-center'>{healthDirectives.medicine}</td>
-                    <td className='text-center'>{healthDirectives.strength}</td>
-                    <td className='text-center'>{healthDirectives.dosage}</td>
-                    <td className='text-center'>{healthDirectives.timing}</td>
-                    <td className='text-center'>{healthDirectives.frequency}</td>
-                    <td className='text-center'>{healthDirectives.duration}</td>
-                    </tr>
-                  
-                    ))
-                       ) : (
-                   <p>No prescriptions available.</p>
-                 )}
-                </tbody>
-              </table>
-              {/* <div className="row">
-                <div className="col-md-12">
-                  <div className="row">
-                    <div className="col-md-6"></div>
-                    <div className="col-md-3">
-                      <h5>Total: {grandTotal}</h5>
-                    </div>
-                    <div className="col-md-3">
-                      <h5>Total Words: {totalAmountWords}</h5>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
             </div>
           </div>
-
-{/* ------------------------------------------------------------------------------------------------------------------------------  */}
-
-                
-          <div className="d-flex flex-row mb-3">
-            
-            <div className="flex-fill col-5 mt-5"><hr/> 
-            <p style={{ fontWeight: 'bold' }}>Registration No. : {clinicData?.clinic_registration_no}</p>
-            <p style={{ fontWeight: 'bold' }}>Address: {clinicData?.clinic_address}</p>
-            <p style={{ fontWeight: 'bold' }}>Contact: {clinicData?.clinic_mobile}</p>
-            <hr/>
-            </div>
-            
-          </div>
-
-
+  
+          <hr />
+  
+          {/* Footer */}
           <div className="d-flex justify-content-center">
             <CButton color="success" onClick={handleDownload}>Download</CButton>&nbsp;&nbsp;
             <CButton color="success" onClick={handleFileInputClick}>Send Bill on WhatsApp</CButton>
@@ -402,12 +357,12 @@ const inv = () => {
               onChange={handleFileChange}
               style={{ display: 'none' }}
             />
-            {/* <CButton color="primary" onClick={handleSendWhatsApp}>Send</CButton> */}
           </div>
         </CContainer>
       </CCardBody>
     </CCard>
   );
+  
 };  
 
 export default inv;
