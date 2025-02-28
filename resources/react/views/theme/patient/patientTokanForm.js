@@ -62,6 +62,7 @@ function PatientTokanForm() {
       setIsExistingPatient(false); // Mark as new patient
     }
   };
+  
 console.log("patientData.patient",patientData.patient);
 
 
@@ -138,15 +139,21 @@ console.log("patientData.patient",patientData.patient);
   };
 
   const handleGenerateToken = async (patientId, clinicId) => {
+    if (!newPatient.doctorId) {
+      alert('Please select a doctor before generating the token.');
+      return;
+    }
+  
     try {
-      const response = await post('api/TokanCreate', {
+      const response = await post('/api/TokanCreate', {
         patient_id: patientId,
         clinic_id: clinicId,
-        doctor_id: newPatient.doctorId,
-        date:new Date().toISOString().split('T')[0],
-        status:"0",
+        doctor_id: parseInt(newPatient.doctorId, 10), // Convert doctor_id to an integer
+        date: new Date().toISOString().split('T')[0],
+        status: "0",
       });
-      alert(`Token generated successfully! Token ID: ${response.token_id}`);
+  
+      alert(`Token generated successfully! Token ID: ${response.tokan.tokan_number}`);
     } catch (error) {
       console.error('Error generating token:', error);
       alert('Failed to generate token. Please try again.');
