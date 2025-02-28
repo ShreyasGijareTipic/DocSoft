@@ -285,6 +285,7 @@ public function login(Request $request)
             'email' => $user->email,
             'mobile' => $user->mobile,
             'speciality' => $user->speciality,
+            'clinic_id' =>$user->clinic_id,
             'education' => $user->education,
             'registration_number' => $user->registration_number,
         ],
