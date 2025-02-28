@@ -23,7 +23,7 @@ function PatientTokanForm() {
     address: '',
     email: '',
     dob: '',
-    doctorId:'', //`${doctor.id}`, // Add doctorId to the patient form
+    doctorId:'', 
   });
   const [doctorList, setDoctorList] = useState([]); // State to hold the list of doctors
   const [errors, setErrors] = useState({});
@@ -137,10 +137,6 @@ console.log("patientData.patient",patientData.patient);
     }
   };
 
-
-
-
-
   const handleGenerateToken = async (patientId, clinicId) => {
     try {
       const response = await post('api/TokanCreate', {
@@ -156,14 +152,6 @@ console.log("patientData.patient",patientData.patient);
       alert('Failed to generate token. Please try again.');
     }
   };
-
-
-
-
-
-
-
-
 
   return (
     <div>

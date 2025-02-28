@@ -114,20 +114,20 @@ class HealthDirectiveController extends Controller
 
 public function getPrescriptionsByBillId($p_p_i_id) {
     try {
-        // Fetching data from health_directives table using Eloquent
+        
         $healthDirectives = DB::table('health_directives')
             ->where('p_p_i_id', $p_p_i_id)
             ->get();
 
-        // Check if the data exists
+        
         if ($healthDirectives->isEmpty()) {
             return response()->json(['message' => 'Prescription not found'], 404);
         }
 
-        // Return the data as JSON
+      
         return response()->json($healthDirectives, 200);
     } catch (\Exception $e) {
-        // Handle any exceptions and return an error response
+        
         return response()->json([
             'error' => 'An error occurred while fetching prescriptions.',
             'message' => $e->getMessage(),

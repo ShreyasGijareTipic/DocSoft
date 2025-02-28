@@ -80,12 +80,14 @@ const inv = () => {
 
   const fetchHealthDirectives = async () => {
     try {
-      const response = await getAPICall(`/api/healthdirectivesData/${billId}`);
-      setHealthDirectives(response);
+        const response = await getAPICall(`/api/healthdirectivesData/${billId}`);
+        setHealthDirectives(Array.isArray(response) ? response : []); // ✅ Ensure it's an array
     } catch (error) {
-      console.error('Error fetching description data:', error);
+        console.error("Error fetching prescription data:", error);
+        setHealthDirectives([]); // ✅ Prevent undefined errors
     }
-  };
+};
+
 
   // Fetch Patient Examinations 
 
@@ -152,8 +154,27 @@ const inv = () => {
 
 
   const handleDownload = () => {
-    generatePDF(grandTotal, formData.id, formData.patient_name, formData, remainingAmount, totalAmountWords, formData.bills, descriptions, doctorData, clinicData);
+    const totalAmount = descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+    
+    generatePDF(
+      grandTotal || 0, 
+      formData.id || "N/A", 
+      formData.patient_name || "N/A", 
+      formData || {}, 
+      remainingAmount || 0, 
+      totalAmountWords || "Zero", 
+      descriptions || [], 
+      doctorData || {}, 
+      clinicData || {}, 
+      healthDirectives || [],   
+      PatientExaminations || [],
+      billId,
+      formData.DeliveryDate ||{},
+      totalAmount
+    );
   };
+  
+
 
   
 
@@ -314,36 +335,53 @@ const inv = () => {
   
           <hr />
   
-          {/* Billing Section */}
-          <div className="row">
-            <div className="col-md-12">
-              <h6><strong>Bill :</strong></h6>
-              <table className="table table-bordered border-black">
-                <thead className='table-success border-black'>
-                  <tr>
-                    <th className='text-center'>Sr No</th>
-                    <th className='text-center'>Description</th>
-                    <th className='text-center'>Quantity</th>
-                    <th className='text-center'>Price</th>
-                    <th className='text-center'>GST</th>
-                    <th className='text-center'>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {descriptions.map((product, index) => (
-                    <tr key={index}>
-                      <td className='text-center'>{index + 1}</td>
-                      <td className='text-center'>{product.description}</td>
-                      <td className='text-center'>{product.quantity}</td>
-                      <td className='text-center'>{product.price}</td>
-                      <td className='text-center'>{product.gst}</td>
-                      <td className='text-center'>{product.total}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+         {/* Billing Section */}
+<div className="row">
+  <div className="col-md-12">
+    <h6><strong>Bill :</strong></h6>
+    <table className="table table-bordered border-black">
+      <thead className='table-success border-black'>
+        <tr>
+          <th className='text-center'>Sr No</th>
+          <th className='text-center'>Description</th>
+          <th className='text-center'>Quantity</th>
+          <th className='text-center'>Price</th>
+          <th className='text-center'>GST</th>
+          <th className='text-center'>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {descriptions.map((product, index) => (
+          <tr key={index}>
+            <td className='text-center'>{index + 1}</td>
+            <td className='text-center'>{product.description}</td>
+            <td className='text-center'>{product.quantity}</td>
+            <td className='text-center'>{product.price}</td>
+            <td className='text-center'>{product.gst}</td>
+            <td className='text-center'>{product.total}</td>
+          </tr>
+        ))}
+        {/* Grand Total Row */}
+        <tr className="fw-bold table-warning">
+          <td colSpan="2" className="text-end"><strong>Grand Total:</strong></td>
+          <td className="text-center">
+            {descriptions.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0)}
+          </td>
+          <td className="text-center">
+            {descriptions.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0).toFixed(2)}
+          </td>
+          <td className="text-center">
+            {descriptions.reduce((sum, item) => sum + (parseFloat(item.gst) || 0), 0).toFixed(2)}
+          </td>
+          <td className="text-center">
+            {descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0).toFixed(2)}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
   
           <hr />
   

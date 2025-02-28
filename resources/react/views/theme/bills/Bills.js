@@ -850,27 +850,31 @@ const [selectedOption, setSelectedOption] = useState('');
 
 
 
-        <div>
-      <CButton
-        color="primary"
-        className="mt-4 mb-2"
-        onClick={() => setShowTable(true)} // Show the table on button click
-      >
-        Add Prescriptions
-      </CButton>
-
-      {/* Conditionally render the table */}
-      {showTable && (
-        <CCardBody>
-          {/* Close button at the top right corner */}
-          <div style={{ textAlign: "left" ,marginBottom:"10px"}}>
-            <CButton
-              color="danger"
-              onClick={() => setShowTable(false)} // Close the table
-            >
-              Remove
-            </CButton>
-          </div>
+       <div>
+  {/* Conditionally render the "Add Prescriptions" button */}
+  {!showTable && (
+    <CButton
+      color="primary"
+      className="mt-4 mb-2"
+      onClick={() => setShowTable(true)} // Show the table on button click
+    >
+      Add Prescriptions
+    </CButton>
+  )}
+ 
+  {/* Conditionally render the table */}
+  {showTable && (
+    <CCardBody>
+      {/* Container for buttons to align them horizontally */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+        {/* Close button at the top right corner */}
+        <CButton
+          color="danger"
+          onClick={() => setShowTable(false)} // Close the table and show the Add button
+        >
+          Remove
+        </CButton>
+      </div>
 
           <CRow>
                     <CTable hover responsive>
@@ -1027,10 +1031,7 @@ const [selectedOption, setSelectedOption] = useState('');
            {rowErrors[index]?.frequency && (
                     <div className="text-danger">{rowErrors[index].frequency}</div>
                   )}
-          </CTableDataCell>
-          
-          
-          
+                        </CTableDataCell>    
                             <CTableDataCell>
                               <div className="d-flex">
                                 <CButton
@@ -1047,7 +1048,7 @@ const [selectedOption, setSelectedOption] = useState('');
                                   color="success"
                                   onClick={handleAddRoww}
                                 >
-                                  Add Row
+                                  AddRow
                                 </CButton>
                               </div>
                             </CTableDataCell>
@@ -1056,12 +1057,6 @@ const [selectedOption, setSelectedOption] = useState('');
                       </CTableBody>
                     </CTable>
                   </CRow>
-
-
-
-
-
-
 
           <CCard className="mb-4">
             <CCardHeader className="d-flex justify-content-between align-items-center">
