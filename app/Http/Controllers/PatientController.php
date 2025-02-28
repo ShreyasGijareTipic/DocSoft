@@ -92,7 +92,7 @@ public function store(Request $request)
             'clinic_id' => 'string',
             'name' => 'required|min:1',
             'email' => 'required|email',  // |unique:patients,email'
-            'phone' => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/','unique:patients,phone'],
+            'phone' => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/'],
             'address' => 'required',
             'dob' => 'required|date',
             'doctor_id' => 'string', // Ensure doctor_id is passed and valid
@@ -339,8 +339,38 @@ public function store(Request $request)
     }
 
 
-
-
+        public function getPatients(Request $request)
+        {
+            // Get query parameters
+            $phone = $request->query('phone');
+            $clinicId = $request->query('clinic_id');
+    
+            // Log received parameters
+            Log::info("Received Search Request", ['phone' => $phone, 'clinic_id' => $clinicId]);
+    
+            // Validate input
+            if (!$phone || !$clinicId) {
+                return response()->json(['error' => 'Phone and Clinic ID are required'], 400);
+            }
+    
+            // Ensure `clinic_id` is an integer
+            $clinicId = intval($clinicId);
+    
+            // Fetch patient matching the phone number and clinic_id
+            $patients = Patient::where('phone', $phone)
+                ->where('clinic_id', $clinicId)
+                ->get();
+    
+            // Log the retrieved data
+            Log::info("Patients Found:", ['data' => $patients]);
+    
+            // Return response
+            if ($patients->isEmpty()) {
+                return response()->json(['message' => 'No patient found'], 404);
+            }
+    
+            return response()->json($patients);
+        }
     
 
 }

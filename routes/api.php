@@ -152,7 +152,7 @@ Route::get('/patients', [PatientController::class, 'searchPatientByMobile']);
 Route::get('/getDoctorsByLoggedInClinic', [PatientController::class, 'getDoctorsByLoggedInClinic']);
 Route::post('/getPatientInfo', [PatientController::class, 'getPatientInfoForBill']);
 Route::post('/checkPatient', [PatientController::class, 'checkPatient']);
-
+Route::get('/patients', [PatientController::class, 'getPatients']);
 
 
 Route::put('/appointments/{id}/{status}', [AppointmentController::class, 'updateAppointment']);

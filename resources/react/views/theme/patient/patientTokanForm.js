@@ -27,9 +27,19 @@ function PatientTokanForm() {
   });
   const [doctorList, setDoctorList] = useState([]); // State to hold the list of doctors
   const [errors, setErrors] = useState({});
+  const [clinicId, setClinicId] = useState('');
   const [isExistingPatient, setIsExistingPatient] = useState(false); // New state to track if the patient is existing
 
   // Fetch the list of doctors when the component mounts
+
+  // useEffect(() => {
+  //   // Fetch clinic ID from session storage or user data
+  //   const storedClinicId = sessionStorage.getItem('clinic_id'); // Modify based on where you store it
+  //   if (storedClinicId) {
+  //     setClinicId(storedClinicId);
+  //   }
+  // }, []);
+  
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -43,25 +53,42 @@ function PatientTokanForm() {
     fetchDoctors();
   }, []);
 
+  const handleInputChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
   const handleSearch = async () => {
+    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+    const clinicId = userData?.user?.clinic_id; // Extract only the clinic_id
+  
+    console.log("Searching with:", { phone: searchQuery, clinicId });
+  
+    if (!searchQuery || !clinicId) {
+      alert("Please enter a phone number and ensure clinic ID is available.");
+      return;
+    }
+  
     try {
-      const response = await getAPICall(`/api/patients?phone=${searchQuery}`);
+      const response = await getAPICall(`/api/patients?phone=${searchQuery}&clinic_id=${clinicId}`);
+      console.log("API Response:", response);
+  
       if (response && response.length > 0) {
-        setPatientData(response); // If patients are found, set their data
+        setPatientData(response);
         setIsNotFound(false);
-        setIsExistingPatient(true); // Mark as an existing patient
+        setIsExistingPatient(true);
       } else {
-        setPatientData([]); // Clear patient data if not found
-        setIsNotFound(true); // Trigger the form to appear
-        setIsExistingPatient(false); // Mark as a new patient
+        setPatientData([]);
+        setIsNotFound(true);
+        setIsExistingPatient(false);
       }
     } catch (error) {
-      console.error('Error fetching patient data:', error);
+      console.error("Error fetching patient data:", error);
       setPatientData([]);
       setIsNotFound(true);
-      setIsExistingPatient(false); // Mark as new patient
+      setIsExistingPatient(false);
     }
   };
+  
   
 console.log("patientData.patient",patientData.patient);
 
@@ -168,18 +195,18 @@ console.log("patientData.patient",patientData.patient);
         <CFormInput
           type="text"
           placeholder="Search by Mobile Number"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onInput={(e) => {
-            if (e.target.value.length > 10) {
-              e.target.value = e.target.value.slice(0, 10); // Limit to 10 digits
-            }
+          value={searchQuery || ""} // Ensures it's always controlled
+          maxLength={10} // Restricts input length
+          onChange={(e) => {
+            const onlyNumbers = e.target.value.replace(/\D/g, ""); // Removes non-numeric characters
+            setSearchQuery(onlyNumbers);
           }}
         />
         <CButton color="primary" onClick={handleSearch}>
           Search
         </CButton>
       </CInputGroup>
+
 
       {/* Display Patient Data */}
       {patientData.length > 0 && (
@@ -221,7 +248,9 @@ console.log("patientData.patient",patientData.patient);
                     value={newPatient.doctorId}
                     onChange={(e) => setNewPatient({ ...newPatient, doctorId: e.target.value })}
                   >
-                    <option value=""> <strong>Select Doctor</strong></option>
+                    <option value="">Select Doctor</option>
+
+
                     {doctorList.map((doctor) => (
                       <option key={doctor.id} value={doctor.id}>
                         {doctor.name}
@@ -300,7 +329,8 @@ console.log("patientData.patient",patientData.patient);
                 value={newPatient.doctorId}
                 onChange={(e) => setNewPatient({ ...newPatient, doctorId: e.target.value })}
               >
-                <option value="">Select Doctor</option>
+               <option value="">Select Doctor</option>
+
                 {doctorList.map((doctor) => (
                   <option key={doctor.id} value={doctor.id}>
                     {doctor.name}
