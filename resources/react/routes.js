@@ -35,6 +35,7 @@ const medicinesShow = React.lazy(() => import('./views/theme/Medicines/medicines
 const Profile = React.lazy(() => import('./Profile'))
 const Billing = React.lazy(() => import('./Billing'))
 const docDashboard = React.lazy(()=>import('./views/theme/docDashboard/docDashboard'))
+const Dashboard2 = React.lazy(()=>import('./views/dashboard/Dashboard2'))
 
 // invoices
 
@@ -106,6 +107,7 @@ const routes = [
   { path: '/Billstable', name: 'Billstable', element: Billstable },
   { path: '/Invoice', name: 'Invoice', element: invoices },
   { path: '/Dashboard', name: 'Dashboard', element: docDashboard },
+  { path: '/Dashboard2', name: 'Dashboard2', element: Dashboard2 },
 
   { path: '/Prescription' , name  :'Prescription',element : prescriptionForm},
   { path: '/theme/PrescriptionView' , name : 'PrescriptionView' ,element :PrescriptionView},

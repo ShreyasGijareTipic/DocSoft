@@ -153,6 +153,10 @@ Route::get('/getDoctorsByLoggedInClinic', [PatientController::class, 'getDoctors
 Route::post('/getPatientInfo', [PatientController::class, 'getPatientInfoForBill']);
 Route::post('/checkPatient', [PatientController::class, 'checkPatient']);
 Route::get('/patients', [PatientController::class, 'getPatients']);
+Route::get('/todays-tokans', [TokanController::class, 'getTodaysTokans']);
+Route::post('/update-token-status', [TokanController::class, 'updateStatus']);
+
+
 
 
 Route::put('/appointments/{id}/{status}', [AppointmentController::class, 'updateAppointment']);

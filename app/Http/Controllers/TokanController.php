@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Tokan;
+use Carbon\Carbon;
 
 class TokanController extends Controller
 {
@@ -97,5 +98,41 @@ class TokanController extends Controller
         $tokan->delete();
 
         return response()->json(['message' => 'Tokan deleted successfully!']);
+    }
+
+    public function getTodaysTokans()
+    {
+        try {
+            $today = Carbon::today()->toDateString();
+
+            $tokans = Tokan::whereDate('date', $today)
+                           ->orderBy('tokan_number', 'asc')
+                           ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $tokans
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching today\'s tokens',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'tokan_id' => 'required|exists:tokans,id',
+            'status' => 'required|in:Pending,In Progress,Completed',
+        ]);
+
+        $tokan = Tokan::find($request->tokan_id);
+        $tokan->status = $request->status;
+        $tokan->save();
+
+        return response()->json(['success' => true, 'message' => 'Status updated successfully', 'data' => $tokan]);
     }
 }

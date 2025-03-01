@@ -126,21 +126,43 @@ console.log("patientData.patient",patientData.patient);
       setErrors(formErrors);
       return;
     }
-
+  
     const phoneExists = await checkIfPhoneExists(newPatient.phone);
     if (phoneExists) {
       setErrors({ ...formErrors, phone: 'This phone number is already associated with an existing patient.' });
-      return; // Prevent adding the patient if the phone number exists
+      return;
     }
-
+  
+    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+    const clinicId = userData?.user?.clinic_id?.toString(); // Ensure clinic_id is a string
+    const doctorId = newPatient.doctorId ? newPatient.doctorId.toString() : null; // Ensure doctorId is a string
+  
+    if (!clinicId) {
+      alert("Clinic ID is missing. Please log in again.");
+      return;
+    }
+  
+    // Log values before making API call
+    console.log("Clinic ID:", clinicId);
+    console.log("Doctor ID (Before Sending):", doctorId);
+  
+    // Assign clinicId and doctorId properly
+    const patientDataToSend = {
+      ...newPatient,
+      clinic_id: clinicId, 
+      doctor_id: doctorId, // Ensure field name matches Laravel API expectations
+    };
+  
+    console.log("Patient Data Being Sent:", patientDataToSend);
+  
     try {
-      const response = await post('/api/patients', newPatient);
-    //   console.log("/api/patients",response);
+      const response = await post('/api/patients', patientDataToSend);
       
+      console.log("Response from API:", response);
+  
       alert('Patient added successfully!');
-      setPatientData([response]); // Add the new patient to the list
       setPatientData([response.patient]);
-
+  
       setNewPatient({
         name: '',
         phone: '',
@@ -149,21 +171,21 @@ console.log("patientData.patient",patientData.patient);
         dob: '',
         doctorId: '',
       });
-      setIsNotFound(false); // Hide the form after adding
-      setIsExistingPatient(false); // Reset the existing patient flag
-      setErrors({}); // Clear errors after successful submission
+  
+      setIsNotFound(false);
+      setIsExistingPatient(false);
+      setErrors({});
     } catch (error) {
       console.error('Error adding new patient:', error);
-
-      // Handle the error response
-      if (error.response && error.response.data && error.response.data.errors) {
-        // Assuming the error response follows this structure
+      if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       } else {
         alert('Failed to add patient. Please try again.');
       }
     }
   };
+  
+  
 
   const handleGenerateToken = async (patientId, clinicId) => {
     if (!newPatient.doctorId) {
