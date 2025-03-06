@@ -27,26 +27,28 @@ function ClinicRegister() {
     const maxSize = 300 * 1024; // 300 KB
 
     if (file) {
-      if (!validTypes.includes(file.type)) {
-        alert('Only JPG and PNG images are allowed.');
-        return;
-      }
+        if (!validTypes.includes(file.type)) {
+            alert('Only JPG and PNG images are allowed.');
+            e.target.value = ""; // Reset the file input
+            return;
+        }
 
-      if (file.size > maxSize) {
-        alert('File size must be under 300 KB.');
-        return;
-      }
+        if (file.size > maxSize) {
+            alert('File size must be under 300 KB.');
+            e.target.value = ""; // Reset the file input
+            return;
+        }
 
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setFormData((prevData) => ({
-          ...prevData,
-          logo: reader.result,
-        }));
-      };
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+            setFormData((prevData) => ({
+                ...prevData,
+                logo: reader.result,
+            }));
+        };
     }
-  };
+};
 
   const validateForm = () => {
     const newErrors = {}
