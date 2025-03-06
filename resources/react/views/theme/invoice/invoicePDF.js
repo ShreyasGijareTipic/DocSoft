@@ -124,8 +124,8 @@ y += lineHeight * 3;
                 [{ content: "Past History", styles: { fontStyle: "bold", halign: "center" } }, patientData?.past_history ?? "N/A",
                  { content: "Complaints", styles: { fontStyle: "bold", halign: "center" } }, patientData?.complaints ?? "N/A"],
     
-                [{ content: "Systemic Examination", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_general ?? "N/A",
-                 { content: "Diagnosis", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_pa ?? "N/A"]
+                // [{ content: "Systemic Examination", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_general ?? "N/A",
+                //  { content: "Diagnosis", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_pa ?? "N/A"]
             ],
             theme: "grid",
             styles: { fontSize: 10, font: "times", halign: "center" },

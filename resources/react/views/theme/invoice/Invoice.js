@@ -284,12 +284,12 @@ const inv = () => {
             <td>{PatientExaminations[0]?.complaints || "N/A"}</td>
           </tr>
 
-          <tr>
+          {/* <tr>
                         <td><strong>Systemic Examination</strong></td>
                         <td>{PatientExaminations[0].systemic_exam_general || "N/A"}</td>
                         <td><strong>Diagnosis</strong></td>
                         <td>{PatientExaminations[0].systemic_exam_pa || "N/A"}</td>
-                      </tr>
+                      </tr> */}
         </tbody>
       </table>
     </div>
