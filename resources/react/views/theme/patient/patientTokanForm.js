@@ -24,11 +24,16 @@ function PatientTokanForm() {
     email: '',
     dob: '',
     doctorId:'', 
+    // date:'',
+    slot:''
   });
   const [doctorList, setDoctorList] = useState([]); // State to hold the list of doctors
   const [errors, setErrors] = useState({});
   const [clinicId, setClinicId] = useState('');
   const [isExistingPatient, setIsExistingPatient] = useState(false); // New state to track if the patient is existing
+  const [selectedSlot, setSelectedSlot] = useState("");
+console.log("selectedSlot",selectedSlot);
+
 
   // Fetch the list of doctors when the component mounts
 
@@ -170,6 +175,8 @@ console.log("patientData.patient",patientData.patient);
         email: '',
         dob: '',
         doctorId: '',
+        // date:'',
+        // slot:''
       });
   
       setIsNotFound(false);
@@ -187,7 +194,7 @@ console.log("patientData.patient",patientData.patient);
   
   
 
-  const handleGenerateToken = async (patientId, clinicId) => {
+  const handleGenerateToken = async (patientId, clinicId, selectedSlot) => {
     if (!newPatient.doctorId) {
       alert('Please select a doctor before generating the token.');
       return;
@@ -199,6 +206,7 @@ console.log("patientData.patient",patientData.patient);
         clinic_id: clinicId,
         doctor_id: parseInt(newPatient.doctorId, 10), // Convert doctor_id to an integer
         date: new Date().toISOString().split('T')[0],
+        slot: selectedSlot,
         status: "0",
       });
   
@@ -281,7 +289,7 @@ console.log("patientData.patient",patientData.patient);
                   </CFormSelect>
                 )}
 
-                <CButton color="primary" className="mt-2"  onClick={() => handleGenerateToken(patient.id, patient.clinic_id)}>
+                <CButton color="primary" className="mt-2"  onClick={() => handleGenerateToken(patient.id, patient.clinic_id, selectedSlot )}>
                   Submit
                 </CButton>
               </CCardBody>
@@ -361,6 +369,33 @@ console.log("patientData.patient",patientData.patient);
               </CFormSelect>
             )}
             {errors.doctorId && <div style={{ color: 'red' }}>{errors.doctorId}</div>}
+
+
+
+
+
+            {/* <CFormInput
+              label="Appointment Date"
+              type="date"
+              value={newPatient.date}
+              onChange={(e) => setNewPatient({ ...newPatient, dob: e.target.value })}
+            />
+            */}
+           <CFormSelect
+              label="Slots"
+              value={newPatient.slot}
+  onChange={(e) => setNewPatient({ ...newPatient, slot: e.target.value })}
+            >
+            <option value="">Select Slot</option>
+            <option value="morning">Morning</option>
+              <option value="afternoon">Afternoon</option>
+            <option value="evening">Evening</option>
+            </CFormSelect>
+ 
+
+
+
+
 
             <CButton color="success" className="mt-3" onClick={handleAddPatient}>
               Add Patient

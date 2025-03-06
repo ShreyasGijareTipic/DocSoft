@@ -27,6 +27,7 @@ class TokanController extends Controller
             'doctor_id' => 'integer',
             'patient_id' => 'required|integer',
             'date' => 'date',
+            'slot' => 'string',
             'status' => 'string',
         ]);
     

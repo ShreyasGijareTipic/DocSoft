@@ -84,30 +84,114 @@ class PatientController extends Controller
 
 
 
+// public function store(Request $request)
+// {
+//     try {
+//         // Validate the request data
+//         $request->validate([
+//             'clinic_id' => 'string',
+//             'name' => 'required|min:1',
+//             'email' => 'required|email',  // |unique:patients,email'
+//             'phone' => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/'],
+//             'address' => 'required',
+//             'dob' => 'required|date',
+//             'doctor_id' => 'string', // Ensure doctor_id is passed and valid
+            
+//         ]);
+
+//         // Get the authenticated user's clinic_id and doctor_id
+//         $clinicId = Auth::user()->clinic_id;
+//         $doctorId = $request->doctor_id;
+
+//         // Check if clinic_id is available
+//         if (!$clinicId) {
+//             return response()->json(['error' => 'Clinic ID not found'], 403);
+//         }
+
+//         // Create the patient, including clinic_id
+//         $patient = Patient::create([
+//             'clinic_id' => $clinicId,
+//             'doctor_id' => $doctorId,
+//             'name' => $request->name,
+//             'email' => $request->email,
+//             'phone' => $request->phone,
+//             'address' => $request->address,
+//             'dob' => $request->dob,
+//         ]);
+
+//         // Determine today's date
+//         $today = now()->toDateString();
+
+//         // Fetch the last token number for today
+//         $lastToken = Tokan::whereDate('date', $today)
+//             ->where('clinic_id', $clinicId)
+//             ->where('doctor_id', $doctorId)
+//             ->orderBy('id', 'desc')
+//             ->first();
+
+//         // Calculate the new token number
+//         $newTokenNumber = $lastToken ? ((int) $lastToken->tokan_number + 1) : 1;
+
+        
+
+//         // Create a new token for the patient with the doctor and clinic association
+//         $token = Tokan::create([
+//             'clinic_id' => $clinicId,          // Clinic of the logged-in doctor
+//             'doctor_id' => $doctorId,          // Allocated doctor for the patient
+//             'patient_id' => $patient->id,      // Newly created patient ID
+//             'tokan_number' => $newTokenNumber, // Incremental token number for today
+//             'date' => $today, 
+//             'slot' => $request->slot,                  // Current date   $slot
+//             'status' => 'pending',             // Or any other status you define
+//         ]);
+
+//         // Return response if everything goes well
+//         return response()->json(['patient' => $patient, 'token' => $token], 201);
+
+//     } catch (\Exception $e) {
+//         // Handle the error and log the exception
+//         \Log::error('Error creating patient or token: ' . $e->getMessage());
+
+//         // Return a generic error message
+//         return response()->json([
+//             'error' => 'An error occurred while processing your request.',
+//             'message' => $e->getMessage(),
+//         ], 500);
+//     }
+// }
+
+
 public function store(Request $request)
 {
     try {
-        // Validate the request data
-        $request->validate([
+        // Validate the request data (including slot)
+        $validatedData = $request->validate([
             'clinic_id' => 'string',
             'name' => 'required|min:1',
-            'email' => 'required|email',  // |unique:patients,email'
+            'email' => 'required|email',
             'phone' => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/'],
             'address' => 'required',
             'dob' => 'required|date',
-            'doctor_id' => 'string', // Ensure doctor_id is passed and valid
+            'doctor_id' => 'string',
+            'slot' => 'required|string|in:morning,afternoon,evening',  // Ensure slot is required and valid
         ]);
 
-        // Get the authenticated user's clinic_id and doctor_id
+        // Get the authenticated user's clinic_id
         $clinicId = Auth::user()->clinic_id;
         $doctorId = $request->doctor_id;
+        $slot = $request->slot;  // Capture the slot value
 
-        // Check if clinic_id is available
+        // Debug: Check if slot is being received properly
+        if (!$slot) {
+            return response()->json(['error' => 'Slot field is missing'], 422);
+        }
+
+        // Ensure clinic_id is available
         if (!$clinicId) {
             return response()->json(['error' => 'Clinic ID not found'], 403);
         }
 
-        // Create the patient, including clinic_id
+        // Create the patient
         $patient = Patient::create([
             'clinic_id' => $clinicId,
             'doctor_id' => $doctorId,
@@ -131,33 +215,31 @@ public function store(Request $request)
         // Calculate the new token number
         $newTokenNumber = $lastToken ? ((int) $lastToken->tokan_number + 1) : 1;
 
-        // Create a new token for the patient with the doctor and clinic association
+        // Create the token with the slot
         $token = Tokan::create([
-            'clinic_id' => $clinicId,          // Clinic of the logged-in doctor
-            'doctor_id' => $doctorId,          // Allocated doctor for the patient
-            'patient_id' => $patient->id,      // Newly created patient ID
-            'tokan_number' => $newTokenNumber, // Incremental token number for today
-            'date' => $today,                  // Current date
-            'status' => 'pending',             // Or any other status you define
+            'clinic_id' => $clinicId,
+            'doctor_id' => $doctorId,
+            'patient_id' => $patient->id,
+            'tokan_number' => $newTokenNumber,
+            'date' => $today,
+            'slot' => $slot,  // Ensure slot is stored
+            'status' => 'pending',
         ]);
 
-        // Return response if everything goes well
+        // Return response
         return response()->json(['patient' => $patient, 'token' => $token], 201);
 
     } catch (\Exception $e) {
-        // Handle the error and log the exception
+        // Log error
         \Log::error('Error creating patient or token: ' . $e->getMessage());
 
-        // Return a generic error message
         return response()->json([
             'error' => 'An error occurred while processing your request.',
             'message' => $e->getMessage(),
         ], 500);
     }
 }
-
-
-    
+   
 
 
 

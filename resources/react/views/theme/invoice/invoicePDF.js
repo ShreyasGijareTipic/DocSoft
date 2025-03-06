@@ -101,32 +101,31 @@ y += lineHeight * 3;
 
         
     }
-
     function drawPatientExamination() {
         pdf.setFontSize(13);
         pdf.text("Medical Observation:", marginLeft, y);
         y += lineHeight;
     
-        if (!patientExaminations || patientExaminations.length === 0) {
+        if (!Array.isArray(patientExaminations) || patientExaminations.length === 0) {
             pdf.text("No patient examination data available", marginLeft, y);
             y += lineHeight * 2;
             return;
         }
     
-        const patientData = patientExaminations[0]; // Assuming single patient record
+        const patientData = patientExaminations[0] || {}; // Ensure it's an object
     
         // Table structure to match your image
         pdf.autoTable({
             startY: y,
             body: [
-                [{ content: "BP", styles: { fontStyle: "bold", halign: "center" } }, patientData.bp || "N/A",
-                 { content: "Pulse", styles: { fontStyle: "bold", halign: "center" } }, patientData.pulse || "N/A"],
+                [{ content: "BP", styles: { fontStyle: "bold", halign: "center" } }, patientData?.bp ?? "N/A",
+                 { content: "Pulse", styles: { fontStyle: "bold", halign: "center" } }, patientData?.pulse ?? "N/A"],
     
-                [{ content: "Past History", styles: { fontStyle: "bold", halign: "center" } }, patientData.past_history || "N/A",
-                 { content: "Complaints", styles: { fontStyle: "bold", halign: "center" } }, patientData.complaints || "N/A"],
+                [{ content: "Past History", styles: { fontStyle: "bold", halign: "center" } }, patientData?.past_history ?? "N/A",
+                 { content: "Complaints", styles: { fontStyle: "bold", halign: "center" } }, patientData?.complaints ?? "N/A"],
     
-                [{ content: "Systemic Examination", styles: { fontStyle: "bold", halign: "center" } }, patientData.systemic_exam_general || "N/A",
-                 { content: "Diagnosis", styles: { fontStyle: "bold", halign: "center" } }, patientData.systemic_exam_pa || "N/A"]
+                [{ content: "Systemic Examination", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_general ?? "N/A",
+                 { content: "Diagnosis", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_pa ?? "N/A"]
             ],
             theme: "grid",
             styles: { fontSize: 10, font: "times", halign: "center" },
@@ -134,6 +133,7 @@ y += lineHeight * 3;
     
         y = pdf.autoTable.previous.finalY + lineHeight;
     }
+    
     
 
     function drawBillingDetails() {

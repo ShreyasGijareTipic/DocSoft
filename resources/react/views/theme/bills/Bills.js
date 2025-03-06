@@ -649,7 +649,7 @@ const [selectedOption, setSelectedOption] = useState('');
   
 <CCard className='mb-4'>
       <CCardHeader>
-        <h3>Select Data Type</h3>
+        <h3>Select Visit Type</h3>
       </CCardHeader>
       <CCardBody>
         <CForm>
@@ -777,37 +777,44 @@ const [selectedOption, setSelectedOption] = useState('');
                         {errors.email && <div style={{ color: 'red' }}>{errors.email}</div>}
                       </CCol>
                     </CCol>
-                    <CCol xs={12} sm={6} lg={3} className="">
+                    <CCol xs={12} sm={6} lg={3}>
   <CCol>
     <CFormInput
       label="Patient DOB"
-      type="date" // Keep the date input
+      type="date"
       value={
         data?.patient?.dob
           ? new Date(data.patient.dob).toISOString().split("T")[0]
-          : dob || "" // Format the DOB properly or use the state value
-      } //dob
+          : dob || ""
+      }
       onChange={(e) => {
         const input = e.target.value;
-        const year = new Date(input).getFullYear();
-        
-        // Ensure the year is a valid 4-digit number
-        if (/^\d{4}$/.test(year) && year >= 1900 && year <= new Date().getFullYear()) {
+        const selectedDate = new Date(input);
+        const currentDate = new Date();
+        const year = selectedDate.getFullYear();
+
+        // Validate: Year should be between 1900 and current year, and date should not be in the future
+        if (year >= 1900 && selectedDate <= currentDate) {
           setDob(input);
           if (errors.dob) {
-            setErrors((prev) => ({ ...prev, dob: "" })); // Clear any previous errors
+            setErrors((prev) => ({ ...prev, dob: "" })); // Clear errors if valid
           }
         } else {
           setDob(""); // Clear invalid value
-          setErrors((prev) => ({ ...prev, dob: "Please enter a valid year (YYYY format)." }));
+          setErrors((prev) => ({
+            ...prev,
+            dob: "Please enter a valid DOB (not in the future & after 1900).",
+          }));
         }
       }}
+      max={new Date().toISOString().split("T")[0]} // Prevent future dates
       placeholder="Enter patient DOB"
       required
     />
-    {errors.dob && <div style={{ color: 'red' }}>{errors.dob}</div>}
+    {errors.dob && <div style={{ color: "red" }}>{errors.dob}</div>}
   </CCol>
 </CCol>
+
                   </div>
                 </CRow>
               </CCol>
@@ -839,294 +846,212 @@ const [selectedOption, setSelectedOption] = useState('');
                     label="Visit Date"
                     value={visitDate}
                     onChange={(e) => setVisitDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]} // Restrict future dates
                   />
                   {errors.visitDate && <div style={{ color: 'red' }}>{errors.visitDate}</div>}
                 </CCol>
+
               </CCol>
             </div>
           </CRow>
         {/* </CCard> */}
        </CCard>
 
+      {/* Medical Observations Section */}
+  <CCard className="mb-4">
+    <CCardHeader className="d-flex justify-content-between align-items-center">
+      <span>Medical Observations</span>
+      <CButton
+        color="link"
+        className="p-0 text-decoration-none"
+        onClick={toggleForm}
+      >
+        {isExpanded ? "-" : "+"}
+      </CButton>
+    </CCardHeader>
+    {isExpanded && (
+      <CCardBody>
+        <CRow className="mb-3">
+          <CCol>
+            <CFormInput label="BP" value={bp} onChange={(e) => setBp(e.target.value)} />
+          </CCol>
+          <CCol>
+            <CFormInput label="Pulse" value={pulse} onChange={(e) => setPulse(e.target.value)} />
+          </CCol>
+        </CRow>
+        <CRow className="mb-3">
+          <CCol>
+            <CFormInput label="Past History" value={pastHistory} onChange={(e) => setPastHistory(e.target.value)} />
+          </CCol>
+        </CRow>
+        <CRow className="mb-3">
+          <CCol>
+            <CFormInput label="Complaints" value={complaints} onChange={(e) => setComplaints(e.target.value)} />
+          </CCol>
+        </CRow>
+        <CRow className="mb-3">
+          <CCol xs={12} sm={6}>
+            <CFormInput label="Systemic Examination - General" value={sysExGeneral} onChange={(e) => setSysExGeneral(e.target.value)} />
+          </CCol>
+          <CCol xs={12} sm={6}>
+            <CFormInput label="Diagnosis" value={sysExPA} onChange={(e) => setSysExPA(e.target.value)} />
+          </CCol>
+        </CRow>
+      </CCardBody>
+    )}
+  </CCard>
 
 
        <div>
-  {/* Conditionally render the "Add Prescriptions" button */}
+  
+
+  {/* Prescriptions Section */}
   {!showTable && (
-    <CButton
-      color="primary"
-      className="mt-4 mb-2"
-      onClick={() => setShowTable(true)} // Show the table on button click
-    >
+    <CButton color="primary" className="mt-4 mb-2" onClick={() => setShowTable(true)}>
       Add Prescriptions
     </CButton>
   )}
- 
-  {/* Conditionally render the table */}
+
   {showTable && (
     <CCardBody>
-      {/* Container for buttons to align them horizontally */}
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-        {/* Close button at the top right corner */}
-        <CButton
-          color="danger"
-          onClick={() => setShowTable(false)} // Close the table and show the Add button
-        >
+        <CButton color="danger" onClick={() => setShowTable(false)}>
           Remove
         </CButton>
       </div>
 
-          <CRow>
-                    <CTable hover responsive>
-                      <CTableHead>
-                        <CTableRow>
-                          <CTableHeaderCell style={{ width: '10%' }}>Medicine</CTableHeaderCell>
-                          <CTableHeaderCell style={{ width: '10%' }}>Strength</CTableHeaderCell>
-                          <CTableHeaderCell style={{ width: '10%' }}>Dosage</CTableHeaderCell>
-                          <CTableHeaderCell style={{ width: '10%' }}>Timing</CTableHeaderCell>
-                          <CTableHeaderCell style={{ width: '10%' }}>Frequency</CTableHeaderCell>
-                          <CTableHeaderCell style={{ width: '10%' }}>Duration</CTableHeaderCell>
-                          <CTableHeaderCell style={{ width: '10%' }}>Actions</CTableHeaderCell>
-                        </CTableRow>
-                      </CTableHead>
-                      <CTableBody>
-                        {rowss.map((row, index) => (
-                          <CTableRow key={index}>
-          
-                            
-                            <CTableDataCell>
-                              <CFormSelect
-                                value={row.description}
-                                onChange={(e) => {
-                                 
-                                  handleRowChangee(index, 'description', e.target.value);
-                                  handleMedicineChange(index, e.target.value);
-                                 // Fetch drug details
-                                }}
-                              >
-                                <option value="">Select Medicine</option>
-                                {medicines && medicines.length > 0 ? (
-                                  medicines.map((medicine) => (
-                                    <option key={medicine.id} value={medicine.id}>
-                                      {medicine.drug_name}
-                                    </option>
-                                  ))
-                                ) : (
-                                  <option disabled>No medicines available</option>
-                                )}
-                              </CFormSelect>
-                              {rowErrors[index]?.description && (
-                    <div className="text-danger">{rowErrors[index].description}</div>
-                  )}
-          
-                            </CTableDataCell>
-          
-          
-          
-          
-                            <CTableDataCell>
-            <CFormSelect
-              value={row.strength}
-              
-              onChange={(e) => handleRowChangee(index, 'strength', e.target.value)}
-              disabled={!row.description} // Disable if no medicine is selected
-            >
-              <option value="">Select Strength</option>
-              {Array.isArray(row.drugDetails) && row.drugDetails
-                .filter((drugs) => drugs.drug_id === parseInt(row.description, 10)) // Filter by selected medicine
-                .map((drugdetails) => (
-                  <option key={drugdetails.id} value={drugdetails.strength}>
-                    {drugdetails.strength}
-                  </option>
-                ))}
-                {/* <option>{drugDetails.strength}</option> */}
-            </CFormSelect>
-            {rowErrors[index]?.strength && (
-                    <div className="text-danger">{rowErrors[index].strength}</div>
-                  )}
-          </CTableDataCell>
-          
-          <CTableDataCell>
-            <CFormSelect
-              // value={row.dosage || '1-0-1'} // Set default value to "1-0-1" if row.dosage is undefined or null
-              onChange={(e) => handleRowChangee(index, 'dosage', e.target.value)}
-            >
-              <option value="">Select</option>
-            <option value="1-0-1">1-0-1</option>
-              <option value="0-1-0">0-1-0</option>
-              <option value="1-1-1">1-1-1</option>
-            </CFormSelect>
-            {rowErrors[index]?.dosage && (
-                    <div className="text-danger">{rowErrors[index].dosage}</div>
-                  )}
-          </CTableDataCell>
-          
-          <CTableDataCell>
-            <CFormSelect
-              // value={row.timing || 'After Food'} // Default value is "After Food" if row.timing is undefined or null
-              onChange={(e) => handleRowChangee(index, 'timing', e.target.value)}
-            >
-              <option value="">Select</option>
-          
-              <option value="After Food">After Food</option>
-              <option value="Before Food">Before Food</option>
-            </CFormSelect>
-            {rowErrors[index]?.timing && (
-                    <div className="text-danger">{rowErrors[index].timing}</div>
-                  )}
-          </CTableDataCell>
-          
-          
-                            <CTableDataCell>
-                              <CFormSelect
-                                type="text"
-                                value={row.frequency}
-                                onChange={(e) => handleRowChangee(index, 'frequency', e.target.value)}
-                              >
-                               <option value="">Select Frequency</option>
-                                <option value="Daily">Daily</option>
-                                <option value="SOS">SOS</option>
-                                </CFormSelect>
-                                {rowErrors[index]?.frequency && (
-                    <div className="text-danger">{rowErrors[index].frequency}</div>
-                  )}
-          
-                            </CTableDataCell>
-                            
-                            <CTableDataCell>
-            {row.isCustom ? (
-              <CFormInput
-                type="text"
-                value={row.duration || ''}
-                onChange={(e) => handleRowChangee(index, 'duration', e.target.value)}
-                placeholder="Enter custom duration"
-              />
-            ) : (
-              <CFormSelect
-                value={row.duration}
-                onChange={(e) => {
-                  const selectedValue = e.target.value;
-                  if (selectedValue === "SOS") {
-                    // Switch to custom input mode
-                    handleRowChangee(index, 'isCustom', true);
-                    handleRowChangee(index, 'duration', ''); // Clear duration for custom input
-                  } else {
-                    // Save the selected predefined value
-                    handleRowChangee(index, 'isCustom', false);
-                    handleRowChangee(index, 'duration', selectedValue);
-                  }
-                }}
-              >
-                <option value="">Select Duration</option>
-                <option value="3 Days">3 Days</option>
-                <option value="5 Days">5 Days</option>
-                <option value="7 Days">7 Days</option>
-                <option value="15 Days">15 Days</option>
-                <option value="30 Days">30 Days</option>
-                <option value="SOS">Custom</option>
-              </CFormSelect>
-            )}
-           
-          
-           {rowErrors[index]?.frequency && (
-                    <div className="text-danger">{rowErrors[index].frequency}</div>
-                  )}
-                        </CTableDataCell>    
-                            <CTableDataCell>
-                              <div className="d-flex">
-                                <CButton
-                                  color="danger"
-                                  className="me-2"
-                                  onClick={() => handleRemoveRoww(index)}
-                                  disabled={index === 0}
-          
-                                >
-                                  Remove
-                                </CButton>
-          
-                                <CButton
-                                  color="success"
-                                  onClick={handleAddRoww}
-                                >
-                                  AddRow
-                                </CButton>
-                              </div>
-                            </CTableDataCell>
-                          </CTableRow>
-                        ))}
-                      </CTableBody>
-                    </CTable>
-                  </CRow>
+      <CRow>
+        <CTable hover responsive>
+          <CTableHead>
+            <CTableRow>
+              <CTableHeaderCell style={{ width: '10%' }}>Medicine</CTableHeaderCell>
+              <CTableHeaderCell style={{ width: '10%' }}>Strength</CTableHeaderCell>
+              <CTableHeaderCell style={{ width: '10%' }}>Dosage</CTableHeaderCell>
+              <CTableHeaderCell style={{ width: '10%' }}>Timing</CTableHeaderCell>
+              <CTableHeaderCell style={{ width: '10%' }}>Frequency</CTableHeaderCell>
+              <CTableHeaderCell style={{ width: '10%' }}>Duration</CTableHeaderCell>
+              <CTableHeaderCell style={{ width: '10%' }}>Actions</CTableHeaderCell>
+            </CTableRow>
+          </CTableHead>
+          <CTableBody>
+            {rowss.map((row, index) => (
+              <CTableRow key={index}>
+                <CTableDataCell>
+                  <CFormSelect
+                    value={row.description}
+                    onChange={(e) => {
+                      handleRowChangee(index, 'description', e.target.value);
+                      handleMedicineChange(index, e.target.value);
+                    }}
+                  >
+                    <option value="">Select Medicine</option>
+                    {medicines.length > 0 ? (
+                      medicines.map((medicine) => (
+                        <option key={medicine.id} value={medicine.id}>
+                          {medicine.drug_name}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>No medicines available</option>
+                    )}
+                  </CFormSelect>
+                  {rowErrors[index]?.description && <div className="text-danger">{rowErrors[index].description}</div>}
+                </CTableDataCell>
 
-          <CCard className="mb-4">
-            <CCardHeader className="d-flex justify-content-between align-items-center">
-              <span>Medical Observations</span>
-              <CButton
-                color="link"
-                className="p-0 text-decoration-none"
-                onClick={toggleForm}
-              >
-                {isExpanded ? "-" : "+"}
-              </CButton>
-            </CCardHeader>
-            {isExpanded && (
-              <CCardBody>
-                <CRow className="mb-3">
-                  <CCol>
+                <CTableDataCell>
+                  <CFormSelect
+                    value={row.strength}
+                    onChange={(e) => handleRowChangee(index, 'strength', e.target.value)}
+                    disabled={!row.description}
+                  >
+                    <option value="">Select Strength</option>
+                    {Array.isArray(row.drugDetails) &&
+                      row.drugDetails
+                        .filter((drugs) => drugs.drug_id === parseInt(row.description, 10))
+                        .map((drugdetails) => (
+                          <option key={drugdetails.id} value={drugdetails.strength}>
+                            {drugdetails.strength}
+                          </option>
+                        ))}
+                  </CFormSelect>
+                  {rowErrors[index]?.strength && <div className="text-danger">{rowErrors[index].strength}</div>}
+                </CTableDataCell>
+
+                <CTableDataCell>
+                  <CFormSelect onChange={(e) => handleRowChangee(index, 'dosage', e.target.value)}>
+                    <option value="">Select</option>
+                    <option value="1-0-1">1-0-1</option>
+                    <option value="0-1-0">0-1-0</option>
+                    <option value="1-1-1">1-1-1</option>
+                  </CFormSelect>
+                  {rowErrors[index]?.dosage && <div className="text-danger">{rowErrors[index].dosage}</div>}
+                </CTableDataCell>
+
+                <CTableDataCell>
+                  <CFormSelect onChange={(e) => handleRowChangee(index, 'timing', e.target.value)}>
+                    <option value="">Select</option>
+                    <option value="After Food">After Food</option>
+                    <option value="Before Food">Before Food</option>
+                  </CFormSelect>
+                  {rowErrors[index]?.timing && <div className="text-danger">{rowErrors[index].timing}</div>}
+                </CTableDataCell>
+
+                <CTableDataCell>
+                  <CFormSelect onChange={(e) => handleRowChangee(index, 'frequency', e.target.value)}>
+                    <option value="">Select Frequency</option>
+                    <option value="Daily">Daily</option>
+                    <option value="SOS">SOS</option>
+                  </CFormSelect>
+                  {rowErrors[index]?.frequency && <div className="text-danger">{rowErrors[index].frequency}</div>}
+                </CTableDataCell>
+
+                <CTableDataCell>
+                  {row.isCustom ? (
                     <CFormInput
-                      label="BP"
-                      value={bp}
-                      onChange={(e) => setBp(e.target.value)}
+                      type="text"
+                      value={row.duration || ''}
+                      onChange={(e) => handleRowChangee(index, 'duration', e.target.value)}
+                      placeholder="Enter custom duration"
                     />
-                  </CCol>
-                  <CCol>
-                    <CFormInput
-                      label="Pulse"
-                      value={pulse}
-                      onChange={(e) => setPulse(e.target.value)}
-                    />
-                  </CCol>
-                </CRow>
-                <CRow className="mb-3">
-                  <CCol>
-                    <CFormInput
-                      label="Past History"
-                      value={pastHistory}
-                      onChange={(e) => setPastHistory(e.target.value)}
-                    />
-                  </CCol>
-                </CRow>
-                <CRow className="mb-3">
-                  <CCol>
-                    <CFormInput
-                      label="Complaints"
-                      value={complaints}
-                      onChange={(e) => setComplaints(e.target.value)}
-                    />
-                  </CCol>
-                </CRow>
-                <CRow className="mb-3">
-                  <CCol xs={12} sm={6}>
-                    <CFormInput
-                      label="Systemic Examination - General"
-                      value={sysExGeneral}
-                      onChange={(e) => setSysExGeneral(e.target.value)}
-                    />
-                  </CCol>
-                  <CCol xs={12} sm={6}>
-                    <CFormInput
-                      label="Diagnosis"
-                      value={sysExPA}
-                      onChange={(e) => setSysExPA(e.target.value)}
-                    />
-                  </CCol>
-                </CRow>
-              </CCardBody>
-            )}
-          </CCard>
-        </CCardBody>
-      )}
-    </div>
+                  ) : (
+                    <CFormSelect
+                      value={row.duration}
+                      onChange={(e) => {
+                        const selectedValue = e.target.value;
+                        handleRowChangee(index, 'isCustom', selectedValue === "SOS");
+                        handleRowChangee(index, 'duration', selectedValue === "SOS" ? '' : selectedValue);
+                      }}
+                    >
+                      <option value="">Select Duration</option>
+                      <option value="3 Days">3 Days</option>
+                      <option value="5 Days">5 Days</option>
+                      <option value="7 Days">7 Days</option>
+                      <option value="15 Days">15 Days</option>
+                      <option value="30 Days">30 Days</option>
+                      <option value="SOS">Custom</option>
+                    </CFormSelect>
+                  )}
+                </CTableDataCell>
+
+                <CTableDataCell>
+                  <div className="d-flex">
+                    <CButton color="danger" className="me-2" onClick={() => handleRemoveRoww(index)} disabled={index === 0}>
+                      Remove
+                    </CButton>
+                    <CButton color="success" onClick={handleAddRoww}>
+                      Add Row
+                    </CButton>
+                  </div>
+                </CTableDataCell>
+              </CTableRow>
+            ))}
+          </CTableBody>
+        </CTable>
+      </CRow>
+    </CCardBody>
+  )}
+</div>
+
 
 
 

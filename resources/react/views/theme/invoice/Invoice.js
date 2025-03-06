@@ -207,200 +207,193 @@ const inv = () => {
       <CCardBody>
         <CContainer className="container-md invoice-content">
           {/* Clinic Header */}
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <img src={clinicData?.logo} width="150" height="150" alt="Logo" />
+          <div className="row align-items-center text-center text-md-start mb-4">
+          <div className="col-12 col-md-3 text-center">
+            <img src={clinicData?.logo} className="img-fluid" alt="Logo" style={{ maxWidth: '120px', height: 'auto' }} />
+          </div>
+          <div className="col-12 d-md-none"><hr /></div> {/* Break line for small screens */}
+
+            <div className="col-12 col-md-6 text-center">
+              <h1 className="h1">{clinicData?.clinic_name}</h1>
             </div>
-            <div className="text-center">
-              <h1>{clinicData?.clinic_name}</h1>
-            </div>
-            <div className="text-right">
-              <h6 style={{ fontWeight: 'bold' }}>Clinic Registration No.: {clinicData?.clinic_registration_no}</h6>
-              <p style={{ fontWeight: 'bold' }}>Clinic Address: {clinicData?.clinic_address}</p>
-              <p style={{ fontWeight: 'bold' }}>Clinic Contact No: {clinicData?.clinic_mobile}</p>
+            <div className="col-12 d-md-none"><hr /></div> {/* Break line for small screens */}
+
+            <div className="col-12 col-md-3 text-md-end">
+              <h6 className="fw-bold">Clinic Registration No.: {clinicData?.clinic_registration_no}</h6>
+              <p className="fw-bold">Clinic Address: {clinicData?.clinic_address}</p>
+              <p className="fw-bold">Clinic Contact No: {clinicData?.clinic_mobile}</p>
             </div>
           </div>
-          <hr/>
-  {/* Patient & Doctor Details */}
-<div className="row mt-3">
-  {/* Patient Details - Left */}
-  <div className="col-md-5 text-md-start">
-    <h6 className="fw-bold">Bills To:</h6>
-    <p><strong>Name:</strong> {formData.patient_name}</p>
-    <p><strong>Address:</strong> {formData.patient_address}</p>
-    <p><strong>Number:</strong> {formData.patient_contact}</p>
-    <p><strong>Email Id:</strong> {formData.patient_email}</p>
-  </div>
-
-  {/* Center Divider */}
-  <div className="col-md-1 d-flex justify-content-center">
-    <div className="border-end border-2 h-100"></div>
-  </div>
-
-  {/* Doctor Details - Right */}
-  <div className="col-md-5 text-right">
-    <h6 className="fw-bold">Doctor Details:</h6>
-    <p><strong>Name:</strong> {doctorData.name} ({doctorData.education})</p>
-    <p><strong>Registration No.:</strong> {doctorData.registration_number}</p>
-    <p><strong>Specialty:</strong> {doctorData.speciality}</p>
-  </div>
-</div>
-<hr/>
-
+          <hr />
+  
+          {/* Patient & Doctor Details */}
+          <div className="row mt-3">
+            <div className="col-12 col-md-5">
+              <h6 className="fw-bold">Bills To:</h6>
+              <p><strong>Name:</strong> {formData.patient_name}</p>
+              <p><strong>Address:</strong> {formData.patient_address}</p>
+              <p><strong>Number:</strong> {formData.patient_contact}</p>
+              <p><strong>Email Id:</strong> {formData.patient_email}</p>
+            </div>
+            <div className="col-12 d-md-none"><hr /></div> {/* Break line for small screens */}
+            
+            {/* Center Divider (hidden on small screens) */}
+            <div className="col-12 col-md-1 d-none d-md-flex justify-content-center">
+              <div className="border-end border-2 h-100"></div>
+            </div>
+            <div className="col-12 d-md-none"><hr /></div> {/* Break line for small screens */}
+            
+            <div className="col-12 col-md-5 text-md-end">
+              <h6 className="fw-bold">Doctor Details:</h6>
+              <p><strong>Name:</strong> {doctorData.name} ({doctorData.education})</p>
+              <p><strong>Registration No.:</strong> {doctorData.registration_number}</p>
+              <p><strong>Specialty:</strong> {doctorData.speciality}</p>
+            </div>
+          </div>
+          <hr />
   
           {/* Invoice Details */}
-          <div className="row mt-3">
-            <div className="col-6">
-              <h6 style={{ fontWeight: 'bold' }}>Bill NO.: {billId}</h6>
-              <p style={{ fontWeight: 'bold' }}><strong style={{ fontWeight: 'bold' }}>Date:</strong> {formData.visit_date}</p>
-              {formData.InvoiceType === 2 && <p><strong style={{ fontWeight: 'bold' }}>Delivery Date:</strong> {formData.DeliveryDate}</p>}
+          <div className="row mt-3 text-center text-md-start">
+            <div className="col-12 col-md-6">
+              <h6 className="fw-bold">Bill NO.: {billId}</h6>
+              <p className="fw-bold"><strong>Date:</strong> {formData.visit_date}</p>
+              {formData.InvoiceType === 2 && <p className="fw-bold"><strong>Delivery Date:</strong> {formData.DeliveryDate}</p>}
             </div>
           </div>
-  
           <hr />
   
           {/* Patient Examination */}
           <div className="row mt-3">
             <div className="col-12">
-              {PatientExaminations.length > 0 ? (
-                <>
-                  <h6><strong>Medical Observation:</strong></h6>
-                  <table className="table table-bordered text-center">
-                    <tbody>
-                      <tr>
-                        <td><strong>BP</strong></td>
-                        <td>{PatientExaminations[0].bp || "N/A"}</td>
-                        <td><strong>Pulse</strong></td>
-                        <td>{PatientExaminations[0].pulse || "N/A"}</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Past History</strong></td>
-                        <td>{PatientExaminations[0].past_history || "N/A"}</td>
-                        <td><strong>Complaints</strong></td>
-                        <td>{PatientExaminations[0].complaints || "N/A"}</td>
-                      </tr>
-                      <tr>
+            {PatientExaminations.length > 0 ? (
+  <>
+    <h6 className="fw-bold">Medical Observation:</h6>
+    <div className="table-responsive">
+      <table className="table table-bordered text-center table-responsive-md">
+        <tbody>
+          <tr>
+            <td><strong>BP</strong></td>
+            <td>{PatientExaminations[0]?.bp || "N/A"}</td>
+            <td><strong>Pulse</strong></td>
+            <td>{PatientExaminations[0]?.pulse || "N/A"}</td>
+          </tr>
+          <tr>
+            <td><strong>Past History</strong></td>
+            <td>{PatientExaminations[0]?.past_history || "N/A"}</td>
+            <td><strong>Complaints</strong></td>
+            <td>{PatientExaminations[0]?.complaints || "N/A"}</td>
+          </tr>
+
+          <tr>
                         <td><strong>Systemic Examination</strong></td>
                         <td>{PatientExaminations[0].systemic_exam_general || "N/A"}</td>
                         <td><strong>Diagnosis</strong></td>
                         <td>{PatientExaminations[0].systemic_exam_pa || "N/A"}</td>
                       </tr>
-                    </tbody>
-                  </table>
-                </>
-              ) : (
-                <p>No patient examination data available</p>
-              )}
+        </tbody>
+      </table>
+    </div>
+  </>
+) : (
+  <p className="text-center">No patient examination data available</p>
+)}
+
             </div>
           </div>
-  
           <hr />
   
           {/* Prescription Section */}
           <div className="row">
-            <div className="col-md-12">
-              <h6><strong>Prescription :</strong></h6>
-              <table className="table table-bordered border-black">
-                <thead className='table-success border-black'>
-                  <tr>
-                    <th className='text-center'>Sr No</th>
-                    <th className='text-center'>Medicine</th>
-                    <th className='text-center'>Strength</th>
-                    <th className='text-center'>Dosage</th>
-                    <th className='text-center'>Timing</th>
-                    <th className='text-center'>Frequency</th>
-                    <th className='text-center'>Duration</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.isArray(healthDirectives) && healthDirectives.length > 0 ? (
-                    healthDirectives.map((item, index) => (
-                      <tr key={index}>
-                        <td className='text-center'>{index + 1}</td>
-                        <td className='text-center'>{item.medicine}</td>
-                        <td className='text-center'>{item.strength}</td>
-                        <td className='text-center'>{item.dosage}</td>
-                        <td className='text-center'>{item.timing}</td>
-                        <td className='text-center'>{item.frequency}</td>
-                        <td className='text-center'>{item.duration}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr><td colSpan="7" className="text-center">No prescriptions available.</td></tr>
-                  )}
-                </tbody>
-              </table>
+            <div className="col-12">
+              <h6 className="fw-bold">Prescription :</h6>
+              <div className="table-responsive">
+                <table className="table table-bordered border-black table-responsive-md">
+                  <thead className="table-success">
+                    <tr>
+                      <th>Sr No</th>
+                      <th>Medicine</th>
+                      <th>Strength</th>
+                      <th>Dosage</th>
+                      <th>Timing</th>
+                      <th>Frequency</th>
+                      <th>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {healthDirectives.length > 0 ? (
+                      healthDirectives.map((item, index) => (
+                        <tr key={index}>
+                          <td>{index + 1}</td>
+                          <td>{item.medicine}</td>
+                          <td>{item.strength}</td>
+                          <td>{item.dosage}</td>
+                          <td>{item.timing}</td>
+                          <td>{item.frequency}</td>
+                          <td>{item.duration}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr><td colSpan="7" className="text-center">No prescriptions available.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-  
           <hr />
-  
-         {/* Billing Section */}
-<div className="row">
-  <div className="col-md-12">
-    <h6><strong>Bill :</strong></h6>
-    <table className="table table-bordered border-black">
-      <thead className='table-success border-black'>
-        <tr>
-          <th className='text-center'>Sr No</th>
-          <th className='text-center'>Description</th>
-          <th className='text-center'>Quantity</th>
-          <th className='text-center'>Price</th>
-          <th className='text-center'>GST</th>
-          <th className='text-center'>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {descriptions.map((product, index) => (
-          <tr key={index}>
-            <td className='text-center'>{index + 1}</td>
-            <td className='text-center'>{product.description}</td>
-            <td className='text-center'>{product.quantity}</td>
-            <td className='text-center'>{product.price}</td>
-            <td className='text-center'>{product.gst}</td>
-            <td className='text-center'>{product.total}</td>
+
+          {/* Billing Section */}
+<div className="row mt-3">
+  <div className="col-12">
+    <h6 className="fw-bold">Bill :</h6>
+    <div className="table-responsive">
+      <table className="table table-bordered border-black text-center">
+        <thead className="table-success border-black">
+          <tr>
+            <th>Sr No</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>GST</th>
+            <th>Total</th>
           </tr>
-        ))}
-        {/* Grand Total Row */}
-        <tr className="fw-bold table-warning">
-          <td colSpan="2" className="text-end"><strong>Grand Total:</strong></td>
-          <td className="text-center">
-            {descriptions.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0)}
-          </td>
-          <td className="text-center">
-            {descriptions.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0).toFixed(2)}
-          </td>
-          <td className="text-center">
-            {descriptions.reduce((sum, item) => sum + (parseFloat(item.gst) || 0), 0).toFixed(2)}
-          </td>
-          <td className="text-center">
-            {descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0).toFixed(2)}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {descriptions.map((product, index) => (
+            <tr key={index}>
+              <td>{index + 1}</td>
+              <td>{product.description}</td>
+              <td>{product.quantity}</td>
+              <td>{product.price}</td>
+              <td>{product.gst}</td>
+              <td>{product.total}</td>
+            </tr>
+          ))}
+          {/* Grand Total Row */}
+          <tr className="fw-bold table-warning">
+            <td colSpan="2" className="text-end"><strong>Grand Total:</strong></td>
+            <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0)}</td>
+            <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0).toFixed(2)}</td>
+            <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.gst) || 0), 0).toFixed(2)}</td>
+            <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0).toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+<hr />
 
-  
-          <hr />
   
           {/* Footer */}
           <div className="d-flex justify-content-center">
             <CButton color="success" onClick={handleDownload}>Download</CButton>&nbsp;&nbsp;
             <CButton color="success" onClick={handleFileInputClick}>Send Bill on WhatsApp</CButton>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-            />
           </div>
         </CContainer>
       </CCardBody>
     </CCard>
   );
-  
 };  
 
 export default inv;

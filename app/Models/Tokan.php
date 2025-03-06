@@ -19,6 +19,7 @@ class Tokan extends Model
         'patient_id',
         'tokan_number',
         'date',
+        'slot',
         'status',
         'created_at',
         'updated_at',
