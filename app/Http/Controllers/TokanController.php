@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Tokan;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TokanController extends Controller
 {
@@ -126,14 +127,20 @@ class TokanController extends Controller
     public function updateStatus(Request $request)
     {
         $request->validate([
-            'tokan_id' => 'required|exists:tokans,id',
+            'tokan_number' => 'required|exists:tokan,tokan_number',
             'status' => 'required|in:Pending,In Progress,Completed',
         ]);
-
-        $tokan = Tokan::find($request->tokan_id);
-        $tokan->status = $request->status;
-        $tokan->save();
-
-        return response()->json(['success' => true, 'message' => 'Status updated successfully', 'data' => $tokan]);
+    
+        $tokan = DB::table('tokan')->where('tokan_number', $request->tokan_number)->first();
+    
+        if (!$tokan) {
+            return response()->json(['success' => false, 'message' => 'Token not found'], 404);
+        }
+    
+        DB::table('tokan')->where('tokan_number', $request->tokan_number)->update(['status' => $request->status]);
+    
+        return response()->json(['success' => true, 'message' => 'Status updated successfully']);
     }
+    
+    
 }

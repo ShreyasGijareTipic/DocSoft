@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CBadge } from '@coreui/react';
-import { getAPICall } from '../../util/api';
+import { getAPICall, post} from '../../util/api';
 
 const Dashboard = () => {
   const [tokens, setTokens] = useState([]);
@@ -44,6 +44,23 @@ const Dashboard = () => {
     loadTokens();
   }, []);
 
+  const updateStatus = async (tokanNumber, newStatus) => {
+    try {
+      const response = await post('/api/update-token-status', {
+        tokan_number: tokanNumber, // Send tokan_number instead of tokan_id
+        status: newStatus,
+      });
+      
+      if (response.success) {
+        setTokens(tokens.map(token => 
+          token.tokan_number === tokanNumber ? { ...token, status: newStatus } : token
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
+  
   const renderTokens = (slot) => {
     const filteredTokens = tokens.filter(token => token.slot === slot);
     return (
@@ -68,8 +85,21 @@ const Dashboard = () => {
                 <CTableDataCell>{token.doctor_name}</CTableDataCell>
                 <CTableDataCell>{token.date}</CTableDataCell>
                 <CTableDataCell>
-                  <CBadge color={token.status === "1" ? "success" : "warning"}>
-                    {token.status === "1" ? "Completed" : "Pending"}
+                  <CBadge 
+                    color={token.status === "Completed" ? "success" : token.status === "In Progress" ? "info" : "warning"}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      const newStatus = token.status === "Pending" 
+                        ? "In Progress" 
+                        : token.status === "In Progress" 
+                          ? "Completed" 
+                          : "Completed"; // Ensures it doesn't go back to Pending
+                      updateStatus(token.tokan_number, newStatus);
+                    }}
+
+
+                  >
+                    {token.status}
                   </CBadge>
                 </CTableDataCell>
               </CTableRow>
