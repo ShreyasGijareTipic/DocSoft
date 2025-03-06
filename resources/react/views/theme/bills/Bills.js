@@ -230,14 +230,18 @@ const today = new Date().toISOString().split('T')[0];
     }
   
     // Validate Phone Number (Mandatory)
-    const phoneRegex = /\d{10}$/; // Must start with +91 and have exactly 10 digits after it
-    if (!data?.patient?.phone && !phone.trim()) {
-      formErrors["phone"] = "Contact number is required";
-      isValid = false;
-    } else if (!phoneRegex.test(phone.trim())) {
-      formErrors["phone"] = "Phone number must have 10 digits";
-      isValid = false;
-    }
+//     const phoneRegex = /^\d{10}$/; // Ensures exactly 10 digits
+
+// if (!data?.patient?.phone && !phone.trim()) {
+//   formErrors["phone"] = "Contact number is required";
+//   isValid = false;
+// } else if (!phoneRegex.test(String(phone).trim())) {  // Convert phone to string explicitly
+//   formErrors["phone"] = "Phone number must have exactly 10 digits";
+//   isValid = false;
+// }
+
+
+    
   
     // Validate Email (Optional but properly formatted)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

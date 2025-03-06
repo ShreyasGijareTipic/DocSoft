@@ -110,49 +110,6 @@ const inv = () => {
     fetchPatientExaminations();
   }, [billId]);
 
-  const numberToWords = (number) => {
-    const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
-    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-
-    if (number === 0) {
-      return 'Zero';
-    }
-
-    let words = '';
-    if (number >= 100000) {
-      words += numberToWords(Math.floor(number / 1000)) + ' Lakh ';
-      number %= 100000;
-    }
-
-    if (number >= 1000) {
-      words += numberToWords(Math.floor(number / 1000)) + ' Thousand ';
-      number %= 1000;
-    }
-
-    if (number >= 100) {
-      words += units[Math.floor(number / 100)] + ' Hundred ';
-      number %= 100;
-    }
-
-    if (number >= 20) {
-      words += tens[Math.floor(number / 10)] + ' ';
-      number %= 10;
-    }
-
-    if (number >= 10) {
-      words += teens[number - 10] + ' ';
-      number = 0;
-    }
-
-    if (number > 0) {
-      words += units[number] + ' ';
-    }
-
-    return words.trim();
-  };
-
-
   const handleDownload = () => {
     const totalAmount = descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
     
