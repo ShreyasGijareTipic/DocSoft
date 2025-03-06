@@ -207,7 +207,7 @@ console.log("patientData.patient",patientData.patient);
         doctor_id: parseInt(newPatient.doctorId, 10), // Convert doctor_id to an integer
         date: new Date().toISOString().split('T')[0],
         slot: selectedSlot,
-        status: "0",
+        status: "pending",
       });
   
       alert(`Token generated successfully! Token ID: ${response.tokan.tokan_number}`);
@@ -288,6 +288,22 @@ console.log("patientData.patient",patientData.patient);
                     ))}
                   </CFormSelect>
                 )}
+         {isExistingPatient && (
+  <CFormSelect
+    label="Slots"
+    value={newPatient.slot}
+    onChange={(e) => {
+      const selectedValue = e.target.value;
+      setNewPatient({ ...newPatient, slot: selectedValue });
+      setSelectedSlot(selectedValue);
+    }}
+  >
+    <option value="">Select Slot</option>
+    <option value="morning">Morning</option>
+    <option value="afternoon">Afternoon</option>
+    <option value="evening">Evening</option>
+  </CFormSelect>
+)}
 
                 <CButton color="primary" className="mt-2"  onClick={() => handleGenerateToken(patient.id, patient.clinic_id, selectedSlot )}>
                   Submit
@@ -336,7 +352,7 @@ console.log("patientData.patient",patientData.patient);
             {errors.address && <div style={{ color: 'red' }}>{errors.address}</div>}
 
             <CFormInput
-              label="Email (Optional)"
+              label="Email"
               type="email"
               value={newPatient.email}
               onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
@@ -348,6 +364,7 @@ console.log("patientData.patient",patientData.patient);
               label="Date of Birth"
               type="date"
               value={newPatient.dob}
+              max={new Date().toISOString().split("T")[0]} // Restrict future dates
               onChange={(e) => setNewPatient({ ...newPatient, dob: e.target.value })}
             />
             {errors.dob && <div style={{ color: 'red' }}>{errors.dob}</div>}
