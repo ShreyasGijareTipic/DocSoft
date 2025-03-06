@@ -103,12 +103,28 @@ const inv = () => {
 
  // --------------------------------------------------------------------------------------------------- 
 
-  useEffect(() => {
-    fetchProduct();
-    fetchDescriptions();
+ useEffect(() => {
+  fetchProduct();
+  fetchDescriptions();
+  fetchHealthDirectives();
+  fetchPatientExaminations();
+
+  // Set intervals for periodic fetching
+  const healthDirectivesInterval = setInterval(() => {
     fetchHealthDirectives();
+  }, 5000); // Fetch every 5 seconds
+
+  const patientExaminationsInterval = setInterval(() => {
     fetchPatientExaminations();
-  }, [billId]);
+  }, 5000); // Fetch every 5 seconds
+
+  // Cleanup function to clear intervals when component unmounts
+  return () => {
+    clearInterval(healthDirectivesInterval);
+    clearInterval(patientExaminationsInterval);
+  };
+}, [billId]);
+
 
   const handleDownload = () => {
     const totalAmount = descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
