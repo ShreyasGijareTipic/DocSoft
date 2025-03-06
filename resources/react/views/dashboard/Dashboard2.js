@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { CCard, CCardBody, CCardHeader, CBadge, CRow, CCol } from '@coreui/react';
-import { getAPICall } from '../../util/api'; // Adjust the import path if needed
+import { CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CBadge } from '@coreui/react';
+import { getAPICall } from '../../util/api';
 
 const Dashboard = () => {
   const [tokens, setTokens] = useState([]);
@@ -14,20 +14,16 @@ const Dashboard = () => {
         if (response.success && Array.isArray(response.data)) {
           const tokensData = response.data;
   
-          // Fetch patient and doctor details for each token
           const enrichedTokens = await Promise.all(
             tokensData.map(async (token) => {
               try {
                 const patientResponse = await getAPICall(`/api/patients/${token.patient_id}`);
                 const doctorResponse = await getAPICall(`/api/users/${token.doctor_id}`);
   
-                console.log(`Fetched patient for token ${token.id}:`, patientResponse);
-                console.log(`Fetched doctor for token ${token.id}:`, doctorResponse);
-  
                 return {
                   ...token,
-                  patient_name: patientResponse?.name || 'Unknown',  // Directly access `.name`
-                  doctor_name: doctorResponse?.name || 'Unknown',    // Directly access `.name`
+                  patient_name: patientResponse?.name || 'Unknown',
+                  doctor_name: doctorResponse?.name || 'Unknown',
                 };
               } catch (error) {
                 console.error(`Error fetching details for token ${token.id}:`, error);
@@ -36,7 +32,6 @@ const Dashboard = () => {
             })
           );
   
-          console.log("Enriched Tokens Data:", enrichedTokens);
           setTokens(enrichedTokens);
         } else {
           console.error('Failed to fetch tokens:', response.message);
@@ -48,34 +43,56 @@ const Dashboard = () => {
   
     loadTokens();
   }, []);
-  
+
+  const renderTokens = (slot) => {
+    const filteredTokens = tokens.filter(token => token.slot === slot);
+    return (
+      <CTable striped hover responsive>
+        <CTableHead>
+          <CTableRow>
+            <CTableHeaderCell>Sr.</CTableHeaderCell>
+            <CTableHeaderCell>Token No</CTableHeaderCell>
+            <CTableHeaderCell>Patient</CTableHeaderCell>
+            <CTableHeaderCell>Doctor</CTableHeaderCell>
+            <CTableHeaderCell>Date</CTableHeaderCell>
+            <CTableHeaderCell>Status</CTableHeaderCell>
+          </CTableRow>
+        </CTableHead>
+        <CTableBody>
+          {filteredTokens.length > 0 ? (
+            filteredTokens.map((token, index) => (
+              <CTableRow key={index}>
+                <CTableDataCell>{index + 1}</CTableDataCell>
+                <CTableDataCell>{token.tokan_number}</CTableDataCell>
+                <CTableDataCell>{token.patient_name}</CTableDataCell>
+                <CTableDataCell>{token.doctor_name}</CTableDataCell>
+                <CTableDataCell>{token.date}</CTableDataCell>
+                <CTableDataCell>
+                  <CBadge color={token.status === "1" ? "success" : "warning"}>
+                    {token.status === "1" ? "Completed" : "Pending"}
+                  </CBadge>
+                </CTableDataCell>
+              </CTableRow>
+            ))
+          ) : (
+            <CTableRow>
+              <CTableDataCell colSpan="6" className="text-center">No tokens available.</CTableDataCell>
+            </CTableRow>
+          )}
+        </CTableBody>
+      </CTable>
+    );
+  };
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Today's Tokens</h1>
-      <CRow>
-        {tokens.length > 0 ? (
-          tokens.map((token, index) => (
-            <CCol md="4" key={index} className="mb-4">
-              <CCard>
-                <CCardHeader>
-                  <h5>Token No: {token.tokan_number}</h5>
-                </CCardHeader>
-                <CCardBody>
-                  <p><strong>Patient:</strong> {token.patient_name}</p>
-                  <p><strong>Doctor:</strong> {token.doctor_name}</p>
-                  <p><strong>Date:</strong> {token.date}</p>
-                  <CBadge color={token.status === "1" ? "success" : "warning"}>
-                    {token.status === "1" ? "Completed" : "Pending"}
-                  </CBadge>
-                </CCardBody>
-              </CCard>
-            </CCol>
-          ))
-        ) : (
-          <p>No tokens for today.</p>
-        )}
-      </CRow>
+      <h2 className="text-xl font-semibold mt-4 mb-2">Morning</h2>
+      {renderTokens("morning")}
+      <h2 className="text-xl font-semibold mt-4 mb-2">Afternoon</h2>
+      {renderTokens("afternoon")}
+      <h2 className="text-xl font-semibold mt-4 mb-2">Evening</h2>
+      {renderTokens("evening")}
     </div>
   );
 };

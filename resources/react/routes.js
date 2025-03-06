@@ -107,7 +107,7 @@ const routes = [
   { path: '/Billstable', name: 'Bills', element: Billstable },
   { path: '/Invoice', name: 'Invoice', element: invoices },
   { path: '/Dashboard', name: 'Dashboard', element: docDashboard },
-  { path: '/Dashboard2', name: 'Dashboard2', element: Dashboard2 },
+  { path: '/Dashboard2', name: 'Dashboard', element: Dashboard2 },
 
   { path: '/Prescription' , name  :'Prescription',element : prescriptionForm},
   { path: '/theme/PrescriptionView' , name : 'PrescriptionView' ,element :PrescriptionView},
