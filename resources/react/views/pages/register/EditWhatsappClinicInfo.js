@@ -100,32 +100,35 @@ console.log(formData);
   
  const navigate = useNavigate();
  
-  async function handleUpdate(e){
-
-   
-    e.preventDefault();
-
-    const payload= getUpdatedFields();
-    console.log("Payload",payload);
-    
-    const responce = await put(`/api/clinic/${storeid}`, payload)
-    console.log("updated",responce);
-
-    navigate(`/register/EditwhatsappClinicRegister/${storeid}`)
-
-    const otp = generateOTP();
-    console.log('Generated OTP:', otp);
-    alert(`Your OTP is: ${otp}`);
-
-    const userOtp = prompt('Enter the OTP to confirm changes:');
-    if (userOtp === otp) {
-      alert('OTP verified successfully! Changes saved.');
-    } else {
-      alert('OTP verification failed. Changes not saved.');
-    }
   
 
+ async function handleUpdate(e) {
+  e.preventDefault();
+
+  const otp = generateOTP();
+  console.log('Generated OTP:', otp);
+  alert(`Your OTP is: ${otp}`);
+
+  const userOtp = prompt('Enter the OTP to confirm changes:');
+
+  if (userOtp === otp) {
+      alert('OTP verified successfully! Changes saved.');
+
+      const payload = getUpdatedFields();
+      console.log("Payload:", payload);
+
+      try {
+          const response = await put(`/api/clinic/${storeid}`, payload);
+          console.log("Updated:", response);
+          navigate(`/register/EditwhatsappClinicRegister/${storeid}`);
+      } catch (error) {
+          console.error('Error updating clinic:', error);
+          alert('Failed to update clinic information.');
+      }
+  } else {
+      alert('OTP verification failed. Changes not saved.');
   }
+}
 
   return (
     // <CContainer>
