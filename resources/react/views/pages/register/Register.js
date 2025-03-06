@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { CButton, CCard, CCardBody, CCol, CContainer, CForm, CFormInput, CFormSelect, CRow } from '@coreui/react';
+import { CButton, CCard, CCardBody, CCol, CContainer, CForm, CFormInput, CRow } from '@coreui/react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAPICall, post } from '../../../util/api';
 
 const Register = () => {
-
- const { storeid } = useParams();
- 
- 
+  const { storeid } = useParams();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    clinic_id:storeid, // Clinic ID should be part of the form data
+    clinic_id: storeid,
     name: '',
     registration_number: '',
     speciality: '',
@@ -24,38 +22,18 @@ const Register = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
-console.log(errors);
+
+  // Clear autofill values on component mount
+  useEffect(() => {
+    setFormData((prevData) => ({
+      ...prevData,
+      email: '',
+      password: '',
+    }));
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    const validTypes = ['image/jpeg', 'image/png'];
-    const maxSize = 300 * 1024; // 300 KB
-
-    if (file) {
-      if (!validTypes.includes(file.type)) {
-        alert('Only JPG and PNG images are allowed.');
-        return;
-      }
-
-      if (file.size > maxSize) {
-        alert('File size must be under 300 KB.');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setFormData((prevData) => ({
-          ...prevData,
-          logo: reader.result,
-        }));
-      };
-    }
   };
 
   const validateForm = () => {
@@ -75,6 +53,10 @@ console.log(errors);
       newErrors.password_confirmation = 'Passwords do not match.';
     }
 
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Enter a valid email address.';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -87,94 +69,48 @@ console.log(errors);
     }
 
     try {
-      const  response = await post('/api/register', formData); // Send clinic_id with the form data
+      const response = await post('/api/register', formData);
       if (response && !response?.errors) {
         alert('Doctor registered successfully');
         navigate(`/register/EditwhatsappClinicRegister/${storeid}`);
-      }
-      else if ( response?.errors) {
-        console.log(response?.errors);
-        
+      } else if (response?.errors) {
         setErrors((prevErrors) => ({
-          ...prevErrors, 
+          ...prevErrors,
           mobile: response?.errors?.mobile ? 'Mobile number has already been taken.' : null,
           email: response?.errors?.email ? 'Email has already been taken.' : null,
         }));
-        }
-    }
-        catch (error ) {
-          console.log(response);
-        console.error('Registration error:', error);
-        alert('Error occurred during registration');
       }
-    
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Error occurred during registration');
+    }
   };
 
-  const [clinics, setClinics] = useState([]);
-
-  // useEffect(() => {
-  //   // Fetch the list of clinics from the server
-  //   getAPICall('/api/clinic')
-  //     .then((response) => {
-  //       setClinics(response);
-  //     })
-  //     .catch((error) => {
-  //       console.error('There was an error fetching clinics!', error);
-  //     });
-  // }, []);
-
   return (
-
-
     <CContainer className="mt-2">
-
-      {/* <h1>clinic Id:{ storeid }</h1> */}
-
       <CRow className="mt-2">
         <CCol md={12} lg={12} xl={12}>
           <CCard className="mx-4">
             <CCardBody className="p-4">
-              <CForm onSubmit={handleSubmit}>
-                <h3 className='text-center'>Register</h3><br/>
-                {/* <p>Create your account</p> */}
+              <CForm onSubmit={handleSubmit} autoComplete="off">
+                <h3 className="text-center">Register</h3>
+                <br />
 
-                {/* Clinic dropdown */}
-                {/* <div>
-  
-  <CFormSelect
-    name="clinic_id" // Set name to clinic_id to bind the dropdown value to formData
-    value={formData.clinic_id}
-    onChange={handleChange} // Bind handleChange to update clinic_id
-  >
-    <option value="">Select Clinic</option>
-    {clinics.map((clinic) => (
-      <option key={clinic.id} value={clinic.id}>
-        {clinic.clinic_name}
-      </option>
-    ))}
-  </CFormSelect>
-</div>
-{errors.clinic_id && <div className="text-danger">{errors.clinic_id}</div>}<br/> */}
-
-              
                 <CFormInput
                   className="mb-3"
                   placeholder="Doctor Name"
                   name="name"
                   onChange={handleChange}
-                  /> 
-                  {errors.name && <div className="text-danger mt-0">{errors.name}</div>}
-                  
-                 
+                />
+                {errors.name && <div className="text-danger mt-0">{errors.name}</div>}
+
                 <CFormInput
                   className="mb-3"
                   placeholder="Registration Number"
                   name="registration_number"
                   onChange={handleChange}
                 />
-                {errors.registration_number && (
-                  <div className="text-danger">{errors.registration_number}</div>
-                )} 
+                {errors.registration_number && <div className="text-danger">{errors.registration_number}</div>}
 
                 <CFormInput
                   className="mb-3"
@@ -201,14 +137,14 @@ console.log(errors);
                 {errors.address && <div className="text-danger">{errors.address}</div>}
 
                 <CFormInput
-                type='number'
+                  type="number"
                   className="mb-3"
                   placeholder="Mobile"
                   name="mobile"
                   onChange={handleChange}
                   onInput={(e) => {
                     if (e.target.value.length > 10) {
-                      e.target.value = e.target.value.slice(0, 10); // Limit to 10 digits
+                      e.target.value = e.target.value.slice(0, 10);
                     }
                   }}
                 />
@@ -218,17 +154,19 @@ console.log(errors);
                   className="mb-3"
                   type="email"
                   placeholder="Email"
-                  name="email"
-                  onChange={handleChange}
+                  name="email_input"
+                  autoComplete="new-email"
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
                 {errors.email && <div className="text-danger">{errors.email}</div>}
 
                 <CFormInput
                   className="mb-3"
                   type="password"
-                  placeholder="Password must be at least 8 characters long"
-                  name="password"
-                  onChange={handleChange}
+                  placeholder="Password"
+                  name="password_input"
+                  autoComplete="new-password"
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
                 {errors.password && <div className="text-danger">{errors.password}</div>}
 
@@ -239,16 +177,7 @@ console.log(errors);
                   name="password_confirmation"
                   onChange={handleChange}
                 />
-                {errors.password_confirmation && (
-                  <div className="text-danger">{errors.password_confirmation}</div>
-                )}
-
-                {/* <CFormInput
-                  className="mb-3"
-                  type="file"
-                  name="logo"
-                  onChange={handleImageUpload}
-                /> */}
+                {errors.password_confirmation && <div className="text-danger">{errors.password_confirmation}</div>}
 
                 <CButton color="success" type="submit">
                   Create Account
