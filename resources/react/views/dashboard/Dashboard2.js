@@ -89,13 +89,13 @@ const Dashboard = () => {
                     color={token.status === "Completed" ? "success" : token.status === "In Progress" ? "info" : "warning"}
                     style={{ cursor: 'pointer' }}
                     onClick={() => {
-                      const newStatus = token.status === "Pending" 
-                        ? "In Progress" 
-                        : token.status === "In Progress" 
-                          ? "Completed" 
-                          : "Completed"; // Ensures it doesn't go back to Pending
-                      updateStatus(token.tokan_number, newStatus);
-                    }}
+                    if (token.status === "pending") {
+                      updateStatus(token.tokan_number, "In Progress");
+                    } else if (token.status === "In Progress") {
+                      updateStatus(token.tokan_number, "Completed");
+                    }
+                  }}
+
 
 
                   >
