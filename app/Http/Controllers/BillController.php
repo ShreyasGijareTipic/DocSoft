@@ -18,28 +18,25 @@ class BillController extends Controller
         // Validate the request
         $request->validate([
             'doctor_id' => 'string',
-
             'patient_name' => 'required|string',
             'address' => 'required|string',
-            'email' => 'email',
-            'contact' =>  'required|string|max:12',
+            'email' => 'nullable|email', // Make email optional
+            'contact' => 'required|string|max:12',
             'dob' => 'date',
-
             'doctor_name' => 'string',
             'registration_number' => 'string',
             'visit_date' => 'required|date',
             'grand_total' => 'string',
         ]);
-
+    
         $doctorId = Auth::id();
-
+    
         // Create a new Bill record
         $bill = Bill::create([
-            'doctor_id' => $doctorId, 
-
+            'doctor_id' => $doctorId,
             'patient_name' => $request->patient_name,
             'patient_address' => $request->address,
-            'patient_email' => $request->email,
+            'patient_email' => $request->email ?? null, // Set to null if not provided
             'patient_contact' => $request->contact,
             'patient_dob' => $request->dob,
             'doctor_name' => $request->doctor_name,
@@ -47,31 +44,20 @@ class BillController extends Controller
             'visit_date' => $request->visit_date,
             'grand_total' => $request->grand_total,
         ]);
-
+    
+        // Process descriptions if provided
+        if ($request->has('descriptions') && is_array($request->descriptions)) {
+            foreach ($request->descriptions as $descriptionData) {
+                $descriptionData['bill_id'] = (string)$bill->id; // Store bill ID as a string
+                Description::create($descriptionData);
+            }
+        }
+    
         return response()->json([
             'id' => (string)$bill->id,
-            // Include any other necessary fields
+            'message' => 'Bill and descriptions created successfully',
         ], 201);
-
-
-        foreach ($request->descriptions as $descriptionData) {
-            $descriptionData['bill_id'] = (string)$bill->id; // Store bill ID as a string
-            Description::create($descriptionData);
-        }
-
-        // return response()->json([
-        //     'message' => 'Bill and descriptions created successfully',
-        //     'bill_id' => (string)$bill->id,
-        // ]);
-
-      
-
     }
-
-
-
-
-
 
     public function index($id)
     {

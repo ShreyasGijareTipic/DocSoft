@@ -54,6 +54,8 @@ const today = new Date().toISOString().split('T')[0];
   const [phone, setContactNumber] = useState((formDataa?.patient_contact || ''));
   const [dob, setDob] = useState(formDataa?.patient_dob || '');
 
+  const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
 
   
   const [billId, setBillId] = useState('');
@@ -214,41 +216,58 @@ const today = new Date().toISOString().split('T')[0];
   const validateForm = () => {
     let formErrors = {};
     let isValid = true;
-
-    // Validate each field
-    if (!data?.patient?.name && !patientName) {
+  
+    // Validate Patient Name (Mandatory)
+    if (!data?.patient?.name && !patientName.trim()) {
       formErrors["patientName"] = "Patient name is required";
       isValid = false;
     }
-    
-    if (!data?.patient?.address && !patientAddress) {
+  
+    // Validate Patient Address (Mandatory)
+    if (!data?.patient?.address && !patientAddress.trim()) {
       formErrors["patientAddress"] = "Patient address is required";
       isValid = false;
     }
-    
-    if (!data?.patient?.phone && !phone) {
+  
+    // Validate Phone Number (Mandatory)
+    const phoneRegex = /\d{10}$/; // Must start with +91 and have exactly 10 digits after it
+    if (!data?.patient?.phone && !phone.trim()) {
       formErrors["phone"] = "Contact number is required";
       isValid = false;
-    }
-    
-    if (!data?.patient?.email && !email) {
-      formErrors["email"] = "Email is required";
+    } else if (!phoneRegex.test(phone.trim())) {
+      formErrors["phone"] = "Phone number must have 10 digits";
       isValid = false;
     }
-    
+  
+    // Validate Email (Optional but properly formatted)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email.trim() && !emailRegex.test(email.trim())) {
+      formErrors["email"] = "Enter a valid email address";
+      isValid = false;
+    }
+  
+    // Validate DOB (Mandatory & Not a Future Date)
     if (!data?.patient?.dob && !dob) {
       formErrors["dob"] = "Date of birth is required";
       isValid = false;
-    }
-
-    if (!visitDate) {
-      formErrors.visitDate = 'Visit date is required';
+    } else if (new Date(dob) >= new Date()) {
+      formErrors["dob"] = "Date of birth cannot be in the future";
       isValid = false;
     }
-
-    setErrors(formErrors); // Set errors in the state
+  
+    // Validate Visit Date (Mandatory & Not a Future Date)
+    if (!visitDate) {
+      formErrors.visitDate = "Visit date is required";
+      isValid = false;
+    } else if (new Date(visitDate) > new Date()) {
+      formErrors.visitDate = "Visit date cannot be in the future";
+      isValid = false;
+    }
+  
+    setErrors(formErrors); // Store validation errors in state
     return isValid;
   };
+  
 
 
 
@@ -383,20 +402,21 @@ if (validateRowss()) {
 
 
 
-      if (bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA) {
-        const patientExaminationData = {
-          p_p_i_id: `${billno}`,
-          bp,
-          pulse,
-          past_history: pastHistory,
-          complaints,
-          systemic_examination_general: sysExGeneral,
-          systemic_examination_pa: sysExPA,
-        };
-  
-        const examinationResponse = await post('/api/patientexaminations', patientExaminationData);
-        console.log('Examination Response:', examinationResponse);
-      }
+if (bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA) {
+  const patientExaminationData = {
+    p_p_i_id: `${billno}`,
+    bp,
+    pulse,
+    past_history: pastHistory,
+    complaints,
+    systemic_examination_general: sysExGeneral || "", // Ensure it's not null
+    systemic_examination_pa: sysExPA || "", // Ensure it's not null
+  };
+
+  const examinationResponse = await post('/api/patientexaminations', patientExaminationData);
+  console.log('Examination Response:', examinationResponse);
+}
+
 
 // ----------------------------------------------------------------------------------------------------- 
 
@@ -820,25 +840,27 @@ const [selectedOption, setSelectedOption] = useState('');
               </CCol>
 
               <CCol xs={12} lg={4} className="">
-                <CCol>
-                  <CFormInput
-                  type="text"
-                    label="Doctor Name"
-                    // value={doctor_name}
-                    onChange={(e) => setDoctorName(e.target.value)}
-                    placeholder={`${user.name}`}
-                  />
-                </CCol>
+              
 
-                <CCol className='pt-4'>
-                  <CFormInput
-                   type="text"
-                    label="Registration Number"
-                    //  value={registration_number}
-                    onChange={(e) => setRegistration(e.target.value)}
-                    placeholder={`${user.registration_number}`}
-                  />
-                </CCol>
+
+<CCol>
+  <CFormInput
+    type="text"
+    label="Doctor Name"
+    value={userData?.user?.name || ""}
+    readOnly
+  />
+</CCol>
+
+<CCol className="pt-4">
+  <CFormInput
+    type="text"
+    label="Registration Number"
+    value={userData?.user?.registration_number || ""}
+    readOnly
+  />
+</CCol>
+
 
                 <CCol className='pt-4'>
                   <CFormInput

@@ -63,7 +63,7 @@ function Timeslots() {
               //  onClick={() => setVisible(!visible)}
                onClick={() => handleDelete(row.original)}
                >
-                Reject
+                Delete
               </Button>
           
           </>
