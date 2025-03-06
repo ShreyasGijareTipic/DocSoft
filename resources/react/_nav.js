@@ -100,7 +100,7 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Tokan',
+    name: 'Token',
     to: '/PatientTokanForm',
     icon: <CIcon icon={cilHospital} customClassName="nav-icon" />,
     
