@@ -11,6 +11,7 @@ import {
   CFormSelect,
 } from '@coreui/react';
 import { getAPICall, post } from '../../../util/api';
+import { useNavigate } from 'react-router-dom';
 
 
 function PatientTokanForm() {
@@ -33,7 +34,6 @@ function PatientTokanForm() {
   const [isExistingPatient, setIsExistingPatient] = useState(false); // New state to track if the patient is existing
   const [selectedSlot, setSelectedSlot] = useState("");
 console.log("selectedSlot",selectedSlot);
-
 
   // Fetch the list of doctors when the component mounts
 
@@ -123,7 +123,9 @@ console.log("patientData.patient",patientData.patient);
       console.error('Error checking if phone exists:', error);
       return false; // Default to false if there is an error
     }
-  };
+  }; 
+
+  const navigate = useNavigate();
 
   const handleAddPatient = async () => {
     const formErrors = validateForm();
@@ -182,6 +184,8 @@ console.log("patientData.patient",patientData.patient);
       setIsNotFound(false);
       setIsExistingPatient(false);
       setErrors({});
+       // Navigate to dashboard2 after success
+       navigate('/Dashboard2');
     } catch (error) {
       console.error('Error adding new patient:', error);
       if (error.response?.data?.errors) {
