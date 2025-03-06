@@ -153,7 +153,7 @@ const DrugForm = () => {
       }));
 
       await post('/api/drugdetails', { drugs_details: drugdetailsdata });
-      alert('Drug details added successfully!');
+      
 
       // Clear the form
       setDrugData({
