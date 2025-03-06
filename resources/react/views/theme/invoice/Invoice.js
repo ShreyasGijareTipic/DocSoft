@@ -233,7 +233,7 @@ const inv = () => {
               <p><strong>Name:</strong> {formData.patient_name}</p>
               <p><strong>Address:</strong> {formData.patient_address}</p>
               <p><strong>Number:</strong> {formData.patient_contact}</p>
-              <p><strong>Email Id:</strong> {formData.patient_email}</p>
+              <p><strong>Email Id:</strong> {formData.patient_email || 'N/A'}</p>
             </div>
             <div className="col-12 d-md-none"><hr /></div> {/* Break line for small screens */}
             
@@ -388,7 +388,7 @@ const inv = () => {
           {/* Footer */}
           <div className="d-flex justify-content-center">
             <CButton color="success" onClick={handleDownload}>Download</CButton>&nbsp;&nbsp;
-            <CButton color="success" onClick={handleFileInputClick}>Send Bill on WhatsApp</CButton>
+            {/* <CButton color="success" onClick={handleFileInputClick}>Send Bill on WhatsApp</CButton> */}
           </div>
         </CContainer>
       </CCardBody>
