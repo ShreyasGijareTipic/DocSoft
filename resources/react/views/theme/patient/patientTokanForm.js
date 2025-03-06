@@ -185,13 +185,13 @@ console.log("patientData.patient",patientData.patient);
       setIsExistingPatient(false);
       setErrors({});
        // Navigate to dashboard2 after success
-       navigate('/Dashboard2');
+        navigate('/Dashboard2');
     } catch (error) {
       console.error('Error adding new patient:', error);
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       } else {
-        alert('Failed to add patient. Please try again.');
+        alert('Failed to add patient due to email. Please try again.');
       }
     }
   };
@@ -327,6 +327,7 @@ console.log("patientData.patient",patientData.patient);
           <CCardBody>
             <CFormInput
               label="Patient Name"
+              className="mb-1" 
               value={newPatient.name}
               onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
               placeholder="Enter patient name"
@@ -336,6 +337,7 @@ console.log("patientData.patient",patientData.patient);
             <CFormInput
               label="Mobile Number"
               type="text"
+              className="mb-1" 
               value={newPatient.phone}
               onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
               placeholder="Enter mobile number"
@@ -349,6 +351,7 @@ console.log("patientData.patient",patientData.patient);
 
             <CFormInput
               label="Address"
+              className="mb-1" 
               value={newPatient.address}
               onChange={(e) => setNewPatient({ ...newPatient, address: e.target.value })}
               placeholder="Enter address"
@@ -358,6 +361,7 @@ console.log("patientData.patient",patientData.patient);
             <CFormInput
               label="Email"
               type="email"
+              className="mb-1" 
               value={newPatient.email}
               onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
               placeholder="Enter email address"
@@ -367,6 +371,7 @@ console.log("patientData.patient",patientData.patient);
             <CFormInput
               label="Date of Birth"
               type="date"
+              className="mb-1" 
               value={newPatient.dob}
               max={new Date().toISOString().split("T")[0]} // Restrict future dates
               onChange={(e) => setNewPatient({ ...newPatient, dob: e.target.value })}
