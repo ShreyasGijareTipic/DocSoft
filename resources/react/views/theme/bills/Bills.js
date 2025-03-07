@@ -413,8 +413,8 @@ if (bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA) {
     pulse,
     past_history: pastHistory,
     complaints,
-    systemic_examination_general: sysExGeneral || "", // Ensure it's not null
-    systemic_examination_pa: sysExPA || "", // Ensure it's not null
+    systemic_exam_general: sysExGeneral,  // Change to match Laravel
+    systemic_exam_pa: sysExPA,
   };
 
   const examinationResponse = await post('/api/patientexaminations', patientExaminationData);
@@ -915,14 +915,14 @@ const [selectedOption, setSelectedOption] = useState('');
             <CFormInput label="Complaints" value={complaints} onChange={(e) => setComplaints(e.target.value)} />
           </CCol>
         </CRow>
-        {/* <CRow className="mb-3">
+        <CRow className="mb-3">
           <CCol xs={12} sm={6}>
             <CFormInput label="Systemic Examination - General" value={sysExGeneral} onChange={(e) => setSysExGeneral(e.target.value)} />
           </CCol>
           <CCol xs={12} sm={6}>
             <CFormInput label="Diagnosis" value={sysExPA} onChange={(e) => setSysExPA(e.target.value)} />
           </CCol>
-        </CRow> */}
+        </CRow>
       </CCardBody>
     )}
   </CCard>

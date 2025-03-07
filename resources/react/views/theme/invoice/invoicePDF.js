@@ -45,9 +45,25 @@ export function generatePDF(
         pdf.text(clinicData?.clinic_name || "N/A", pageWidth / 2, y + 10, { align: "center" });
 
         pdf.setFontSize(11);
-        pdf.text(`Reg No.: ${clinicData?.clinic_registration_no || "N/A"} | Contact: ${clinicData?.clinic_mobile || "N/A"}`, pageWidth - 80, y + 5);
-        pdf.text(`Address: ${clinicData?.clinic_address || "N/A"}`, pageWidth - 80, y + 15);
-        y += 30;
+        // Format and wrap the address text
+const addressText = pdf.splitTextToSize(
+    `Address: ${clinicData?.clinic_address || "N/A"}`,
+    pageWidth - marginLeft - 80 // Ensures it doesn't exceed page width
+);
+
+// Display registration number and contact
+pdf.text(
+    `Reg No.: ${clinicData?.clinic_registration_no || "N/A"} | Contact: ${clinicData?.clinic_mobile || "N/A"}`,
+    pageWidth - 80,
+    y + 5
+);
+
+// Display the formatted address below
+pdf.text(addressText, pageWidth - 80, y + 15);
+
+// Adjust y position dynamically based on the address height
+y += 15 + (addressText.length * 5);
+
 
         pdf.setDrawColor(0);
         pdf.setLineWidth(0.5);
@@ -78,9 +94,10 @@ export function generatePDF(
         pdf.setFontSize(13);
         pdf.text("Doctor Details:", doctorBoxX + 3, y + 6);
         pdf.setFontSize(11);
-        pdf.text(`Dr. ${doctorData?.name || "N/A"} (${doctorData?.education || "N/A"})`, doctorBoxX + 3, y + 12);
-        pdf.text(`Reg No.: ${doctorData?.registration_number || "N/A"}`, doctorBoxX + 3, y + 18);
-        pdf.text(`Specialty: ${doctorData?.speciality || "N/A"}`, doctorBoxX + 3, y + 24);
+        pdf.text(`Doctor Name:${doctorData?.name || "N/A"}`, doctorBoxX + 3, y + 12);
+        pdf.text(`Education: ${doctorData?.education || "N/A"}`, doctorBoxX + 3, y + 18);
+        pdf.text(`Reg No.: ${doctorData?.registration_number || "N/A"}`, doctorBoxX + 3, y + 23);
+        pdf.text(`Specialty: ${doctorData?.speciality || "N/A"}`, doctorBoxX + 3, y + 28);
 
         y += boxHeight + lineHeight;
 
@@ -124,8 +141,8 @@ y += lineHeight * 3;
                 [{ content: "Past History", styles: { fontStyle: "bold", halign: "center" } }, patientData?.past_history ?? "N/A",
                  { content: "Complaints", styles: { fontStyle: "bold", halign: "center" } }, patientData?.complaints ?? "N/A"],
     
-                // [{ content: "Systemic Examination", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_general ?? "N/A",
-                //  { content: "Diagnosis", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_pa ?? "N/A"]
+                [{ content: "Systemic Examination", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_general ?? "N/A",
+                 { content: "Diagnosis", styles: { fontStyle: "bold", halign: "center" } }, patientData?.systemic_exam_pa ?? "N/A"]
             ],
             theme: "grid",
             styles: { fontSize: 10, font: "times", halign: "center" },

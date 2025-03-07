@@ -104,26 +104,67 @@ const inv = () => {
  // --------------------------------------------------------------------------------------------------- 
 
  useEffect(() => {
-  fetchProduct();
-  fetchDescriptions();
-  fetchHealthDirectives();
-  fetchPatientExaminations();
+  let count = 0; // Counter to track iterations
 
-  // Set intervals for periodic fetching
-  const healthDirectivesInterval = setInterval(() => {
+  const interval = setInterval(() => {
+    if (count >= 2) {
+      clearInterval(interval);
+      console.log("Completed 2 iterations, stopping updates.");
+      return;
+    }
+
+    fetchProduct();
+    fetchDescriptions();
     fetchHealthDirectives();
-  }, 5000); // Fetch every 5 seconds
-
-  const patientExaminationsInterval = setInterval(() => {
     fetchPatientExaminations();
-  }, 5000); // Fetch every 5 seconds
 
-  // Cleanup function to clear intervals when component unmounts
-  return () => {
-    clearInterval(healthDirectivesInterval);
-    clearInterval(patientExaminationsInterval);
-  };
+    count++; // Increment counter
+  }, 100);
+
+  return () => clearInterval(interval); // Cleanup on unmount
 }, [billId]);
+
+  const numberToWords = (number) => {
+    const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    if (number === 0) {
+      return 'Zero';
+    }
+
+    let words = '';
+    if (number >= 100000) {
+      words += numberToWords(Math.floor(number / 1000)) + ' Lakh ';
+      number %= 100000;
+    }
+
+    if (number >= 1000) {
+      words += numberToWords(Math.floor(number / 1000)) + ' Thousand ';
+      number %= 1000;
+    }
+
+    if (number >= 100) {
+      words += units[Math.floor(number / 100)] + ' Hundred ';
+      number %= 100;
+    }
+
+    if (number >= 20) {
+      words += tens[Math.floor(number / 10)] + ' ';
+      number %= 10;
+    }
+
+    if (number >= 10) {
+      words += teens[number - 10] + ' ';
+      number = 0;
+    }
+
+    if (number > 0) {
+      words += units[number] + ' ';
+    }
+
+    return words.trim();
+  };
 
 
   const handleDownload = () => {
@@ -218,7 +259,8 @@ const inv = () => {
             
             <div className="col-12 col-md-5 text-md-end">
               <h6 className="fw-bold">Doctor Details:</h6>
-              <p><strong>Name:</strong> {doctorData.name} ({doctorData.education})</p>
+              <p><strong>Name:</strong> {doctorData.name}</p>
+              <p><strong>Education:</strong>{doctorData.education}</p>
               <p><strong>Registration No.:</strong> {doctorData.registration_number}</p>
               <p><strong>Specialty:</strong> {doctorData.speciality}</p>
             </div>
@@ -257,12 +299,12 @@ const inv = () => {
             <td>{PatientExaminations[0]?.complaints || "N/A"}</td>
           </tr>
 
-          {/* <tr>
+          <tr>
                         <td><strong>Systemic Examination</strong></td>
                         <td>{PatientExaminations[0].systemic_exam_general || "N/A"}</td>
                         <td><strong>Diagnosis</strong></td>
                         <td>{PatientExaminations[0].systemic_exam_pa || "N/A"}</td>
-                      </tr> */}
+                      </tr>
         </tbody>
       </table>
     </div>
