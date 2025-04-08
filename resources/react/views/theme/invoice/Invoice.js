@@ -257,12 +257,12 @@ const inv = () => {
             </div>
             <div className="col-12 d-md-none"><hr /></div> {/* Break line for small screens */}
             
-            <div className="col-12 col-md-5 text-md-end">
+            <div className="col-12 col-md-5">
               <h6 className="fw-bold">Doctor Details:</h6>
-              <p><strong>Name:</strong> {doctorData.name}</p>
-              <p><strong>Education:</strong>{doctorData.education}</p>
-              <p><strong>Registration No.:</strong> {doctorData.registration_number}</p>
-              <p><strong>Specialty:</strong> {doctorData.speciality}</p>
+              <p><strong>Name: </strong> {doctorData.name}</p>
+              <p><strong>Education: </strong>{doctorData.education}</p>
+              <p><strong>Registration No.: </strong> {doctorData.registration_number}</p>
+              <p><strong>Specialty: </strong> {doctorData.speciality}</p>
             </div>
           </div>
           <hr />
