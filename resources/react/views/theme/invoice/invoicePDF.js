@@ -48,15 +48,7 @@ function drawHeader() {
     const logoSize = 20;
     const leftMargin = marginLeft;
     const rightMargin = pageWidth - marginLeft;
-    // const headerHeight = 30; 
-
-    // for (let i = 0; i < headerHeight; i++) {
-    //     let shade = Math.floor(30 + (i / headerHeight) * 100); // Darker at top, lighter at bottom
-    //     pdf.setFillColor(0, 0, shade); // RGB for dark blue shades
-    //     pdf.rect(10, y + i, pageWidth - 20, 1, "F"); // Drawing thin strips for gradient
-    // }
-
-
+   
     // Clinic Logo (Left Side)
     if (clinicData?.logo) {
         const img = new Image();
@@ -64,41 +56,29 @@ function drawHeader() {
         pdf.addImage(img, "PNG", leftMargin, y, logoSize, logoSize);
     }
 
-    // Clinic Name (Centered)
+
     pdf.setFontSize(16);
     pdf.setFont("times", "bold");
     pdf.text(clinicData?.clinic_name || "N/A", pageWidth / 2, y + 7, { align: "center" });
 
-    // Registration Number (Right-Aligned)
+  
     pdf.setFontSize(10);
     pdf.setFont("times", "normal");
     pdf.text(`Reg No: ${clinicData?.clinic_registration_no || "N/A"}`, rightMargin, y + 5, { align: "right" });
 
-    // Address (Right-Aligned, Below Reg No)
+ 
     pdf.text(`Address: ${clinicData?.clinic_address || "N/A"}`, rightMargin, y + 10, { align: "right" });
 
-    // Contact Details (Right-Aligned, Below Address)
+    
     pdf.text(`Contact: ${clinicData?.clinic_mobile || "N/A"}`, rightMargin, y + 15, { align: "right" });
 
-    // Draw a separator line
+    
     y += 25;
     pdf.setDrawColor(0);
     pdf.setLineWidth(0.5);
     pdf.line(10, y, pageWidth - 10, y);
     y += 8;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
     function drawPatientAndDoctorDetails() {
         const boxWidth = (contentWidth / 2) - 5;
