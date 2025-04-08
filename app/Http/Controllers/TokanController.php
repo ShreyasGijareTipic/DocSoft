@@ -102,27 +102,57 @@ class TokanController extends Controller
         return response()->json(['message' => 'Tokan deleted successfully!']);
     }
 
+    // public function getTodaysTokans()
+    // {
+    //     try {
+    //         $today = Carbon::today()->toDateString();
+
+    //         $tokans = Tokan::whereDate('date', $today)
+    //                        ->orderBy('tokan_number', 'asc')
+    //                        ->get();
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => $tokans
+    //         ], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Error fetching today\'s tokens',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+
     public function getTodaysTokans()
-    {
-        try {
-            $today = Carbon::today()->toDateString();
+{
+    try {
+        $today = Carbon::today()->toDateString();
+        $clinicId = auth()->user()->clinic_id; // Get logged-in user's clinic ID
 
-            $tokans = Tokan::whereDate('date', $today)
-                           ->orderBy('tokan_number', 'asc')
-                           ->get();
+        $tokans = Tokan::whereDate('date', $today)
+                       ->where('clinic_id', $clinicId) // Filter by clinic ID
+                       ->orderBy('tokan_number', 'asc')
+                       ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $tokans
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error fetching today\'s tokens',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'data' => $tokans
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching today\'s tokens',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
+
+
+
+
 
     public function updateStatus(Request $request)
     {

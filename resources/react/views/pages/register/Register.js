@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CButton, CCard, CCardBody, CCol, CContainer, CForm, CFormInput, CRow } from '@coreui/react';
+import { CButton, CCard, CCardBody, CCol, CContainer, CForm, CFormInput, CFormSelect, CRow } from '@coreui/react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAPICall, post } from '../../../util/api';
 
@@ -19,6 +19,7 @@ const Register = () => {
     password: '',
     password_confirmation: '',
     logo: '',
+    type:''
   });
 
   const [errors, setErrors] = useState({});
@@ -149,6 +150,24 @@ const Register = () => {
                   }}
                 />
                 {errors.mobile && <div className="text-danger">{errors.mobile}</div>}
+
+
+
+
+                <CFormSelect
+  className="mb-3"
+  name="type"
+  value={formData.type}
+  onChange={handleChange}
+>
+<option value="1">Select</option>
+  <option value="1">Doctor</option>
+  <option value="2">Receptionist</option>
+</CFormSelect>
+{errors.type && <div className="text-danger">{errors.type}</div>}
+
+
+
 
                 <CFormInput
                   className="mb-3"

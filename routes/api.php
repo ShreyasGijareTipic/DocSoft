@@ -203,6 +203,10 @@ Route::middleware(['auth:sanctum', 'role:user'])->group(function () {
     // User-specific routes can be added here
 });
 
+Route::middleware(['auth:sanctum', 'role:compounder'])->group(function () {
+    // User-specific routes can be added here
+});
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');

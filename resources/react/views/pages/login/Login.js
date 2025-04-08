@@ -18,7 +18,7 @@ import {
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser } from '@coreui/icons';
 // import { login } from '../../../util/api';
-import { isLogIn, storeUserData } from '../../../util/session';
+import { getUser, isLogIn, storeUserData } from '../../../util/session';
 import { login } from '../../../util/api';
 // import { isLogIn, storeUserData } from '../../../util/session';
 import symbol from '../../../../react/assets/images/logo.png'
@@ -35,7 +35,7 @@ const Login = () => {
 
   useEffect(() => {
     if (isLogIn()) {
-      navigate('/theme/bills');
+      navigate('/Bills');
     }
   }, [navigate]);
 
@@ -67,6 +67,77 @@ const Login = () => {
 //     }
 // };
 
+// const user = getUser();
+
+
+// const handleLogin = async (event) => {
+//   const form = event.currentTarget;
+//   event.preventDefault();
+//   event.stopPropagation();
+
+//   // Validate the form
+//   if (form.checkValidity() !== true) {
+//     console.log('Invalid');
+//     setValidated(true);
+//     return;
+//   }
+
+//   setValidated(true);
+//   const email = userNameRef.current?.value;
+//   const password = userPwdRef.current?.value;
+
+//   try {
+//     // Call login function, which returns the response with the token
+//     const resp = await login({ email, password });
+//     console.log('XYZ',resp);
+    
+    
+//     // Check if user is blocked
+//     if (resp.blocked) {
+//       setErrorMessage(resp.message);
+//     } else {
+//       // Store token in local storage
+//       if (resp.token) {
+//         localStorage.setItem('token', resp.token);
+//         console.log("Token stored:", resp.token); // Store the token
+//       }
+
+//       // Store doctorId in localStorage if it's part of the response
+//       // if (resp.user && resp.user.id) {
+//       //   localStorage.setItem('doctorId', resp.user.id); // Store the doctor's ID
+//       //   console.log('d id stored',resp.user.id);
+//       //   console.log('doctor id stored',resp.user.id);
+//       // }
+
+
+//       if (resp && resp.doctorId) {
+//         localStorage.setItem('doctorId', resp.doctorId); // Store doctorId in localStorage
+//         console.log('Doctor ID stored in localStorage:', resp.doctorId);
+//     } else {
+//         console.log('Doctor ID not found in response:', resp);
+//     }
+    
+
+
+
+
+
+
+//       // Store any additional user data if needed
+//       storeUserData(resp); // Assume storeUserData handles any user data
+
+//       // Navigate to the next page (e.g., /theme/bills)
+//       navigate('/Bills');
+//     }
+//   } catch (error) {
+//     // Set error message if login fails
+//     setErrorMessage('Please provide valid email and password');
+//   }
+ 
+// };
+
+
+
 const handleLogin = async (event) => {
   const form = event.currentTarget;
   event.preventDefault();
@@ -86,52 +157,52 @@ const handleLogin = async (event) => {
   try {
     // Call login function, which returns the response with the token
     const resp = await login({ email, password });
-    console.log('XYZ',resp);
-    
-    
+    console.log('Login Response:', resp);
+
     // Check if user is blocked
     if (resp.blocked) {
       setErrorMessage(resp.message);
-    } else {
-      // Store token in local storage
-      if (resp.token) {
-        localStorage.setItem('token', resp.token);
-        console.log("Token stored:", resp.token); // Store the token
-      }
-
-      // Store doctorId in localStorage if it's part of the response
-      // if (resp.user && resp.user.id) {
-      //   localStorage.setItem('doctorId', resp.user.id); // Store the doctor's ID
-      //   console.log('d id stored',resp.user.id);
-      //   console.log('doctor id stored',resp.user.id);
-      // }
-
-
-      if (resp && resp.doctorId) {
-        localStorage.setItem('doctorId', resp.doctorId); // Store doctorId in localStorage
-        console.log('Doctor ID stored in localStorage:', resp.doctorId);
-    } else {
-        console.log('Doctor ID not found in response:', resp);
+      return;
     }
-    
 
-
-
-
-
-
-      // Store any additional user data if needed
-      storeUserData(resp); // Assume storeUserData handles any user data
-
-      // Navigate to the next page (e.g., /theme/bills)
-      navigate('/Bills');
+    // Store token in local storage
+    if (resp.token) {
+      localStorage.setItem('token', resp.token);
+      console.log("Token stored:", resp.token);
     }
+
+    // Store doctorId in localStorage if it's part of the response
+    if (resp.doctorId) {
+      localStorage.setItem('doctorId', resp.doctorId);
+      console.log('Doctor ID stored:', resp.doctorId);
+    } else {
+      console.log('Doctor ID not found in response:', resp);
+    }
+
+    // Store additional user data
+    storeUserData(resp); 
+
+    // Navigation based on user type
+    if (resp?.user?.type === 0) {
+      navigate('/register/WhatsappClinicRegister');  // Navigate to Dashboard if userType = 0
+    } else if (resp?.user?.type === 1) {
+      navigate('/Bills');      // Navigate to Bills if userType = 1
+    }
+    else if (resp?.user?.type === 2) {
+      navigate('/PatientTokanForm');      // Navigate to Bills if userType = 1
+    } else {
+      setErrorMessage("Invalid user type. Please contact support.");
+    }
+
   } catch (error) {
     // Set error message if login fails
     setErrorMessage('Please provide valid email and password');
   }
- 
 };
+
+
+  
+
 
 
   return (

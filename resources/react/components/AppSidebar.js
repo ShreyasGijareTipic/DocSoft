@@ -12,12 +12,15 @@ import {
 import CIcon from '@coreui/icons-react'
 
 import { AppSidebarNav } from './AppSidebarNav'
+// import { AppSidebarNav } from '../components/AppSidebarNav'
 
 import  logo  from '../../react/assets/images/tipic.png'
 import { sygnet } from 'resources/react/assets/brand/sygnet'
 
 // sidebar nav config
 import navigation from '../_nav'
+const nav=navigation();
+console.log(navigation);
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
@@ -48,7 +51,10 @@ const AppSidebar = () => {
           onClick={() => dispatch({ type: 'set', sidebarShow: false })}
         />
       </CSidebarHeader>
-      <AppSidebarNav items={navigation} />
+      
+      <AppSidebarNav items={nav}/>
+     
+
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler
           onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
@@ -59,3 +65,6 @@ const AppSidebar = () => {
 }
 
 export default React.memo(AppSidebar)
+
+
+

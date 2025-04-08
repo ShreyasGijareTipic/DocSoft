@@ -115,7 +115,7 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password), // Hashing the password
                 'profilepic' => $request->profilepic,
                 'blocked' => $request->blocked ?? false,
-                'type' => $request->type ?? 0,
+                'type' => $request->type ?? 1,
             ]);
             
             // Log successful user creation
@@ -281,12 +281,14 @@ public function login(Request $request)
     $response = [
         'doctorId' => $user->id, // Change to return doctorId instead of user
         'user' => [
+            'id' => $user->id, 
             'name' => $user->name,
             'email' => $user->email,
             'mobile' => $user->mobile,
             'speciality' => $user->speciality,
             'clinic_id' =>$user->clinic_id,
             'education' => $user->education,
+            'type' => $user->type,
             'registration_number' => $user->registration_number,
         ],
         'token' => $token
