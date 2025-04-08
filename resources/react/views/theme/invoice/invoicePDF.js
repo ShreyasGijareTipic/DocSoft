@@ -25,7 +25,7 @@ export function generatePDF(
     });
 
     const marginLeft = 15;
-    let y = 10;
+    let y = 20;
     const lineHeight = 7;
     const pageWidth = pdf.internal.pageSize.getWidth();
     const contentWidth = pageWidth - 2 * marginLeft;
@@ -36,97 +36,102 @@ export function generatePDF(
 
 
     function drawBorder() {
-        pdf.setDrawColor(0); // Black color border
-        pdf.setLineWidth(0.5); // Medium thickness
+        pdf.setDrawColor(0);
+        pdf.setLineWidth(0.5);
         pdf.rect(5, 5, pageWidth - 10, pageHeight - 10); // Draw rectangle border
     }
 
 
-function drawHeader() {
-    y = 10;
-
-    const logoSize = 20;
-    const leftMargin = marginLeft;
-    const rightMargin = pageWidth - marginLeft;
-   
-    // Clinic Logo (Left Side)
-    if (clinicData?.logo) {
-        const img = new Image();
-        img.src = clinicData.logo;
-        pdf.addImage(img, "PNG", leftMargin, y, logoSize, logoSize);
+    function drawHeader() {
+        y = 10;
+        const logoSize = 40;
+        const leftMargin = marginLeft;
+        const rightMargin = pageWidth - marginLeft;
+    
+        // Clinic Logo (Left Side)
+        if (clinicData?.logo) {
+            const img = new Image();
+            img.src = clinicData.logo;
+            pdf.addImage(img, "PNG", leftMargin, y, logoSize, logoSize);
+        }
+    
+        pdf.setFontSize(16);
+        pdf.setFont("times", "bold");
+        pdf.text(clinicData?.clinic_name || "N/A", pageWidth / 2, y + 7, { align: "center" });
+    
+        pdf.setFontSize(10);
+        pdf.setFont("times", "normal");
+        pdf.text(`Reg No: ${clinicData?.clinic_registration_no || "N/A"}`, rightMargin, y + 5, { align: "right" });
+    
+      
+        const addressText = `Address: ${clinicData?.clinic_address || "N/A"}`;
+        const addressLines = pdf.splitTextToSize(addressText, 50);
+        addressLines.forEach((line, index) => {
+            pdf.text(line, rightMargin, y + 10 + index * 5, { align: "right" });
+        });
+    
+        const addressHeight = addressLines.length * 5;
+    
+        // Move Contact below wrapped address
+        pdf.text(`Contact: ${clinicData?.clinic_mobile || "N/A"}`, rightMargin, y + 10 + addressHeight, { align: "right" });
+    
+        // Draw line below header
+        y += logoSize + addressHeight ;
+        pdf.setDrawColor(0);
+        pdf.setLineWidth(0.5);
+        pdf.line(10, y, pageWidth - 10, y);
+        y += 8;
     }
-
-
-    pdf.setFontSize(16);
-    pdf.setFont("times", "bold");
-    pdf.text(clinicData?.clinic_name || "N/A", pageWidth / 2, y + 7, { align: "center" });
-
-  
-    pdf.setFontSize(10);
-    pdf.setFont("times", "normal");
-    pdf.text(`Reg No: ${clinicData?.clinic_registration_no || "N/A"}`, rightMargin, y + 5, { align: "right" });
-
- 
-    pdf.text(`Address: ${clinicData?.clinic_address || "N/A"}`, rightMargin, y + 10, { align: "right" });
-
     
-    pdf.text(`Contact: ${clinicData?.clinic_mobile || "N/A"}`, rightMargin, y + 15, { align: "right" });
-
-    
-    y += 25;
-    pdf.setDrawColor(0);
-    pdf.setLineWidth(0.5);
-    pdf.line(10, y, pageWidth - 10, y);
-    y += 8;
-}
 
     function drawPatientAndDoctorDetails() {
         const boxWidth = (contentWidth / 2) - 5;
-        const boxHeight = 30;
         const patientBoxX = marginLeft;
         const doctorBoxX = marginLeft + boxWidth + 10;
-
+        const lineSpacing = 5;
+    
         // Patient Details
         pdf.setDrawColor(0);
-        pdf.rect(patientBoxX, y, boxWidth, boxHeight);
-
         pdf.setFontSize(13);
         pdf.text("Patient Details:", patientBoxX + 3, y + 6);
         pdf.setFontSize(11);
         pdf.text(`Name: ${formData?.patient_name || "N/A"}`, patientBoxX + 3, y + 12);
         pdf.text(`Address: ${formData?.patient_address || "N/A"}`, patientBoxX + 3, y + 18);
         pdf.text(`Mobile: ${formData?.patient_contact || "N/A"}`, patientBoxX + 3, y + 24);
-
+        // Fixed height patient box
+    
         // Doctor Details
-        pdf.rect(doctorBoxX, y, boxWidth, boxHeight);
-
         pdf.setFontSize(13);
         pdf.text("Doctor Details:", doctorBoxX + 3, y + 6);
         pdf.setFontSize(11);
-        pdf.text(`Doctor Name:${doctorData?.name || "N/A"}`, doctorBoxX + 3, y + 12);
-        pdf.text(`Education: ${doctorData?.education || "N/A"}`, doctorBoxX + 3, y + 18);
-        pdf.text(`Reg No.: ${doctorData?.registration_number || "N/A"}`, doctorBoxX + 3, y + 23);
-        pdf.text(`Specialty: ${doctorData?.speciality || "N/A"}`, doctorBoxX + 3, y + 28);
-
+        pdf.text(`Doctor Name: ${doctorData?.name || "N/A"}`, doctorBoxX + 3, y + 12);
+    
+        // ✅ Wrap Education
+        const educationLines = pdf.splitTextToSize(`Education: ${doctorData?.education || "N/A"}`, boxWidth - 6);
+        educationLines.forEach((line, index) => {
+            pdf.text(line, doctorBoxX + 3, y + 18 + index * lineSpacing);
+        });
+    
+        const eduOffset = educationLines.length * lineSpacing;
+        let boxHeight = 12 + eduOffset + 15; // Adjust height dynamically
+    
+        // Add Reg No and Specialty below wrapped education
+        pdf.text(`Reg No.: ${doctorData?.registration_number || "N/A"}`, doctorBoxX + 3, y + 18 + eduOffset);
+        pdf.text(`Specialty: ${doctorData?.speciality || "N/A"}`, doctorBoxX + 3, y + 24 + eduOffset);
+    
+        pdf.rect(doctorBoxX, y, boxWidth, boxHeight); // Doctor box with dynamic height
+        pdf.rect(patientBoxX, y, boxWidth,boxHeight); 
+        console.log(boxHeight)
         y += boxHeight + lineHeight;
-
-        
-
-        // Bill No (left-aligned)
+    
+        // Bill No and Bill Date
         pdf.setFontSize(12);
-
-// Bill No (First Line)
-pdf.text(`Bill No: ${billId}`, marginLeft, y);
-
-// Bill Date (Below Bill No)
-const formattedDate = formData.visit_date ? formData.visit_date.split("-").reverse().join("-") : "Date Not Available";
-pdf.text(`Bill Date: ${formattedDate}`, marginLeft, y + lineHeight); 
-
-// Move Y position down for next content
-y += lineHeight * 3;
-
-        
+        pdf.text(`Bill No: ${billId}`, marginLeft, y);
+        const formattedDate = formData.visit_date ? formData.visit_date.split("-").reverse().join("-") : "Date Not Available";
+        pdf.text(`Bill Date: ${formattedDate}`, marginLeft, y + lineHeight);
+        y += lineHeight * 3;
     }
+    
     function drawPatientExamination() {
         pdf.setFontSize(13);
         pdf.text("Medical Observation:", marginLeft, y);
