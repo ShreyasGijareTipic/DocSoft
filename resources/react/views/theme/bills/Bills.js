@@ -543,6 +543,9 @@ const [showTable, setShowTable] = useState(false);
 //get Medicine In Dropdown Code
 
   const [medicines, setMedicines] = useState(null);
+  const [medicineSearch, setMedicineSearch] = useState({});
+  const [medicineOptions, setMedicineOptions] = useState({});
+
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
@@ -569,7 +572,23 @@ const [showTable, setShowTable] = useState(false);
     console.log("Medicines state updated:", medicines);
   }, [medicines]);
 
-
+  const handleMedicineSearch = (index, searchText) => {
+    setMedicineSearch((prev) => ({ ...prev, [index]: searchText }));
+  
+    if (searchText.length < 2) {
+      // Don't show suggestions for less than 2 characters
+      setMedicineOptions((prev) => ({ ...prev, [index]: [] }));
+      return;
+    }
+  
+    const filtered = medicines?.filter((med) =>
+      med.drug_name.toLowerCase().includes(searchText.toLowerCase())
+    ) || [];
+  
+    setMedicineOptions((prev) => ({ ...prev, [index]: filtered }));
+  };
+  
+  
   
   const [drugDetails, setDrugDetails] = useState([]); // State to store drugs
 
@@ -963,7 +982,7 @@ const [selectedOption, setSelectedOption] = useState('');
           <CTableBody>
             {rowss.map((row, index) => (
               <CTableRow key={index}>
-                <CTableDataCell>
+                {/* <CTableDataCell>
                   <CFormSelect
                     value={row.description}
                     onChange={(e) => {
@@ -983,7 +1002,69 @@ const [selectedOption, setSelectedOption] = useState('');
                     )}
                   </CFormSelect>
                   {rowErrors[index]?.description && <div className="text-danger">{rowErrors[index].description}</div>}
-                </CTableDataCell>
+                </CTableDataCell> */}
+
+                <CTableDataCell>
+  <div style={{ position: 'relative' }}>
+    <CFormInput
+      type="text"
+      value={medicineSearch[index] || ''}
+      onChange={(e) => handleMedicineSearch(index, e.target.value)}
+      placeholder="Search medicine..."
+      autoComplete="off"
+    />
+    
+    {/* Dropdown suggestions */}
+    {medicineOptions[index]?.length > 0 && (
+      <div style={{
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        zIndex: 2000,
+        width: '100%',
+        border: '1px solid #ccc',
+        borderTop: 'none',
+        borderRadius: '0 0 6px 6px',
+        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+        maxHeight: '200px',
+        overflowY: 'auto',
+        marginTop: '-1px',
+      }}>
+        {medicineOptions[index].map((medicine) => (
+          <div
+            key={medicine.id}
+            style={{
+              padding: '8px 12px',
+              cursor: 'pointer',
+              borderBottom: '1px solid #f1f1f1',
+              transition: 'background 0.2s ease',
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+            onClick={() => {
+              handleRowChangee(index, 'description', medicine.id); // store ID or drug name here
+              handleMedicineChange(index, medicine.id); // update related logic
+              setMedicineSearch((prev) => ({ ...prev, [index]: medicine.drug_name }));
+              setMedicineOptions((prev) => ({ ...prev, [index]: [] })); // close dropdown
+            }}
+          >
+            {medicine.drug_name}
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Field error display */}
+    {rowErrors[index]?.description && (
+      <div className="text-danger">{rowErrors[index].description}</div>
+    )}
+  </div>
+</CTableDataCell>
+
+
+
 
                 <CTableDataCell>
                   <CFormSelect
