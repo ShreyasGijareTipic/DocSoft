@@ -63,6 +63,18 @@ const today = new Date().toISOString().split('T')[0];
   const [patientAge, setPatientAge] = useState('');
   const [doctor_name, setDoctorName] = useState('');
   const [registration_number, setRegistration] = useState('');
+  const [suggestionFlags, setSuggestionFlags] = useState({});
+  
+  const toggleSuggestion = (index, type, value) => {
+    setSuggestionFlags((prev) => ({
+      ...prev,
+      [index]: {
+        ...prev[index],
+        [type]: value,
+      },
+    }));
+  };
+  
 
   const [suggestions, setSuggestions] = useState([]);
 
@@ -960,14 +972,14 @@ const [selectedOption, setSelectedOption] = useState('');
 
   {showTable && (
     <CCardBody>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px",}}>
         <CButton color="danger" onClick={() => setShowTable(false)}>
           Remove
         </CButton>
       </div>
 
-      <CRow>
-        <CTable hover responsive>
+      <CRow >
+        <CTable hover responsive style={{ height:"128px" }}>
           <CTableHead>
             <CTableRow>
               <CTableHeaderCell style={{ width: '10%' }}>Medicine</CTableHeaderCell>
@@ -1023,12 +1035,12 @@ const [selectedOption, setSelectedOption] = useState('');
         right: 0,
         backgroundColor: '#fff',
         zIndex: 2000,
-        width: '100%',
+        width: '150px',
         border: '1px solid #ccc',
         borderTop: 'none',
         borderRadius: '0 0 6px 6px',
         boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-        maxHeight: '200px',
+        maxHeight: '50px',
         overflowY: 'auto',
         marginTop: '-1px',
       }}>
@@ -1062,38 +1074,127 @@ const [selectedOption, setSelectedOption] = useState('');
     )}
   </div>
 </CTableDataCell>
+<CTableDataCell style={{ position: "relative" }}>
+  <CFormInput
+    value={row.strength}
+    onChange={(e) => {
+      handleRowChangee(index, "strength", e.target.value);
+      toggleSuggestion(index, "showStrength", true);
+    }}
+    onFocus={() => toggleSuggestion(index, "showStrength", true)}
+    placeholder="Enter strength"
+    disabled={!row.description}
+    autoComplete="off"
+  />
+  {suggestionFlags[index]?.showStrength &&
+    Array.isArray(row.drugDetails) &&
+    row.drugDetails
+      .filter(
+        (drug) =>
+          drug.drug_id === parseInt(row.description, 10) &&
+          (row.strength.trim() === "" ||
+            drug.strength.toLowerCase().includes(row.strength.toLowerCase()))
+      )
+      .slice(0, 5)
+      .map((drug, i) => (
+        <div
+          key={i}
+          onClick={() => {
+            handleRowChangee(index, "strength", drug.strength);
+            toggleSuggestion(index, "showStrength", false);
+          }}
+          style={{
+            position: "relative",
+            top: "100%",
+            left: 0,
+            right: 0,
+            backgroundColor: "#fff",
+            zIndex: 2000,
+            width: "150px",
+            border: "1px solid #ccc",
+            borderTop: "none",
+            borderRadius: "0 0 6px 6px",
+            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+            maxHeight: "50px",
+            overflowY: "auto",
+            marginTop: "-1px",
+            padding: "5px 10px",
+            cursor: "pointer",
+          }}
+        >
+          {drug.strength}
+        </div>
+      ))}
+  {rowErrors[index]?.strength && (
+    <div className="text-danger">{rowErrors[index].strength}</div>
+  )}
+</CTableDataCell>
+
+<CTableDataCell style={{ position: "relative" }}>
+  <CFormInput
+    value={row.dosage}
+    onChange={(e) => {
+      handleRowChangee(index, "dosage", e.target.value);
+      toggleSuggestion(index, "showDosage", true);
+    }}
+    onFocus={() => {
+      if (row.dosage.trim() !== "") {
+        toggleSuggestion(index, "showDosage", true);
+      }
+    }}
+    placeholder="Enter dosage"
+    autoComplete="off"
+  />
+
+  {suggestionFlags[index]?.showDosage &&
+    row.dosage.trim() !== "" &&
+    ["1-0-1", "0-1-0", "1-1-1", "1-0-0", "0-0-1", "0-1-1", "1-1-0"]
+      .filter((d) => {
+        const cleanedInput = row.dosage.replace(/-/g, "").toLowerCase();
+        const cleanedOption = d.replace(/-/g, "").toLowerCase();
+        return cleanedOption.includes(cleanedInput);
+      })
+      .slice(0, 5)
+      .map((d, i) => (
+        <div
+          key={i}
+          onClick={() => {
+            handleRowChangee(index, "dosage", d);
+            toggleSuggestion(index, "showDosage", false);
+          }}
+          style={{
+            position: "relative",
+            top: "100%",
+            left: 0,
+            right: 0,
+            backgroundColor: "#fff",
+            zIndex: 2000,
+            width: "150px",
+            border: "1px solid #ccc",
+            borderTop: "none",
+            borderRadius: "0 0 6px 6px",
+            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+            maxHeight: "50px",
+            overflowY: "auto",
+            marginTop: "-1px",
+            padding: "5px 10px",
+            cursor: "pointer",
+          }}
+        >
+          {d}
+        </div>
+      ))}
+
+  {rowErrors[index]?.dosage && (
+    <div className="text-danger">{rowErrors[index].dosage}</div>
+  )}
+</CTableDataCell>
 
 
 
 
-                <CTableDataCell>
-                  <CFormSelect
-                    value={row.strength}
-                    onChange={(e) => handleRowChangee(index, 'strength', e.target.value)}
-                    disabled={!row.description}
-                  >
-                    <option value="">Select Strength</option>
-                    {Array.isArray(row.drugDetails) &&
-                      row.drugDetails
-                        .filter((drugs) => drugs.drug_id === parseInt(row.description, 10))
-                        .map((drugdetails) => (
-                          <option key={drugdetails.id} value={drugdetails.strength}>
-                            {drugdetails.strength}
-                          </option>
-                        ))}
-                  </CFormSelect>
-                  {rowErrors[index]?.strength && <div className="text-danger">{rowErrors[index].strength}</div>}
-                </CTableDataCell>
 
-                <CTableDataCell>
-                  <CFormSelect onChange={(e) => handleRowChangee(index, 'dosage', e.target.value)}>
-                    <option value="">Select</option>
-                    <option value="1-0-1">1-0-1</option>
-                    <option value="0-1-0">0-1-0</option>
-                    <option value="1-1-1">1-1-1</option>
-                  </CFormSelect>
-                  {rowErrors[index]?.dosage && <div className="text-danger">{rowErrors[index].dosage}</div>}
-                </CTableDataCell>
+
 
                 <CTableDataCell>
                   <CFormSelect onChange={(e) => handleRowChangee(index, 'timing', e.target.value)}>
@@ -1144,10 +1245,10 @@ const [selectedOption, setSelectedOption] = useState('');
                 <CTableDataCell>
                   <div className="d-flex">
                     <CButton color="danger" className="me-2" onClick={() => handleRemoveRoww(index)} disabled={index === 0}>
-                      Remove
+                      -
                     </CButton>
                     <CButton color="success" onClick={handleAddRoww}>
-                      Add Row
+                      +
                     </CButton>
                   </div>
                 </CTableDataCell>
@@ -1159,6 +1260,8 @@ const [selectedOption, setSelectedOption] = useState('');
     </CCardBody>
   )}
 </div>
+
+
 
 
 
@@ -1192,8 +1295,46 @@ const [selectedOption, setSelectedOption] = useState('');
                         <option value="OPD">OPD</option>
                       </CFormSelect>
                     </CTableDataCell>
-
                     <CTableDataCell>
+  <CFormInput
+    type="text"
+    value={row.quantity}
+    onChange={(e) =>
+      handleRowChange(index, 'quantity', Math.max(0, Number(e.target.value)))
+    }
+    onFocus={() => handleRowChange(index, 'quantity', '')}
+  />
+  {rowErrors[index]?.quantity && (
+    <div style={{ color: 'red' }}>{rowErrors[index]?.quantity}</div>
+  )}
+</CTableDataCell>
+
+<CTableDataCell>
+  <CFormInput
+    type="number"
+    value={row.price}
+    onChange={(e) =>
+      handleRowChange(index, 'price', Number(e.target.value))
+    }
+    onFocus={() => handleRowChange(index, 'price', '')}
+  />
+  {rowErrors[index]?.price && (
+    <div style={{ color: 'red' }}>{rowErrors[index]?.price}</div>
+  )}
+</CTableDataCell>
+
+<CTableDataCell>
+  <CFormInput
+    type="text"
+    value={row.gst}
+    onChange={(e) =>
+      handleRowChange(index, 'gst', Number(e.target.value))
+    }
+    onFocus={() => handleRowChange(index, 'gst', '')}
+  />
+</CTableDataCell>
+
+                    {/* <CTableDataCell>
                       <CFormInput
                         type="text"
                         value={row.quantity}
@@ -1219,7 +1360,7 @@ const [selectedOption, setSelectedOption] = useState('');
                         value={row.gst}
                         onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
                       />
-                    </CTableDataCell>
+                    </CTableDataCell> */}
 
                     <CTableDataCell>{row.total.toFixed(2)}</CTableDataCell>
 
@@ -1232,14 +1373,14 @@ const [selectedOption, setSelectedOption] = useState('');
                           disabled={index === 0}
 
                         >
-                          Remove
+                          -
                         </CButton>
 
                         <CButton
                           color="success"
                           onClick={handleAddRow}
                         >
-                          Add Row
+                          +
                         </CButton>
                       </div>
                     </CTableDataCell>
