@@ -93,18 +93,31 @@ const today = new Date().toISOString().split('T')[0];
 
 
   const handleAddRow = () => {
+    const usedDescriptions = rows.map((row) => row.description);
+    const allDescriptions = ['Consulting', 'Medicine', 'OPD'];
+  
+
+    const nextDescription = allDescriptions.find(
+      (desc) => !usedDescriptions.includes(desc)
+    );
+  
+  
+    if (!nextDescription) return;
+  
     setRows((prevRows) => [
       ...prevRows,
-      { description: 'Consulting', quantity: 0, price: 0, gst: 0, total: 0 }
+      { description: nextDescription, quantity: 0, price: 0, gst: 0, total: 0 }
     ]);
   };
+  
+  
 
 
 
 
   const [grandTotal, setGrandTotal] = useState(0); // State for grand total
 
-  // Function to calculate the grand total
+ 
   const calculateGrandTotal = () => {
     const total = rows.reduce((acc, row) => acc + parseFloat(row.total || 0), 0);
     setGrandTotal(total.toFixed(2));
@@ -1130,71 +1143,29 @@ const [selectedOption, setSelectedOption] = useState('');
   )}
 </CTableDataCell>
 
-<CTableDataCell style={{ position: "relative" }}>
+<CTableDataCell>
   <CFormInput
     value={row.dosage}
     onChange={(e) => {
-      handleRowChangee(index, "dosage", e.target.value);
-      toggleSuggestion(index, "showDosage", true);
-    }}
-    onFocus={() => {
-      if (row.dosage.trim() !== "") {
-        toggleSuggestion(index, "showDosage", true);
+      const rawInput = e.target.value.replace(/-/g, '').trim(); // remove hyphens
+      const validInput = rawInput.replace(/[^01]/g, ''); // allow only 0 or 1
+      const trimmed = validInput.slice(0, 3); // only first 3 digits
+
+      let formatted = trimmed;
+      if (trimmed.length === 3) {
+        formatted = `${trimmed[0]}-${trimmed[1]}-${trimmed[2]}`;
       }
+
+      handleRowChangee(index, 'dosage', formatted);
     }}
-    placeholder="Enter dosage"
+    placeholder="Enter dosage (e.g. 1-0-1)"
     autoComplete="off"
+    maxLength={5} // 3 digits + 2 hyphens
   />
-
-  {suggestionFlags[index]?.showDosage &&
-    row.dosage.trim() !== "" &&
-    ["1-0-1", "0-1-0", "1-1-1", "1-0-0", "0-0-1", "0-1-1", "1-1-0"]
-      .filter((d) => {
-        const cleanedInput = row.dosage.replace(/-/g, "").toLowerCase();
-        const cleanedOption = d.replace(/-/g, "").toLowerCase();
-        return cleanedOption.includes(cleanedInput);
-      })
-      .slice(0, 5)
-      .map((d, i) => (
-        <div
-          key={i}
-          onClick={() => {
-            handleRowChangee(index, "dosage", d);
-            toggleSuggestion(index, "showDosage", false);
-          }}
-          style={{
-            position: "relative",
-            top: "100%",
-            left: 0,
-            right: 0,
-            backgroundColor: "#fff",
-            zIndex: 2000,
-            width: "150px",
-            border: "1px solid #ccc",
-            borderTop: "none",
-            borderRadius: "0 0 6px 6px",
-            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-            maxHeight: "50px",
-            overflowY: "auto",
-            marginTop: "-1px",
-            padding: "5px 10px",
-            cursor: "pointer",
-          }}
-        >
-          {d}
-        </div>
-      ))}
-
   {rowErrors[index]?.dosage && (
     <div className="text-danger">{rowErrors[index].dosage}</div>
   )}
 </CTableDataCell>
-
-
-
-
-
-
 
                 <CTableDataCell>
                   <CFormSelect onChange={(e) => handleRowChangee(index, 'timing', e.target.value)}>

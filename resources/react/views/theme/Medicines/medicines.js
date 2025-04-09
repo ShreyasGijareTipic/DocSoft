@@ -11,6 +11,7 @@ import {
 } from '@coreui/react';
 import { post, postFormData } from '../../../util/api'; // Replace with your actual API utility
 
+
 const DrugForm = () => {
   const [drugData, setDrugData] = useState({
     drug_name: '',
@@ -18,6 +19,7 @@ const DrugForm = () => {
     category: '',
     manufacturer: '',
   });
+  const SampleMedicineTemplate = "/SampleMedicineTemplate/SampleMedicineTemplate.csv";
 
   const [errors, setErrors] = useState({});
   const [rowErrors, setRowErrors] = useState({});
@@ -235,7 +237,7 @@ const handleUpload = async () => {
 
 return (
   <>
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '10px' }}>
 
 <CRow>
   <CCol xs={12} sm={6} lg={4} className="">
@@ -269,10 +271,39 @@ return (
 </CRow>
 </div>
 
+{/* <CButton color="info" variant="outline" onClick={() => {
+  const link = document.createElement("a");
+  link.href = SampleMedicineTemplate;
+  link.download = "SampleMedicineTemplate.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}}>
+  📥 Download Template
+</CButton> */}
 
-      
-   
-  
+<CRow className="mb-3 align-items-center"  >
+  <CCol xs="auto" className="d-flex align-items-center">
+    <strong className="me-1" style={{ marginLeft: '10px' }}>Sample CSV template for Medicines</strong>
+    <CButton
+      color="success"
+      variant="outline"
+      title="Download Sample Template"
+      style={{ padding: '6px 10px' }}
+      onClick={() => {
+        const link = document.createElement("a");
+  link.href = SampleMedicineTemplate;
+  link.download = "SampleMedicineTemplate.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+      }}
+    >
+      📥
+    </CButton>
+  </CCol>
+</CRow>
+
 
 
 
