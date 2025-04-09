@@ -278,44 +278,41 @@ const inv = () => {
           <hr />
   
           {/* Patient Examination */}
-          <div className="row mt-3">
-            <div className="col-12">
-            {PatientExaminations.length > 0 ? (
-  <>
-    <h6 className="fw-bold">Medical Observation:</h6>
-    <div className="table-responsive">
-      <table className="table table-bordered text-center table-responsive-md">
-        <tbody>
-          <tr>
-            <td><strong>BP</strong></td>
-            <td>{PatientExaminations[0]?.bp || "N/A"}</td>
-            <td><strong>Pulse</strong></td>
-            <td>{PatientExaminations[0]?.pulse || "N/A"}</td>
-          </tr>
-          <tr>
-            <td><strong>Past History</strong></td>
-            <td>{PatientExaminations[0]?.past_history || "N/A"}</td>
-            <td><strong>Complaints</strong></td>
-            <td>{PatientExaminations[0]?.complaints || "N/A"}</td>
-          </tr>
-
-          <tr>
-                        <td><strong>Systemic Examination</strong></td>
-                        <td>{PatientExaminations[0].systemic_exam_general || "N/A"}</td>
-                        <td><strong>Diagnosis</strong></td>
-                        <td>{PatientExaminations[0].systemic_exam_pa || "N/A"}</td>
-                      </tr>
-        </tbody>
-      </table>
+{PatientExaminations.length > 0 && (
+  <div className="row mt-3">
+    <div className="col-12">
+      <h6 className="fw-bold">Medical Observation:</h6>
+      <div className="table-responsive">
+        <table className="table table-bordered text-center table-responsive-md">
+          <tbody>
+            <tr>
+              <td><strong>BP</strong></td>
+              <td>{PatientExaminations[0]?.bp || "N/A"}</td>
+              <td><strong>Pulse</strong></td>
+              <td>{PatientExaminations[0]?.pulse || "N/A"}</td>
+            </tr>
+            <tr>
+              <td><strong>Past History</strong></td>
+              <td>{PatientExaminations[0]?.past_history || "N/A"}</td>
+              <td><strong>Complaints</strong></td>
+              <td>{PatientExaminations[0]?.complaints || "N/A"}</td>
+            </tr>
+            <tr>
+              <td><strong>Systemic Examination</strong></td>
+              <td>{PatientExaminations[0]?.systemic_exam_general || "N/A"}</td>
+              <td><strong>Diagnosis</strong></td>
+              <td>{PatientExaminations[0]?.systemic_exam_pa || "N/A"}</td>
+            </tr>
+          </tbody>
+        </table>
+        <hr />
+      </div>
     </div>
-  </>
-) : (
-  <p className="text-center">No patient examination data available</p>
+  </div>
+  
 )}
 
-            </div>
-          </div>
-          <hr />
+
   
           {/* Prescription Section */}
           <div className="row">
