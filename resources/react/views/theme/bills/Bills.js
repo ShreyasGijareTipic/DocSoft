@@ -1208,7 +1208,6 @@ const [selectedOption, setSelectedOption] = useState('');
                       <option value="7 Days">7 Days</option>
                       <option value="15 Days">15 Days</option>
                       <option value="30 Days">30 Days</option>
-                      <option value="SOS">Custom</option>
                     </CFormSelect>
                   )}
                 </CTableDataCell>

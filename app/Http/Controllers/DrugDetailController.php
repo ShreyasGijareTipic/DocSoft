@@ -222,11 +222,4 @@ class DrugDetailController extends Controller
         
         return response()->json($drugDetail, 200);
     }
-
-
-
-
-
-
-
 }

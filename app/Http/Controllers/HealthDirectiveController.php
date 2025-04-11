@@ -27,13 +27,13 @@ class HealthDirectiveController extends Controller
 
     // Validate the incoming request data
     $validatedData = $request->validate([
-        'p_p_i_id' => 'required|exists:Bills,id',
-        'medicine' => 'required|string',
-        'strength' => 'required|string',
-        'dosage' => 'required|string',
-        'timing' => 'required|string',
-        'frequency' => 'required|string',
-        'duration' => 'required|string',
+        'p_p_i_id' => 'exists:Bills,id',
+        'medicine' => 'nullable|string',
+        'strength' => 'nullable|string',
+        'dosage' => 'nullable|string',
+        'timing' => 'nullable|string',
+        'frequency' => 'nullable|string',
+        'duration' => 'nullable|string',
     ]);
 
     \Log::info('Validated Data:', $validatedData); // Log validated data
