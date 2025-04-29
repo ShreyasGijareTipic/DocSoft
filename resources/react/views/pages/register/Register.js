@@ -13,6 +13,7 @@ const Register = () => {
     registration_number: '',
     speciality: '',
     education: '',
+    consulting_fee: '',
     mobile: '',
     address: '',
     email: '',
@@ -57,6 +58,11 @@ const Register = () => {
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Enter a valid email address.';
     }
+
+    if (formData.consulting_fee && !/^\d+(\.\d{1,2})?$/.test(formData.consulting_fee)) {
+      newErrors.consulting_fee = 'Enter a valid number (up to 2 decimal places).';
+    }
+    
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -128,6 +134,15 @@ const Register = () => {
                   onChange={handleChange}
                 />
                 {errors.education && <div className="text-danger">{errors.education}</div>}
+
+                <CFormInput
+                  className="mb-3"
+                  placeholder="Consulting Fee"
+                  name="consulting_fee"
+                  onChange={handleChange}
+                />
+                {errors.consulting_fee && <div className="text-danger">{errors.consulting_fee}</div>}
+
 
                 <CFormInput
                   className="mb-3"

@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import AppBreadcrumb from './components/AppBreadcrumb'
+import ToastContainer from './views/theme/toastContainer/toastContainer'
 // import EditWhatsappClinicRegister from './views/pages/register/EditwhatsappClinicRegister'
 
 // Containers
@@ -19,6 +20,7 @@ const ClinicRegister = React.lazy(() => import('./views/pages/register/ClinicReg
 const WhatsappClinicRegister = React.lazy(() => import('./views/pages/register/WhatsappClinicRegister'))
 const EditWhatsappClinicRegister = React.lazy(() => import('./views/pages/register/EditwhatsappClinicRegister'))
 
+// const ToastContainer = React.lazy(() => import('./views/theme/toastContainer/toastContainer'))
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -67,9 +69,10 @@ const App = () => {
           {/* Fallback to Default Layout */}
           <Route path="*" name="Home" element={<DefaultLayout />} />
 
-     
+            
         
         </Routes>
+        <ToastContainer/>
       </Suspense>
     </HashRouter>
   )

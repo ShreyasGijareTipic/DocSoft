@@ -97,14 +97,14 @@ class DrugDetailController extends Controller
             $validatedData = $request->validate([
                 'drugs_details' => 'required|array',
                 'drugs_details.*.drug_id' => 'required|exists:drugs,id', // Ensure that the drug_id exists in the drugs table
-                'drugs_details.*.dosage_form' => 'required|string',
+                // 'drugs_details.*.dosage_form' => 'nullable|string',
                 'drugs_details.*.strength' => 'required|string',
-                'drugs_details.*.price' => 'required|numeric', // Ensure price is numeric
-                'drugs_details.*.stock_quantity' => 'required|integer', // Ensure stock_quantity is an integer
-                'drugs_details.*.expiration_date' => 'required|date', // Ensure expiration_date is a valid date
-                'drugs_details.*.side_effects' => 'required|string',
-                'drugs_details.*.usage_instructions' => 'required|string',
-                'drugs_details.*.storage_conditions' => 'required|string',
+                'drugs_details.*.price' => 'nullable|numeric' ?? 0, // Ensure price is numeric
+                'drugs_details.*.stock_quantity' => 'nullable|integer' ?? 0, // Ensure stock_quantity is an integer
+                'drugs_details.*.expiration_date' => 'nullable|date' ?? 00-00-0000, // Ensure expiration_date is a valid date
+                // 'drugs_details.*.side_effects' => 'nullable|string',
+                // 'drugs_details.*.usage_instructions' => 'nullable|string',
+                // 'drugs_details.*.storage_conditions' => 'nullable|string',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Log the validation errors for debugging
@@ -118,14 +118,14 @@ class DrugDetailController extends Controller
             // Create the drug detail record
             $drugDetails[] = DrugDetail::create([
                 'drug_id' => $desc['drug_id'],
-                'dosage_form' => $desc['dosage_form'],
+                // 'dosage_form' => $desc['dosage_form'],
                 'strength' => $desc['strength'],
                 'price' => $desc['price'],
                 'stock_quantity' => $desc['stock_quantity'],
                 'expiration_date' => $desc['expiration_date'],
-                'side_effects' => $desc['side_effects'],
-                'usage_instructions' => $desc['usage_instructions'],
-                'storage_conditions' => $desc['storage_conditions'],
+                // 'side_effects' => $desc['side_effects'],
+                // 'usage_instructions' => $desc['usage_instructions'],
+                // 'storage_conditions' => $desc['storage_conditions'],
             ]);
         }
     

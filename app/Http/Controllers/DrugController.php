@@ -29,9 +29,9 @@ public function store(Request $request)
             'doctor_id' => 'string',
 
            'drug_name' => 'required|string|max:255',
-            'generic_name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'manufacturer' => 'required|string|max:255',
+            'generic_name' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'manufacturer' => 'nullable|string|max:255',
         ]);
 
         $doctorId = Auth::id();
@@ -123,9 +123,9 @@ public function store(Request $request)
         }
 
         $validated = $request->validate([
-            'doctor_id' => 'required|exists:users,id',
+            // 'doctor_id' => 'required|exists:users,id',
             'drug_name' => 'required|string|max:255',
-            'generic_name' => 'required|string|max:255',
+            // 'generic_name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
             'manufacturer' => 'required|string|max:255',
         ]);

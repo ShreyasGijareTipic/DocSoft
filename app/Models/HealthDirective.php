@@ -12,7 +12,8 @@ class HealthDirective extends Model
     protected $table = 'health_directives'; // Explicitly define the table name (optional if following convention)
 
     protected $fillable = [
-        'p_p_i_id', 
+        'p_p_i_id',
+        'patient_id', 
         'medicine', 
         'strength',
         'dosage', 

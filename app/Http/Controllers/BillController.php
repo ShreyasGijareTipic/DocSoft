@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Bill;
 use App\Models\Description;
+use App\Models\PatientExamination;
+use App\Models\HealthDirective;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\User;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +20,7 @@ class BillController extends Controller
         // Validate the request
         $request->validate([
             'doctor_id' => 'string',
+            'patient_id' => 'nullable|exists:patients,id', // <- NEW
             'patient_name' => 'required|string',
             'address' => 'required|string',
             'email' => 'nullable|email', // Make email optional
@@ -30,10 +33,12 @@ class BillController extends Controller
         ]);
     
         $doctorId = Auth::id();
+       
     
         // Create a new Bill record
         $bill = Bill::create([
             'doctor_id' => $doctorId,
+            'patient_id' => $request->patient_id, // <- NEW
             'patient_name' => $request->patient_name,
             'patient_address' => $request->address,
             'patient_email' => $request->email ?? null, // Set to null if not provided
@@ -58,6 +63,80 @@ class BillController extends Controller
             'message' => 'Bill and descriptions created successfully',
         ], 201);
     }
+
+//     public function store(Request $request)
+// {
+//     // Validate the request
+//     $request->validate([
+//         'doctor_id' => 'string',
+//         'patient_id' => 'nullable|exists:patients,id', // Optional but validated if present
+//         'name' => 'required|string',  //patient_name
+//         'address' => 'required|string',
+//         'email' => 'nullable|email',
+//         'phone' => 'required|string|max:12',  //contact
+//         'dob' => 'nullable|date',
+//         'doctor_name' => 'string',
+//         'registration_number' => 'string',
+//         'visit_date' => 'nullable|date',
+//         'grand_total' => 'string',
+//     ]);
+
+    
+//     $doctorId = Auth::id();
+//     $clinicId = Auth::user()->clinic_id;
+//     $patientId = $request->patient_id;
+
+//     // If no patient_id provided, create a new patient
+//     if (!$patientId) {
+//         $newPatient = \App\Models\Patient::create([
+//             'clinic_id'=>$clinicId,
+//             'doctor_id' => $doctorId,
+//             'name' => $request->patient_name,
+//             'phone' => $request->contact,
+//             'email' => $request->email,
+//             'address' => $request->address,
+//             'dob' => $request->dob,
+//         ]);
+
+//         $patientId = $newPatient->id;
+//     }
+
+//     // Now create the bill with the patient_id
+//     $bill = \App\Models\Bill::create([
+//         'doctor_id' => $doctorId,
+//         'patient_id' => $patientId,
+//         'patient_name' => $request->patient_name,
+//         'patient_address' => $request->address,
+//         'patient_email' => $request->email ?? null,
+//         'patient_contact' => $request->contact,
+//         'patient_dob' => $request->dob,
+//         'doctor_name' => $request->doctor_name,
+//         'registration_number' => $request->registration_number,
+//         'visit_date' => $request->visit_date,
+//         'grand_total' => $request->grand_total,
+//     ]);
+
+//     // Save descriptions (bill details)
+//     if ($request->has('descriptions') && is_array($request->descriptions)) {
+//         foreach ($request->descriptions as $descriptionData) {
+//             $descriptionData['bill_id'] = $bill->id;
+//             \App\Models\Description::create($descriptionData);
+//         }
+//     }
+
+//     return response()->json([
+//         'id' => (string)$bill->id,
+//         'message' => 'Bill and patient created successfully',
+//     ], 201);
+// }
+
+
+
+
+
+
+
+    
 
     public function index($id)
     {
@@ -185,6 +264,78 @@ public function getBillsByDoctorId()
 
     return response()->json($bills); // Return bills as JSON
 }
+
+
+
+
+public function showPreviousFunction($billId)
+{
+    $doctorId = Auth::user()->id;
+
+    // Verify the bill belongs to the logged-in doctor
+    $bill = Bill::where('id', $billId)
+                ->where('doctor_id', $doctorId)
+                ->first();
+
+    if (!$bill) {
+        return response()->json(['message' => 'Bill not found or unauthorized'], 404);
+    }
+
+    // Fetch related data for this specific bill ID
+    $descriptions = Description::where('bill_id', $billId)->get();
+    $PatientExamination = PatientExamination::where('p_p_i_id', $billId)->get();
+    $HealthDirective = HealthDirective::where('p_p_i_id', $billId)->get();
+
+    return response()->json([
+        'bill' => $bill,
+        'descriptions' => $descriptions,
+        'patient_examinations' => $PatientExamination,
+        'health_directives' => $HealthDirective,
+    ]);
+}
+
+// public function showPreviousFunction($billId)
+// {
+//     // Get the current doctor's ID
+//     $doctorId = Auth::user()->id;
+
+//     // Find the selected bill
+//     $bill = Bill::find($billId);
+
+//     // If bill doesn't exist or doctor is not authorized
+//     if (!$bill || $bill->doctor_id !== $doctorId) {
+//         return response()->json(['message' => 'Bill not found or unauthorized'], 404);
+//     }
+
+//     // Get the patient_id from that bill
+//     $patientId = $bill->patient_id;
+
+//     // 🔥 Get all bills of the same patient (across all doctors if needed)
+//     $patientBillIds = Bill::where('patient_id', $patientId)->pluck('id');
+
+//     // ✅ Get ALL records for this patient_id — regardless of bill
+//     // $healthDirectives = HealthDirective::where('patient_id', $patientBillIds)->get();
+//     $patientExaminations = PatientExamination::where('patient_id', $patientId)->get();
+
+//     // Still get the description by all bill ids
+//     $descriptions = Description::whereIn('bill_id', $patientBillIds)->get();
+
+//     return response()->json([
+//         'current_bill_id' => $billId,
+//         'patient_id' => $patientId,
+//         'related_bill_ids' => $patientBillIds,
+//         'health_directives' => $healthDirectives,
+//         'patient_examinations' => $patientExaminations,
+//         'descriptions' => $descriptions,
+//     ]);
+// }
+
+
+
+
+
+
+
 
 
 

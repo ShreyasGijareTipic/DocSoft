@@ -69,6 +69,7 @@ class AuthController extends Controller
                 'registration_number' => 'required|string|max:255',
                 'speciality' => 'required|string|max:255',
                 'education' => 'required|string|max:255',
+                'consulting_fee' => 'required|string|max:255',
                 'password' => 'required|string|min:8|confirmed', // Ensure password confirmation
                 'profilepic' => 'nullable|string', // Nullable string for profile picture URL or file path
                 'blocked' => 'boolean', // Boolean field
@@ -112,6 +113,7 @@ class AuthController extends Controller
                 'registration_number' => $request->registration_number,
                 'speciality' => $request->speciality,
                 'education' => $request->education,
+                'consulting_fee' => $request->consulting_fee,
                 'password' => Hash::make($request->password), // Hashing the password
                 'profilepic' => $request->profilepic,
                 'blocked' => $request->blocked ?? false,
@@ -290,6 +292,7 @@ public function login(Request $request)
             'education' => $user->education,
             'type' => $user->type,
             'registration_number' => $user->registration_number,
+            'consulting_fee' => $user->consulting_fee
         ],
         'token' => $token
     ];
@@ -428,12 +431,47 @@ public function login(Request $request)
     }
 
 
-    public function update(Request $request)
-    {
-        $obj = User::find($request->id);
-        $obj->update($request->all());
-        return $obj;
-    }
+    // public function update(Request $request)
+    // {
+    //     $obj = User::find($request->id);
+    //     $obj->update($request->all());
+    //     return $obj;
+    // }
+   
+
+public function update(Request $request)
+{
+    $request->validate([
+        // 'id' => 'required|exists:users,id',
+        'name' => 'required|string|max:255',
+        'email' => 'required|email',
+        'mobile' => 'required|string|digits:10',
+        'address' => 'nullable|string',
+        'registration_number' => 'nullable|string',
+        'speciality' => 'nullable|string',
+        'education' => 'nullable|string',
+    ]);
+
+    $user = User::find($request->id);
+
+    // ✅ Update only allowed fields
+    $user->update([
+        'name' => $request->name,
+        'email' => $request->email,
+        'mobile' => $request->mobile,
+        'address' => $request->address,
+        'registration_number' => $request->registration_number,
+        'speciality' => $request->speciality,
+        'education' => $request->education,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'User updated successfully.',
+        'user' => $user
+    ]);
+}
+
     
 
     function registerUser(Request $request){

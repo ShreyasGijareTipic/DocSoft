@@ -6,8 +6,10 @@ import { useParams, useLocation } from 'react-router-dom';
 
 const inv = () => {
   const location = useLocation();
-  const { billId } = location.state || {};
+  const { billId , billIds} = location.state || {};
   const param = useParams();
+  console.log(billIds);
+  
 
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [totalAmountWords, setTotalAmountWords] = useState('');
@@ -41,7 +43,7 @@ const inv = () => {
 
   const fetchProduct = async () => {
     try {
-      const response = await getAPICall(`/api/bill/${billId}`);
+      const response = await getAPICall(`/api/bill/${billId ?? billIds}`);
       setFormData(response);
       const finalAmount = Math.round(response.finalAmount);
       const remaining = finalAmount - response.paidAmount;
@@ -67,7 +69,7 @@ const inv = () => {
 
   const fetchDescriptions = async () => {
     try {
-      const response = await getAPICall(`/api/descriptions/${billId}`);
+      const response = await getAPICall(`/api/descriptions/${billId ?? billIds}`);
       setDescriptions(response);
     } catch (error) {
       console.error('Error fetching description data:', error);
@@ -80,7 +82,7 @@ const inv = () => {
 
   const fetchHealthDirectives = async () => {
     try {
-        const response = await getAPICall(`/api/healthdirectivesData/${billId}`);
+        const response = await getAPICall(`/api/healthdirectivesData/${billId ?? billIds}`);
         setHealthDirectives(Array.isArray(response) ? response : []); // ✅ Ensure it's an array
     } catch (error) {
         console.error("Error fetching prescription data:", error);
@@ -93,7 +95,7 @@ const inv = () => {
 
   const fetchPatientExaminations = async () => {
     try {
-      const response = await getAPICall(`/api/patientexaminationsData/${billId}`);
+      const response = await getAPICall(`/api/patientexaminationsData/${billId ?? billIds}`);
       setpatientexaminations(response);
     } catch (error) {
       console.error('Error fetching patientexaminationsData data:', error);
@@ -409,3 +411,4 @@ const inv = () => {
 };  
 
 export default inv;
+

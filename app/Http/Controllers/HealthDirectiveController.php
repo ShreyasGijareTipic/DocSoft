@@ -28,6 +28,7 @@ class HealthDirectiveController extends Controller
     // Validate the incoming request data
     $validatedData = $request->validate([
         'p_p_i_id' => 'exists:Bills,id',
+        'patient_id' => 'nullable|exists:patients,id', // <- NEW
         'medicine' => 'nullable|string',
         'strength' => 'nullable|string',
         'dosage' => 'nullable|string',

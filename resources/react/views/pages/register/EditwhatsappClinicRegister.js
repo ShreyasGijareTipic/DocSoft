@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getAPICall } from '../../../util/api';
+import { getAPICall, put } from '../../../util/api';
 import { Loader } from '@mantine/core';
 import { MantineReactTable } from 'mantine-react-table';
-import { CButton ,  CCard, CCardBody, CCardLink, CCardSubtitle, CCardText, CCardTitle, CCol, CImage, CRow } from '@coreui/react';
-import { Alert } from '@coreui/coreui';
+import { CButton ,  CCard, CCardBody, CCardLink, CCardSubtitle, CCardText, CCardTitle, CCol, CForm, CFormInput, CImage, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow } from '@coreui/react';
+import { Alert, Button } from '@coreui/coreui';
 
 function EditwhatsappClinicRegister() {
   const { id } = useParams(); // Get ID from URL
@@ -17,7 +17,21 @@ const navigate = useNavigate(); // Navigation hook
     const [error, setError] = useState(''); // State to handle errors
     const [userLoading,setUserLoading]=useState(false);
 
-    console.log("dhjshbdjsh",doctorData);
+    // console.log("dhjshbdjsh",doctorData);
+
+    const [visible, setVisible] = useState(false);
+const [editData, setEditData] = useState({
+  id: '',
+  name: '',
+  email: '',
+  mobile: '',
+  address: '',
+  registration_number: '',
+  speciality: '',
+  education: '',
+  consulting_fee:''
+});
+
     
 
  const columns = useMemo(
@@ -28,10 +42,73 @@ const navigate = useNavigate(); // Navigation hook
       { accessorKey: 'email', header: 'Email ID' },
       { accessorKey: 'speciality', header: 'Speciality' },
       { accessorKey: 'education', header: 'Education' },
-      
+      { accessorKey: 'Consulting Fees', header: 'Education' },
+     {
+             header: 'Action',
+             accessorKey: 'action',
+             Cell: ({ row }) => (
+               <>
+                 
+                   <CButton className='bg-warning' 
+                   // onClick={() => setVisible(!visible)} 
+                   onClick={() => handleEdit(row.original)}
+                  >
+                     Edit
+                   </CButton>
+              
+               </>
+             ),
+           },
     ],
     []
   );
+
+  const handleEdit = (doctor) => {
+    console.log(doctor);
+    
+    setEditData({
+      id: doctor.id,
+      name: doctor.name || '',
+      email: doctor.email|| '',
+      mobile: doctor.mobile || '',
+      address: doctor.address || '',
+      registration_number: doctor.registration_number || '',
+      speciality:doctor.speciality || '',
+      education: doctor.education || '',
+      consulting_fee: doctor.consulting_fee || '',
+    
+    });
+    setVisible(true);
+  };
+  
+  
+
+  const handleUpdate = async () => {
+    
+
+ try {
+    const response = await put(`/api/appUsers/${editData.id}`, {
+      name: editData.name || '',
+      email: editData.email|| '',
+      mobile: editData.mobile || '',
+      address: editData.address || '',
+      registration_number: editData.registration_number || '',
+      speciality:editData.speciality || '',
+      education: editData.education || '',
+      consulting_fee: editData.consulting_fee || '',
+    });
+
+    console.log('Doctor updated:', response.data);
+    setVisible(false);
+    fetchPatients();
+    // Optionally refresh table or show success toast
+  } catch (error) {
+    console.error('Update failed:', error);
+    // Optionally show error toast
+  }
+
+  };
+  
 
 
   // Fetch data when the component mounts
@@ -164,6 +241,67 @@ const navigate = useNavigate(); // Navigation hook
 )
 }
 
+
+
+
+<CModal visible={visible} onClose={() => setVisible(false)}>
+  <CModalHeader>
+    <CModalTitle>Edit Doctor</CModalTitle>
+  </CModalHeader>
+  <CModalBody>
+    <CForm>
+      <CFormInput
+        label="Name"
+        value={editData.name}
+        onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+      />
+      <CFormInput
+        label="Email"
+        type="email"
+        value={editData.email}
+        onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+      />
+      <CFormInput
+        label="Mobile"
+        value={editData.mobile}
+        onChange={(e) => setEditData({ ...editData, mobile: e.target.value })}
+      />
+      <CFormInput
+        label="Address"
+        value={editData.address}
+        onChange={(e) => setEditData({ ...editData, address: e.target.value })}
+      />
+      <CFormInput
+        label="Registration Number"
+        value={editData.registration_number}
+        onChange={(e) => setEditData({ ...editData, registration_number: e.target.value })}
+      />
+      <CFormInput
+        label="Speciality"
+        value={editData.speciality}
+        onChange={(e) => setEditData({ ...editData, speciality: e.target.value })}
+      />
+      <CFormInput
+        label="Education"
+        value={editData.education}
+        onChange={(e) => setEditData({ ...editData, education: e.target.value })}
+      />
+        <CFormInput
+        label="Consulting Fee"
+        value={editData.consulting_fee}
+        onChange={(e) => setEditData({ ...editData, consulting_fee: e.target.value })}
+      />
+    </CForm>
+  </CModalBody>
+  <CModalFooter>
+    <CButton color="secondary" onClick={() => setVisible(false)}>
+      Cancel
+    </CButton>
+    <CButton color="primary" onClick={handleUpdate}>
+      Save Changes
+    </CButton>
+  </CModalFooter>
+</CModal>
 
 
 

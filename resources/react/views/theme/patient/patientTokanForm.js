@@ -13,7 +13,7 @@ import {
 import { getAPICall, post } from '../../../util/api';
 import { useNavigate } from 'react-router-dom';
 import { getUser } from '../../../util/session';
-
+import { showToast } from '../toastContainer/toastContainer'; 
 
 function PatientTokanForm() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,7 +72,8 @@ console.log("user",user.id);
     console.log("Searching with:", { phone: searchQuery, clinicId });
   
     if (!searchQuery || !clinicId) {
-      alert("Please enter a phone number and ensure clinic ID is available.");
+      // alert("Please enter a phone number and ensure clinic ID is available.");
+      showToast('Please enter a phone number and ensure clinic ID is available.', 'Validation Error', '#d9534f');
       return;
     }
   
@@ -130,85 +131,6 @@ console.log("patientData.patient",patientData.patient);
 
   const navigate = useNavigate();
 
-  // const handleAddPatient = async () => {
-  //   const formErrors = validateForm();
-  //   if (Object.keys(formErrors).length > 0) {
-  //     setErrors(formErrors);
-  //     return;
-  //   }
-  
-  //   const phoneExists = await checkIfPhoneExists(newPatient.phone);
-  //   if (phoneExists) {
-  //     setErrors({ ...formErrors, phone: 'This phone number is already associated with an existing patient.' });
-  //     return;
-  //   }
-  // let doctorId=null;
-  //   const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-  //   const clinicId = userData?.user?.clinic_id?.toString(); // Ensure clinic_id is a string
-  //   if(user.type=== 1){
-  //   doctorId =user?.id.toString() ;
-  //   }
-  //   if(user.type=== 0 ){
-  //     doctorId = newPatient.doctorId==="" ? newPatient.doctorId.toString() : null; // Ensure doctorId is a string
-  //   }
-     
-  
-  //   if (!clinicId) {
-  //     alert("Clinic ID is missing. Please log in again.");
-  //     return;
-  //   }
-  
-  //   // Log values before making API call
-  //   console.log("Clinic ID:", clinicId);
-  //   console.log("Doctor ID (Before Sending):", doctorId);
-  
-  //   // Assign clinicId and doctorId properly
-  //   const patientDataToSend = {
-  //     ...newPatient,
-  //     clinic_id: clinicId, 
-  //     doctor_id: doctorId, // Ensure field name matches Laravel API expectations
-  //   };
-  //   //  console.log("patientDataToSend",patientDataToSend);
-    
-  
-  //   console.log("Patient Data Being Sent:", patientDataToSend);
-  
-  //   try {
-  //     const response = await post('/api/patients', patientDataToSend);
-      
-  //     console.log("Response from API:", response);
-  
-  //     alert('Patient added successfully!');
-  //     setPatientData([response.patient]);
-  
-  //     setNewPatient({
-  //       name: '',
-  //       phone: '',
-  //       address: '',
-  //       email: '',
-  //       dob: '',
-  //       doctorId: '',
-  //       // date:'',
-  //       // slot:''
-  //     });
-  
-  //     setIsNotFound(false);
-  //     setIsExistingPatient(false);
-  //     setErrors({});
-  //      // Navigate to dashboard2 after success
-  //       navigate('/Dashboard2');
-  //   } catch (error) {
-  //     console.error('Error adding new patient:', error);
-  //     if (error.response?.data?.errors) {
-  //       setErrors(error.response.data.errors);
-  //     } else {
-  //       alert('Failed to add patient due to email. Please try again.');
-  //     }
-  //   }
-  // };
-  
-  // ____________________________________________________________________________________________ 
-
 
   const handleAddPatient = async () => {
     const formErrors = validateForm();
@@ -243,12 +165,14 @@ console.log("patientData.patient",patientData.patient);
     console.log("Selected Doctor ID from Dropdown:", newPatient.doctorId);
   
     if (!clinicId) {
-      alert("Clinic ID is missing. Please log in again.");
+      // alert("Clinic ID is missing. Please log in again.");
+      showToast('Clinic ID is missing. Please log in again.', 'Validation Error', '#d9534f');
       return;
     }
   
     if (!doctorId) {
-      alert("Please select a doctor from the dropdown.");
+      // alert("Please select a doctor from the dropdown.");
+      showToast('Please select a doctor from the dropdown.', 'Validation Error', '#d9534f');
       return;
     }
   
@@ -265,7 +189,9 @@ console.log("patientData.patient",patientData.patient);
       const response = await post('/api/patients', patientDataToSend);
       console.log("Response from API:", response);
   
-      alert('Patient added successfully!');
+      // alert('Patient added successfully!');
+      showToast('Patient added successfully!', 'Successfully Submittted', '#198754');
+      showToast('Tokan Crated', 'Successfully Submittted', '#198754');
       setPatientData([response.patient]);
   
       // Reset form fields
@@ -290,7 +216,8 @@ console.log("patientData.patient",patientData.patient);
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
       } else {
-        alert('Failed to add patient. Please try again.');
+        // alert('Failed to add patient. Please try again.');
+        showToast('Failed to add patient. Please try again.', 'Validation Error', '#d9534f');
       }
     }
   };
@@ -310,7 +237,8 @@ console.log("patientData.patient",patientData.patient);
 
   const handleGenerateToken = async (patientId, clinicId, selectedSlot) => {
     if (!newPatient.doctorId) {
-      alert('Please select a doctor before generating the token.');
+      // alert('Please select a doctor before generating the token.');
+      showToast('lease select a doctor before generating the token.', 'Validation Error', '#d9534f');
       return;
     }
   
@@ -325,12 +253,14 @@ console.log("patientData.patient",patientData.patient);
         status: "pending",
       });
   
-      alert(`Token generated successfully! Token ID: ${response.tokan.tokan_number}`);
+      // alert(`Token generated successfully! Token ID: ${response.tokan.tokan_number}`);
+      showToast(`Token generated successfully! Token ID: ${response.tokan.tokan_number}`, 'Successfully Submittted', '#198754');
       navigate('/Dashboard2');
 
     } catch (error) {
       console.error('Error generating token:', error);
-      alert('Failed to generate token. Please try again.');
+      // alert('Failed to generate token. Please try again.');
+      showToast('Failed to generate token. Please try again.', 'Validation Error', '#d9534f');
     }
   };
 
@@ -350,16 +280,19 @@ console.log("patientData.patient",patientData.patient);
 
   return (
     <div>
-      <h1>Patient Token Form</h1>
-      {/* Search Bar */}
-      <CInputGroup className="mb-3">
+  <h3 className="mb-4">Patient Token Management</h3>
+
+  {/* 🔍 Search Bar */}
+  <CCard className="mb-4 shadow-sm">
+    <CCardBody>
+      <CInputGroup>
         <CFormInput
           type="text"
           placeholder="Search by Mobile Number"
-          value={searchQuery || ""} // Ensures it's always controlled
-          maxLength={10} // Restricts input length
+          value={searchQuery || ""}
+          maxLength={10}
           onChange={(e) => {
-            const onlyNumbers = e.target.value.replace(/\D/g, ""); // Removes non-numeric characters
+            const onlyNumbers = e.target.value.replace(/\D/g, "");
             setSearchQuery(onlyNumbers);
           }}
         />
@@ -367,96 +300,16 @@ console.log("patientData.patient",patientData.patient);
           Search
         </CButton>
       </CInputGroup>
+    </CCardBody>
+  </CCard>
 
-
-      {/* Display Patient Data */}
-      {/* {patientData.length > 0 && (
-        <div>
-          {patientData.map((patient) => (
-            <CCard className="mb-3" key={patient.id}>
-              <CCardHeader>
-                <h5>Patient Details</h5>
-              </CCardHeader>
-              <CCardBody>
-                <p>
-                  <strong>Name:</strong> {patient.name}
-                </p>
-                <p>
-                  <strong>Mobile:</strong> {patient.phone}
-                </p>
-                <p>
-                  <strong>Address:</strong> {patient.address}
-                </p>
-                <p>
-                  <strong>Email:</strong> {patient.email}
-                </p>
-                <p>
-                  <strong>DOB:</strong> {patient.dob}
-                </p> */}
-
-                {/* <CButton
-                  color="success"
-                  className="mt-2"
-                  onClick={() => handleGenerateToken(patient.id, patient.clinic_id)}
-                >
-                  Generate Token
-                </CButton> */}
-
-
-                {/* Display Doctor dropdown if patient is existing */}
-                {/* {isExistingPatient && (
-                  <CFormSelect
-                    value={newPatient.doctorId}
-                    onChange={(e) => setNewPatient({ ...newPatient, doctorId: e.target.value })}
-                  >
-                    <option value="">Select Doctor</option>
-
-
-                    {doctorList.map((doctor) => (
-                      <option key={doctor.id} value={doctor.id}>
-                        {doctor.name}
-                      </option>
-                    ))}
-                  </CFormSelect>
-                )}
-
-
-         {isExistingPatient && (
-  <CFormSelect
-    label="Slots"
-    value={newPatient.slot}
-    onChange={(e) => {
-      const selectedValue = e.target.value;
-      setNewPatient({ ...newPatient, slot: selectedValue });
-      setSelectedSlot(selectedValue);
-    }}
-  >
-    <option value="">Select Slot</option>
-    <option value="morning">Morning</option>
-    <option value="afternoon">Afternoon</option>
-    <option value="evening">Evening</option>
-  </CFormSelect>
-)}
-
-                <CButton color="primary" className="mt-2"  onClick={() => handleGenerateToken(patient.id, patient.clinic_id, selectedSlot )}>
-                  Submit
-                </CButton>
-              </CCardBody>
-            </CCard>
-          ))}
-        </div>
-      )} */}
-
-
-
-{/* __________________________________________________________________________________________________  */}
-
-{patientData.length > 0 && (
+  {/* 🧍 Existing Patient Info */}
+  {patientData.length > 0 && (
     <div>
       {patientData.map((patient) => (
-        <CCard className="mb-3" key={patient.id}>
-          <CCardHeader>
-            <h5>Patient Details</h5>
+        <CCard className="mb-4 shadow-sm" key={patient.id}>
+          <CCardHeader className="bg-primary text-white">
+            <strong>Patient Details</strong>
           </CCardHeader>
           <CCardBody>
             <p><strong>Name:</strong> {patient.name}</p>
@@ -465,11 +318,12 @@ console.log("patientData.patient",patientData.patient);
             <p><strong>Email:</strong> {patient.email}</p>
             <p><strong>DOB:</strong> {patient.dob}</p>
 
-            {/* Hide doctor selection for user.type === 1 */}
+            {/* Doctor Selection */}
             {user?.type === 1 ? (
               <input type="hidden" value={newPatient.doctorId} readOnly />
             ) : user?.type === 2 ? (
               <CFormSelect
+                className="mb-3"
                 value={newPatient.doctorId}
                 onChange={(e) =>
                   setNewPatient({ ...newPatient, doctorId: e.target.value })
@@ -487,9 +341,11 @@ console.log("patientData.patient",patientData.patient);
             {/* Slot Selection */}
             {isExistingPatient && (
               <CFormSelect
-                label="Slots"
+                className="mb-3"
                 value={newPatient.slot}
-                onChange={(e) => setNewPatient({ ...newPatient, slot: e.target.value })}
+                onChange={(e) =>
+                  setNewPatient({ ...newPatient, slot: e.target.value })
+                }
               >
                 <option value="">Select Slot</option>
                 <option value="morning">Morning</option>
@@ -498,11 +354,16 @@ console.log("patientData.patient",patientData.patient);
               </CFormSelect>
             )}
 
-            {/* Submit Button */}
-            <CButton 
-              color="primary" 
-              className="mt-2"  
-              onClick={() => handleGenerateToken(patient.id, patient.clinic_id, newPatient.slot)}
+            {/* Submit */}
+            <CButton
+              color="primary"
+              onClick={() =>
+                handleGenerateToken(
+                  patient.id,
+                  patient.clinic_id,
+                  newPatient.slot
+                )
+              }
             >
               Submit
             </CButton>
@@ -512,161 +373,123 @@ console.log("patientData.patient",patientData.patient);
     </div>
   )}
 
+  {/* ➕ Add New Patient */}
+  {isNotFound && (
+    <CCard className="shadow-sm">
+      <CCardHeader className="bg-success text-white">
+        <strong>Add New Patient</strong>
+      </CCardHeader>
+      <CCardBody>
+        <CFormInput
+          className="mb-3"
+          label="Patient Name"
+          value={newPatient.name}
+          onChange={(e) =>
+            setNewPatient({ ...newPatient, name: e.target.value })
+          }
+          placeholder="Enter patient name"
+        />
+        {errors.name && <div className="text-danger">{errors.name}</div>}
 
-{/* _________________________________________________________________________________________________________________________  */}
+        <CFormInput
+          className="mb-3"
+          label="Mobile Number"
+          type="text"
+          value={newPatient.phone}
+          onChange={(e) =>
+            setNewPatient({ ...newPatient, phone: e.target.value })
+          }
+          placeholder="Enter mobile number"
+          onInput={(e) => {
+            if (e.target.value.length > 10) {
+              e.target.value = e.target.value.slice(0, 10);
+            }
+          }}
+        />
+        {errors.phone && <div className="text-danger">{errors.phone}</div>}
 
+        <CFormInput
+          className="mb-3"
+          label="Address"
+          value={newPatient.address}
+          onChange={(e) =>
+            setNewPatient({ ...newPatient, address: e.target.value })
+          }
+          placeholder="Enter address"
+        />
+        {errors.address && <div className="text-danger">{errors.address}</div>}
 
+        <CFormInput
+          className="mb-3"
+          label="Email"
+          type="email"
+          value={newPatient.email}
+          onChange={(e) =>
+            setNewPatient({ ...newPatient, email: e.target.value })
+          }
+          placeholder="Enter email"
+        />
+        {errors.email && <div className="text-danger">{errors.email}</div>}
 
+        <CFormInput
+          className="mb-3"
+          label="Date of Birth"
+          type="date"
+          value={newPatient.dob}
+          max={new Date().toISOString().split("T")[0]}
+          onChange={(e) =>
+            setNewPatient({ ...newPatient, dob: e.target.value })
+          }
+        />
+        {errors.dob && <div className="text-danger">{errors.dob}</div>}
 
+        {/* Doctor */}
+        {user?.type === 2 ? (
+          <CFormSelect
+            className="mb-3"
+            label="Select Doctor"
+            value={newPatient.doctorId}
+            onChange={(e) =>
+              setNewPatient({ ...newPatient, doctorId: e.target.value })
+            }
+          >
+            <option value="">Select Doctor</option>
+            {doctorList.map((doctor) => (
+              <option key={doctor.id} value={doctor.id}>
+                {doctor.name}
+              </option>
+            ))}
+          </CFormSelect>
+        ) : (
+          user?.type === 1 && (
+            <input type="hidden" value={user.id} readOnly />
+          )
+        )}
+        {errors.doctorId && <div className="text-danger">{errors.doctorId}</div>}
 
+        {/* Slot Selection */}
+        <CFormSelect
+          className="mb-3"
+          label="Slot"
+          value={newPatient.slot}
+          onChange={(e) =>
+            setNewPatient({ ...newPatient, slot: e.target.value })
+          }
+        >
+          <option value="">Select Slot</option>
+          <option value="morning">Morning</option>
+          <option value="afternoon">Afternoon</option>
+          <option value="evening">Evening</option>
+        </CFormSelect>
 
+        <CButton color="success" onClick={handleAddPatient}>
+          Add Patient
+        </CButton>
+      </CCardBody>
+    </CCard>
+  )}
+</div>
 
-
-
-
-
-
-
-
-      {/* Add New Patient Form */}
-      {isNotFound && (
-        <CCard>
-          <CCardHeader>
-            <h5>Add New Patient</h5>
-          </CCardHeader>
-          <CCardBody>
-            <CFormInput
-              label="Patient Name"
-              className="mb-1" 
-              value={newPatient.name}
-              onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
-              placeholder="Enter patient name"
-            />
-            {errors.name && <div style={{ color: 'red' }}>{errors.name}</div>}
-
-            <CFormInput
-              label="Mobile Number"
-              type="text"
-              className="mb-1" 
-              value={newPatient.phone}
-              onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
-              placeholder="Enter mobile number"
-              onInput={(e) => {
-                if (e.target.value.length > 10) {
-                  e.target.value = e.target.value.slice(0, 10); // Limit to 10 digits
-                }
-              }}
-            />
-            {errors.phone && <div style={{ color: 'red' }}>{errors.phone}</div>}
-
-            <CFormInput
-              label="Address"
-              className="mb-1" 
-              value={newPatient.address}
-              onChange={(e) => setNewPatient({ ...newPatient, address: e.target.value })}
-              placeholder="Enter address"
-            />
-            {errors.address && <div style={{ color: 'red' }}>{errors.address}</div>}
-
-            <CFormInput
-              label="Email"
-              type="email"
-              className="mb-1" 
-              value={newPatient.email}
-              onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
-              placeholder="Enter email address"
-            />
-            {errors.email && <div style={{ color: 'red' }}>{errors.email}</div>}
-
-            <CFormInput
-              label="Date of Birth"
-              type="date"
-              className="mb-1" 
-              value={newPatient.dob}
-              max={new Date().toISOString().split("T")[0]} // Restrict future dates
-              onChange={(e) => setNewPatient({ ...newPatient, dob: e.target.value })}
-            />
-            {errors.dob && <div style={{ color: 'red' }}>{errors.dob}</div>}
-
-            {/* Do not display doctor dropdown for new patients */}
-            {/* {!isExistingPatient && (
-              <CFormSelect
-                label="Select Doctor"
-                value={newPatient.doctorId}
-                onChange={(e) => setNewPatient({ ...newPatient, doctorId: e.target.value })}
-              >
-               <option value="">Select Doctor</option>
-
-                {doctorList.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name}
-                  </option>
-                ))}
-              </CFormSelect>
-            )}
-            {errors.doctorId && <div style={{ color: 'red' }}>{errors.doctorId}</div>} */}
-
-{user?.type === 2 ? (
-  // Show doctor selection dropdown when userType is 2
-  <CFormSelect
-    label="Select Doctor"
-    value={newPatient.doctorId}
-    onChange={(e) => setNewPatient({ ...newPatient, doctorId: e.target.value })}
-  >
-    <option value="">Select Doctor</option>
-    {doctorList.map((doctor) => (
-      <option key={doctor.id} value={doctor.id}>
-        {doctor.name}
-      </option>
-    ))}
-  </CFormSelect>
-) : user?.type === 1 ? (
-  // Hide dropdown and set doctorId automatically for userType 1
-  <input  
-  type="hidden"  
-  value={user.id}
-  readOnly  
-/>  
-) : null}
-
-{/* Display error message if doctorId is missing */}
-{errors.doctorId && <div style={{ color: 'red' }}>{errors.doctorId}</div>}
-
-
-
-
-
-
-            {/* <CFormInput
-              label="Appointment Date"
-              type="date"
-              value={newPatient.date}
-              onChange={(e) => setNewPatient({ ...newPatient, dob: e.target.value })}
-            />
-            */}
-           <CFormSelect
-              label="Slots"
-              value={newPatient.slot}
-  onChange={(e) => setNewPatient({ ...newPatient, slot: e.target.value })}
-            >
-            <option value="">Select Slot</option>
-            <option value="morning">Morning</option>
-              <option value="afternoon">Afternoon</option>
-            <option value="evening">Evening</option>
-            </CFormSelect>
- 
-
-
-
-
-
-            <CButton color="success" className="mt-3" onClick={handleAddPatient}>
-              Add Patient
-            </CButton>
-          </CCardBody>
-        </CCard>
-      )}
-    </div>
   );
 }
 
@@ -910,3 +733,189 @@ export default PatientTokanForm;
 // }
 
 // export default PatientTokanForm;
+
+
+
+
+  // const handleAddPatient = async () => {
+  //   const formErrors = validateForm();
+  //   if (Object.keys(formErrors).length > 0) {
+  //     setErrors(formErrors);
+  //     return;
+  //   }
+  
+  //   const phoneExists = await checkIfPhoneExists(newPatient.phone);
+  //   if (phoneExists) {
+  //     setErrors({ ...formErrors, phone: 'This phone number is already associated with an existing patient.' });
+  //     return;
+  //   }
+  // let doctorId=null;
+  //   const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  //   const clinicId = userData?.user?.clinic_id?.toString(); // Ensure clinic_id is a string
+  //   if(user.type=== 1){
+  //   doctorId =user?.id.toString() ;
+  //   }
+  //   if(user.type=== 0 ){
+  //     doctorId = newPatient.doctorId==="" ? newPatient.doctorId.toString() : null; // Ensure doctorId is a string
+  //   }
+     
+  
+  //   if (!clinicId) {
+  //     alert("Clinic ID is missing. Please log in again.");
+  //     return;
+  //   }
+  
+  //   // Log values before making API call
+  //   console.log("Clinic ID:", clinicId);
+  //   console.log("Doctor ID (Before Sending):", doctorId);
+  
+  //   // Assign clinicId and doctorId properly
+  //   const patientDataToSend = {
+  //     ...newPatient,
+  //     clinic_id: clinicId, 
+  //     doctor_id: doctorId, // Ensure field name matches Laravel API expectations
+  //   };
+  //   //  console.log("patientDataToSend",patientDataToSend);
+    
+  
+  //   console.log("Patient Data Being Sent:", patientDataToSend);
+  
+  //   try {
+  //     const response = await post('/api/patients', patientDataToSend);
+      
+  //     console.log("Response from API:", response);
+  
+  //     alert('Patient added successfully!');
+  //     setPatientData([response.patient]);
+  
+  //     setNewPatient({
+  //       name: '',
+  //       phone: '',
+  //       address: '',
+  //       email: '',
+  //       dob: '',
+  //       doctorId: '',
+  //       // date:'',
+  //       // slot:''
+  //     });
+  
+  //     setIsNotFound(false);
+  //     setIsExistingPatient(false);
+  //     setErrors({});
+  //      // Navigate to dashboard2 after success
+  //       navigate('/Dashboard2');
+  //   } catch (error) {
+  //     console.error('Error adding new patient:', error);
+  //     if (error.response?.data?.errors) {
+  //       setErrors(error.response.data.errors);
+  //     } else {
+  //       alert('Failed to add patient due to email. Please try again.');
+  //     }
+  //   }
+  // };
+  
+  // ____________________________________________________________________________________________ 
+
+     {/* Do not display doctor dropdown for new patients */}
+            {/* {!isExistingPatient && (
+              <CFormSelect
+                label="Select Doctor"
+                value={newPatient.doctorId}
+                onChange={(e) => setNewPatient({ ...newPatient, doctorId: e.target.value })}
+              >
+               <option value="">Select Doctor</option>
+
+                {doctorList.map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.name}
+                  </option>
+                ))}
+              </CFormSelect>
+            )}
+            {errors.doctorId && <div style={{ color: 'red' }}>{errors.doctorId}</div>} */}
+
+
+
+            
+
+      {/* Display Patient Data */}
+      {/* {patientData.length > 0 && (
+        <div>
+          {patientData.map((patient) => (
+            <CCard className="mb-3" key={patient.id}>
+              <CCardHeader>
+                <h5>Patient Details</h5>
+              </CCardHeader>
+              <CCardBody>
+                <p>
+                  <strong>Name:</strong> {patient.name}
+                </p>
+                <p>
+                  <strong>Mobile:</strong> {patient.phone}
+                </p>
+                <p>
+                  <strong>Address:</strong> {patient.address}
+                </p>
+                <p>
+                  <strong>Email:</strong> {patient.email}
+                </p>
+                <p>
+                  <strong>DOB:</strong> {patient.dob}
+                </p> */}
+
+                {/* <CButton
+                  color="success"
+                  className="mt-2"
+                  onClick={() => handleGenerateToken(patient.id, patient.clinic_id)}
+                >
+                  Generate Token
+                </CButton> */}
+
+
+                {/* Display Doctor dropdown if patient is existing */}
+                {/* {isExistingPatient && (
+                  <CFormSelect
+                    value={newPatient.doctorId}
+                    onChange={(e) => setNewPatient({ ...newPatient, doctorId: e.target.value })}
+                  >
+                    <option value="">Select Doctor</option>
+
+
+                    {doctorList.map((doctor) => (
+                      <option key={doctor.id} value={doctor.id}>
+                        {doctor.name}
+                      </option>
+                    ))}
+                  </CFormSelect>
+                )}
+
+
+         {isExistingPatient && (
+  <CFormSelect
+    label="Slots"
+    value={newPatient.slot}
+    onChange={(e) => {
+      const selectedValue = e.target.value;
+      setNewPatient({ ...newPatient, slot: selectedValue });
+      setSelectedSlot(selectedValue);
+    }}
+  >
+    <option value="">Select Slot</option>
+    <option value="morning">Morning</option>
+    <option value="afternoon">Afternoon</option>
+    <option value="evening">Evening</option>
+  </CFormSelect>
+)}
+
+                <CButton color="primary" className="mt-2"  onClick={() => handleGenerateToken(patient.id, patient.clinic_id, selectedSlot )}>
+                  Submit
+                </CButton>
+              </CCardBody>
+            </CCard>
+          ))}
+        </div>
+      )} */}
+
+
+
+{/* __________________________________________________________________________________________________  */}

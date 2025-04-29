@@ -71,7 +71,8 @@ try{
 
   const response = await post('/api/clinic',formData);
   console.log("jdkjskjdhskj",response);
-  alert("Clinic Registered Successfully..!");
+  // alert("Clinic Registered Successfully..!");
+   showToast('Clinic Registered Successfully..!', 'Successfully Uploaded', '#198754');
   setFormData({
   clinic_name: '',
   logo: '',
@@ -82,7 +83,8 @@ try{
 
 }
 catch{
-    alert("not clinic registered")
+    // alert("not clinic registered")
+     showToast('not clinic registered', 'Validation Error', '#d9534f');
 }
  
   }

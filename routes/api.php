@@ -80,7 +80,8 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/changePassword', [AuthController::class, 'changePassword']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/registerUser', [AuthController::class, 'registerUser']);
-    Route::put('/appUsers', [AuthController::class, 'update']);
+    // Route::put('/appUsers', [AuthController::class, 'update']);
+    Route::put('/appUsers/{id}', [AuthController::class, 'update']);
     Route::get('/appUsers', [AuthController::class, 'allUsers']);
 
     Route::post('/sendBill', [WhatsAppController::class, 'sendBill']);
@@ -93,8 +94,9 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::get('/bill/{id} ', [BillController::class, 'index']);
     Route::get('/bills', [BillController::class, 'show']);
 
-    Route::get('/patients/search', [BillController::class, 'search']);
+    // Route::get('/patients/search', [BillController::class, 'search']); 
 
+    Route::get('/priviousBill/{id}', [BillController::class, 'showPreviousFunction']);
 
 // use App\Http\Controllers\PrescriptionPatientInfoController;
 
@@ -145,7 +147,11 @@ Route::get('/healthdirectivesData/{p_p_i_id}', [HealthDirectiveController::class
 Route::get('/patients', [PatientController::class, 'index']);
 Route::post('/patients', [PatientController::class, 'store']);
 Route::get('/patients/{patient}', [PatientController::class, 'show']);
-Route::put('/patients/{patient}', [PatientController::class, 'update']);
+Route::get('/loggedDrsPatient', [PatientController::class, 'patientDataShowLoggedDoctor']);
+
+// Route::put('/patients/{patient}', [PatientController::class, 'update']);
+Route::post('/manuallyAddPatient', [PatientController::class, 'manuallyAddPatient']);
+Route::put('/patients/{id}', [PatientController::class, 'update']);
 Route::delete('/patients/{patient}', [PatientController::class, 'destroy']);
 Route::get('/patients/search', [PatientController::class, 'search']);
 Route::get('/patients', [PatientController::class, 'searchPatientByMobile']);
@@ -155,7 +161,11 @@ Route::post('/checkPatient', [PatientController::class, 'checkPatient']);
 Route::get('/patients', [PatientController::class, 'getPatients']);
 Route::get('/todays-tokans', [TokanController::class, 'getTodaysTokans']);
 Route::post('/update-token-status', [TokanController::class, 'updateStatus']);
-
+Route::get('/patientDisplyed', [TokanController::class, 'displyed']);
+Route::post('/checkToken', [TokanController::class, 'checkToken']);   // new
+Route::get('/suggestionPatient', [PatientController::class, 'suggestionPatient']); // new
+// routes/api.php
+Route::get('/patient-details/{id}', [PatientController::class, 'getPatientDetails']);
 
 
 
@@ -186,8 +196,8 @@ Route::get('/bill-with-doctor/{id}', [BillController::class, 'getBillWithDoctor'
 Route::post('/uploadDrugs', [CsvUploadController::class, 'uploadDrugs']);
 
 Route::post('/TokanCreate', [TokanController::class, 'store']);
-Route::get('/TokanGet/{id}', [TokanController::class, 'show']);
-
+Route::get('/TokanGet/{id}', [TokanController::class, 'show']); 
+// Route::get('/suggestionPatient', [TokanController::class, 'suggestionPatient']);
 
 
 });

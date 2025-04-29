@@ -6,7 +6,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Patient;
 use App\Models\User;
+use App\Models\Bill;
 use App\Models\Tokan;
+use App\Models\HealthDirective;
+use App\Models\PatientExamination;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Log;
@@ -247,24 +250,31 @@ public function store(Request $request)
         // Validate the request data (including slot)
         $validatedData = $request->validate([
             'clinic_id' => 'string',
+            'doctor_id' => 'string',
             'name' => 'required|min:1',
             'email' => 'required|email',
             'phone' => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/'],
             'address' => 'required',
             'dob' => 'required|date',
             'doctor_id' => 'required|integer', // Allow integer doctor_id
-            'slot' => 'required|string|in:morning,afternoon,evening',
+            'slot' => 'required|string|in:morning,afternoon,evening' ?? 'morning',
         ]);
 
-        // Get the authenticated user's clinic_id
+        // Get the authenticated user's clinic_id   
         $clinicId = Auth::user()->clinic_id;
         $doctorId = $request->doctor_id;
+        // $doctorId = Auth::id();
         $slot = $request->slot;  // Capture the slot value
 
         // Debug: Check if slot is being received properly
         if (!$slot) {
             return response()->json(['error' => 'Slot field is missing'], 422);
         }
+
+        if (!$doctorId) {
+            return response()->json(['error' => 'doctor id field is missing'], 422);
+        }
+        
 
         // Ensure clinic_id is available
         if (!$clinicId) {
@@ -321,6 +331,42 @@ public function store(Request $request)
 }
 
 
+public function manuallyAddPatient(Request $request)
+{
+    // ✅ First, validate only the fields that come from the request
+    $validatedData = $request->validate([
+        'name'    => 'required|string|min:1',
+        'email'   => 'required|email',
+        'phone'   => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/'],
+        'address' => 'required|string',
+        'dob'     => 'required|date'
+    ]);
+
+    try {
+        // ✅ Append the authenticated doctor's clinic_id and doctor_id
+        $validatedData['clinic_id'] = Auth::user()->clinic_id ?? null;
+        $validatedData['doctor_id'] = Auth::id();
+
+        // ✅ Create the patient
+        $patient = Patient::create($validatedData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Patient added successfully',
+            'patient' => $patient
+        ], 201);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to add patient',
+            'details' => $e->getMessage()
+        ], 500);
+    }
+    
+   
+}
+
 
 
 
@@ -339,21 +385,42 @@ public function store(Request $request)
     // }
 
     // Update a patient
-    public function update(Request $request, Patient $patient)
-    {
-        $request->validate([
-            'name' => 'sometimes|required',
-            'email' => 'sometimes|required|email|unique:patients,email,' . $patient->id,
-            'phone' => 'sometimes|required',
-            'address' => 'sometimes|required',
-            'dob' => 'sometimes|required|date',
-            // 'gender' => 'sometimes|required'
-        ]);
+    // public function update(Request $request, Patient $patient)
+    // {
+    //     $request->validate([
+    //         'name' => 'sometimes|required',
+    //         'email' => 'sometimes|required|email|unique:patients,email,' . $patient->id,
+    //         'phone' => 'sometimes|required',
+    //         'address' => 'sometimes|required',
+    //         'dob' => 'sometimes|required|date',
+    //         // 'gender' => 'sometimes|required'
+    //     ]);
 
-        $patient->update($request->all());
+    //     $patient->update($request->all());
 
-        return response()->json($patient, 200);
-    }
+    //     return response()->json($patient, 200);
+    // }
+    public function update(Request $request, $id)
+{
+    $patient = Patient::findOrFail($id); // Fetch patient by ID
+
+    $request->validate([
+        'name' => 'sometimes|required|string',
+        'email' => 'sometimes|required|email',
+        'phone' => 'sometimes|required|string',
+        'address' => 'sometimes|required|string',
+        'dob' => 'sometimes|required|date',
+        // 'gender' => 'sometimes|required|string'
+    ]);
+
+    $patient->update($request->all());
+
+    return response()->json([
+        'message' => 'Patient updated successfully',
+        'data' => $patient
+    ], 200);
+}
+
 
     // Delete a patient
     public function destroy(Patient $patient)
@@ -362,16 +429,117 @@ public function store(Request $request)
         return response()->json(null, 204);
     }
 
-    // public function getSuggestions(Request $request)
-    // {
-    //     $name = $request->query('name');
 
-    //     // Assuming you have a Patient model
-    //     $patients = Patient::where('name', 'LIKE', "%{$name}%")
-    //         ->get(['id', 'name', 'age', 'address', 'email', 'phone', 'dob']); // Adjust the fields as necessary
+    public function suggestionPatient(Request $request)
+{
+    $doctorId = Auth::id(); // currently logged-in doctor's ID
+    $search = $request->input('query');
 
-    //     return response()->json($patients);
-    // }
+    // Fetch patients directly assigned to this doctor from patients table
+    $patients = Patient::where('doctor_id', $doctorId)
+        ->where(function ($query) use ($search) {
+            $query->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('phone', 'like', '%' . $search . '%');
+        })
+        ->limit(10)
+        ->get();
+
+
+    return response()->json($patients);
+}
+
+// YourController.php
+// public function getPatientDetails($id)
+// {
+//     $doctorId = Auth::id(); // Ensure the doctor owns this patient
+
+//     $patient = Patient::where('id', $id)
+//                 ->where('doctor_id', $doctorId)
+//                 ->first();
+
+//     if (!$patient) {
+//         return response()->json(['error' => 'Patient not found'], 404);
+//     }
+
+//     // Get the latest bill for the patient
+//     $lastBill = Bill::where('patient_id', $id)
+//                 ->latest('created_at')
+//                 ->first();
+
+//     // Initialize empty arrays for additional data
+//     $healthDirectives = [];
+//     $patientExaminations = [];
+
+//     // If a bill exists, fetch additional data using its ID
+//     if ($lastBill) {
+//         $billId = $lastBill->id;
+
+
+//         // Fetch health directives where p_p_i_id = bill ID
+//         $healthDirectives = HealthDirective::where('p_p_i_id', $billId)->get();
+
+//         // Fetch patient examinations where p_p_i_id = bill ID
+//         $patientExaminations = PatientExamination::where('p_p_i_id', $billId)->get();
+//     }
+
+//     return response()->json([
+//         'patient' => $patient,
+//         'last_bill' => $lastBill,
+//         'health_directives' => $healthDirectives,
+//         'patient_examinations' => $patientExaminations,
+//     ]);
+// }
+public function getPatientDetails($id)
+{
+    $doctorId = Auth::id(); // Ensure the doctor owns this patient
+
+    $patient = Patient::where('id', $id)
+                ->where('doctor_id', $doctorId)
+                ->first();
+
+    if (!$patient) {
+        return response()->json(['error' => 'Patient not found'], 404);
+    }
+
+    // Get the latest bill for the patient
+    $lastBill = Bill::where('patient_id', $id)
+                // ->latest('created_at')
+                // ->first();
+                ->orderBy('created_at', 'desc')
+                ->take(3)
+                ->get();
+
+
+    // Get latest 3 health directives
+    $healthDirectives = HealthDirective::where('patient_id', $id)
+                        ->orderBy('created_at', 'desc')
+                        ->take(3)
+                        ->get();
+
+    // Get latest 3 patient examinations
+    $patientExaminations = PatientExamination::where('patient_id', $id)
+                            ->orderBy('created_at', 'desc')
+                            ->take(3)
+                            ->get();
+
+    return response()->json([
+        'patient' => $patient,
+        'last_bill' => $lastBill,
+        'health_directives' => $healthDirectives,
+        'patient_examinations' => $patientExaminations,
+    ]);
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
     public function show($id)
@@ -384,8 +552,24 @@ public function store(Request $request)
     }
 
 
+    public function patientDataShowLoggedDoctor()
+    {
+        
+        $doctorId = auth()->id(); // Get the currently logged-in doctor's ID
 
+    // Fetch all patients for the logged-in doctor
+    $patients = Patient::where('doctor_id', $doctorId)->get();
 
+    return response()->json($patients);
+    }
+
+//     public function displyed()
+// {
+//     $doctorId = auth()->id();
+//     $patients = Patient::where('doctor_id', $doctorId)->get();
+
+//     return response()->json($patients);
+// }
 
 
     // public function searchPatientByName(Request $request)
@@ -406,6 +590,7 @@ public function store(Request $request)
 
         return response()->json($patients);
     }
+    
 
     public function searchPatientByMobile(Request $request)
     {
@@ -571,7 +756,10 @@ public function store(Request $request)
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to check patient'], 500);
         }
+  
     }
+
+
 
 
         public function getPatients(Request $request)

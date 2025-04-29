@@ -13,6 +13,7 @@ class PatientExamination extends Model
 
     protected $fillable = [
         'p_p_i_id',
+        'patient_id', 
         'bp',
         'pulse',
         'past_history',

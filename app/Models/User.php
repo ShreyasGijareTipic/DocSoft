@@ -28,6 +28,7 @@ class User extends Authenticatable
         'registration_number',
         'speciality',
         'education',
+        'consulting_fee',
         'type',
         'profilepic',
         'blocked',
@@ -62,5 +63,10 @@ class User extends Authenticatable
 // {
 //     return $this->belongsTo(Clinic::class, 'clinic_name'); // Use 'clinic_id' as the foreign key
 // }
+public function patients()
+{
+    return $this->hasMany(Patient::class, 'doctor_id');
+}
+
 }
 

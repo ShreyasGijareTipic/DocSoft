@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Tokan;
+use App\Models\Patient;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class TokanController extends Controller
 {
@@ -173,4 +175,72 @@ class TokanController extends Controller
     }
     
     
+
+
+    public function displyed()
+    {
+        $doctorId = auth()->id();
+    
+        // Step 1: Get patient IDs from `tokan` table where doctor_id = logged-in doctor
+        $patientIds = tokan::where('doctor_id', $doctorId)->pluck('patient_id'); // Assuming tokan has patient_id field
+    
+        // Step 2: Get patient details for those IDs from `patients` table
+        $patients = Patient::whereIn('id', $patientIds)->get();
+    
+        return response()->json($patients);
+    }
+    
+
+
+
+// public function suggestionPatient(Request $request){
+
+//     $doctorId = Auth::id(); // currently logged in doctor ID
+//     $search = $request->input('query');
+
+//     // Join patients with tokens to filter only doctor's patients
+//     $patients = Patient::whereIn('id', function ($query) use ($doctorId) {
+//             $query->select('patient_id')
+//                   ->from('tokan')
+//                   ->where('doctor_id', $doctorId);
+//         })
+//         ->where(function ($query) use ($search) {
+//             $query->where('name', 'like', '%' . $search . '%')
+//                   ->orWhere('phone', 'like', '%' . $search . '%');
+//         })
+//         ->limit(10)
+//         ->get();
+
+//     return response()->json($patients);
+// }
+
+
+public function checkToken(Request $request) {
+    // $patientId = $request->input('patient_id');
+    // $exists = DB::table('tokan')->where('patient_id', $patientId)->exists();
+
+    // return response()->json(['exists' => $exists], 200);
+    $patientId = $request->input('patient_id');
+
+    try {
+        // Check in 'tokan' table
+        $tokenExists = DB::table('tokan')->where('patient_id', $patientId)->exists();
+
+        // Check in 'patients' table
+        $patientExists = Patient::where('id', $patientId)->exists();
+
+        // Return true if found in either table
+        $exists = $tokenExists || $patientExists;
+
+        return response()->json(['exists' => $exists], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to check token/patient',
+            'details' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
 }

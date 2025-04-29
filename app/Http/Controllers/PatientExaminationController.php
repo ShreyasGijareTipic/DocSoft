@@ -28,6 +28,7 @@ class PatientExaminationController extends Controller
         // Validate the request data
         $validatedData = $request->validate([
             'p_p_i_id' => 'required|exists:Bills,id',
+            'patient_id' => 'nullable|exists:patients,id', // <- NEW
             'bp' => 'nullable|string',
             'pulse' => 'nullable|string',
             'past_history' => 'nullable|string',
