@@ -8,6 +8,8 @@ const WhatsappClinicRegister = React.lazy(() => import('./views/pages/register/W
 const EditwhatsappClinicRegister = React.lazy(() => import('./views/pages/register/EditwhatsappClinicRegister'))
 const EditWhatsappClinicInfo = React.lazy(() => import('./views/pages/register/EditWhatsappClinicInfo'))
 
+//plans
+const Plans = React.lazy(() => import('./views/pages/plans/Plans'))
 
 
 
@@ -97,7 +99,7 @@ const routes = [
   { path: '/register/EditwhatsappClinicRegister', name: 'Clinic Details', element: EditwhatsappClinicRegister },
   { path: '/register/EditWhatsappClinicInfo/:storeid', name: 'EditWhatsappClinicInfo', element: EditWhatsappClinicInfo },
 
-
+  { path:'plans', name: 'Plans', element: Plans },
   // { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },

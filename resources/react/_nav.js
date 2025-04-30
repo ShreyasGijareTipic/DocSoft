@@ -20,6 +20,7 @@ import {
   cilAvTimer,
   cilPlaylistAdd,
   cilListRich,
+  
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle,  } from '@coreui/react'
 import { getUser } from './util/session';
@@ -140,6 +141,7 @@ const getNavigation = () => {
             icon: <CIcon icon={cilHospital} customClassName="nav-icon" />,
             
           },
+          
           {
                 component: CNavItem,
                 name: 'Clinic Register',
@@ -147,6 +149,13 @@ const getNavigation = () => {
                 icon: <CIcon icon={cilHospital} customClassName="nav-icon" />,
                 
            },
+
+           {
+            component: CNavItem,
+            name: 'Plans',
+            to: '/plans',
+            icon: <CIcon icon={cilHospital} customClassName="nav-icon" />,
+          },
 
      ]
    }

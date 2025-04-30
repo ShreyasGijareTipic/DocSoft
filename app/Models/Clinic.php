@@ -31,6 +31,9 @@ class Clinic extends Model
         'clinic_whatsapp_url',
         'clinic_permanant_tokan',
         'clinic_webhook_tokan',
+        'subscribed_plan',
+        'subscription_validity',
+        'refer_by_id'
     ];
 
     /**

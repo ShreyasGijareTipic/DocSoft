@@ -40,6 +40,8 @@ use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\PrescriptionPatientInfoController;
 use App\Http\Controllers\DrugUploadController;
 use App\Http\Controllers\TokanController;
+use App\Http\Controllers\PlanController;
+use App\Http\Controllers\RazorpayController;
 
 
 
@@ -77,6 +79,17 @@ Route::get('/showdoctordatabyclinicid/{id}', [AuthController::class, 'showdoctor
 
 // Secured APIs
 Route::group(['middleware' => ['auth:sanctum']], function() {
+
+    //Razorpay and Plans
+    Route::resource('plan', PlanController::class);
+    Route::post('/create-order', [RazorpayController::class, 'createOrder']);
+    Route::post('/verify-payment', [RazorpayController::class, 'verifyPayment']);
+
+    Route::post('/clinic-receipt', [App\Http\Controllers\ClinicReceiptController::class, 'store']);
+    Route::get('/clinic-receipts/{clinicId}', [App\Http\Controllers\ClinicReceiptController::class, 'getClinicReceipts']);
+    Route::get('/detailsForClinic', [App\Http\Controllers\ClinicReceiptController::class, 'getDetailsForClinic']);
+
+
     Route::post('/changePassword', [AuthController::class, 'changePassword']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/registerUser', [AuthController::class, 'registerUser']);
