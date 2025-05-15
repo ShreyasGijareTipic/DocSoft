@@ -20,6 +20,7 @@ use App\Models\Inquiry;
 // use App\Http\Controllers\CatalogController;
 // use App\Http\Controllers\AdminController; 
 use App\Http\Controllers\CsvUploadController;
+use App\Http\Controllers\DoctorMedicalObservationController;
 
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\PatientController;
@@ -46,7 +47,8 @@ use App\Http\Controllers\RazorpayController;
 
 
 
-
+Route::get('/doctor-medical-observations/{doctorId}', [DoctorMedicalObservationController::class, 'getByDoctor']);
+Route::post('/save-doctor-medical-observations', [DoctorMedicalObservationController::class, 'save']);
 
 
 
@@ -84,6 +86,8 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::resource('plan', PlanController::class);
     Route::post('/create-order', [RazorpayController::class, 'createOrder']);
     Route::post('/verify-payment', [RazorpayController::class, 'verifyPayment']);
+
+  
 
     Route::post('/clinic-receipt', [App\Http\Controllers\ClinicReceiptController::class, 'store']);
     Route::get('/clinic-receipts/{clinicId}', [App\Http\Controllers\ClinicReceiptController::class, 'getClinicReceipts']);

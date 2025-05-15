@@ -30,6 +30,8 @@ class PatientExaminationController extends Controller
             'p_p_i_id' => 'required|exists:Bills,id',
             'patient_id' => 'nullable|exists:patients,id', // <- NEW
             'bp' => 'nullable|string',
+            'height' => 'nullable|string',
+            'weight' => 'nullable|string',
             'pulse' => 'nullable|string',
             'past_history' => 'nullable|string',
             'complaints' => 'nullable|string',
@@ -64,6 +66,8 @@ class PatientExaminationController extends Controller
             'p_p_i_id' => 'required|exists:Bills,id',
             'bp' => 'nullable|string',
             'pulse' => 'nullable|string',
+            'height' => 'nullable|string',
+            'weight' => 'nullable|string',
             'past_history' => 'nullable|string',
             'complaints' => 'nullable|string',
             'systemic_exam_general' => 'nullable|string',

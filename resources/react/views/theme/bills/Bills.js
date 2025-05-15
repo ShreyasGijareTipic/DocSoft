@@ -517,12 +517,14 @@ const handleSubmit = async () => {
     }
 
     // 🧪 Examinations
-    if (bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA) {
+    if (bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA || weight || height) {
       const patientExaminationData = {
         p_p_i_id: `${billno}`,
         patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get patient ID',
         bp,
         pulse,
+        weight,
+        height,
         past_history: pastHistory,
         complaints,
         systemic_exam_general: sysExGeneral,
@@ -614,12 +616,41 @@ const [showTable, setShowTable] = useState(false);
   const toggleForm = () => setIsExpanded(!isExpanded);
 
   const [bp, setBp] = useState("");
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
   const [pulse, setPulse] = useState("");
   const [pastHistory, setPastHistory] = useState("");
   const [complaints, setComplaints] = useState("");
   const [sysExGeneral, setSysExGeneral] = useState("");
   const [sysExPA, setSysExPA] = useState("");
+  
 
+  const [doctorObservationSettings, setDoctorObservationSettings] = useState(null);
+
+  
+
+  useEffect(() => {
+    const fetchObservationSettings = async () => {
+      try {
+        const doctorId = userData.user.id;
+        const res = await getAPICall(`/api/doctor-medical-observations/${doctorId}`);
+        console.log("✅ Observation settings fetched:", res);
+  
+        const normalized = Object.fromEntries(
+          Object.entries(res).map(([key, val]) => [key, Boolean(Number(val))])
+        );
+  
+        setDoctorObservationSettings(normalized);
+      } catch (error) {
+        console.error("❌ Error fetching observation settings:", error);
+      }
+    };
+  
+    fetchObservationSettings();
+  }, [userData]);
+  
+  
+  
 
 //get Medicine In Dropdown Code
 
@@ -1192,7 +1223,7 @@ const [selectedOption, setSelectedOption] = useState('');
   </CButton>
 </div>
 
-{isExpanded && (
+{/* {isExpanded && (
   <div className="p-2">
     <CRow className="mb-2">
       <CCol xs={12} sm={6}>
@@ -1251,9 +1282,69 @@ const [selectedOption, setSelectedOption] = useState('');
       </CCol>
     </CRow>
   </div>
+)} */}
+
+{isExpanded && doctorObservationSettings && (
+  <div className="p-2">
+    <CRow className="mb-2">
+      {doctorObservationSettings.bp && (
+        <CCol xs={12} sm={6}>
+          <CFormLabel className="fw-bold">BP</CFormLabel>
+          <CFormInput value={bp} onChange={(e) => setBp(e.target.value)} />
+        </CCol>
+      )}
+
+      {doctorObservationSettings.weight && (
+        <CCol xs={12} sm={6}>
+          <CFormLabel className="fw-bold">Weight</CFormLabel>
+          <CFormInput value={weight} onChange={(e) => setWeight(e.target.value)} />
+        </CCol>
+      )}
+      {doctorObservationSettings.height && (
+        <CCol xs={12} sm={6}>
+          <CFormLabel className="fw-bold">Height</CFormLabel>
+          <CFormInput value={height} onChange={(e) => setHeight(e.target.value)} />
+        </CCol>
+      )}
+      {doctorObservationSettings.pulse && (
+        <CCol xs={12} sm={6}>
+          <CFormLabel className="fw-bold">Pulse</CFormLabel>
+          <CFormInput value={pulse} onChange={(e) => setPulse(e.target.value)} />
+        </CCol>
+      )}
+    </CRow>
+
+    <CRow className="mb-2">
+      {doctorObservationSettings.past_history && (
+        <CCol xs={12} sm={6}>
+          <CFormLabel className="fw-bold">Past History</CFormLabel>
+          <CFormInput value={pastHistory} onChange={(e) => setPastHistory(e.target.value)} />
+        </CCol>
+      )}
+      {doctorObservationSettings.complaint && (
+        <CCol xs={12} sm={6}>
+          <CFormLabel className="fw-bold">Complaints</CFormLabel>
+          <CFormInput value={complaints} onChange={(e) => setComplaints(e.target.value)} />
+        </CCol>
+      )}
+    </CRow>
+
+    <CRow className="mb-2">
+      {doctorObservationSettings.systemic_examination && (
+        <CCol xs={12} sm={6}>
+          <CFormLabel className="fw-bold">Systemic Examination</CFormLabel>
+          <CFormInput value={sysExGeneral} onChange={(e) => setSysExGeneral(e.target.value)} />
+        </CCol>
+      )}
+      {doctorObservationSettings.diagnosis && (
+        <CCol xs={12} sm={6}>
+          <CFormLabel className="fw-bold">Diagnosis</CFormLabel>
+          <CFormInput value={sysExPA} onChange={(e) => setSysExPA(e.target.value)} />
+        </CCol>
+      )}
+    </CRow>
+  </div>
 )}
-
-
 
 
 

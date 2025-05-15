@@ -10,7 +10,6 @@ const inv = () => {
   const param = useParams();
   console.log(billIds);
   
-
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [totalAmountWords, setTotalAmountWords] = useState('');
   const [grandTotal, setGrandTotal] = useState(0);
@@ -20,11 +19,10 @@ const inv = () => {
   const [file, setFile] = useState(null); // State to hold the file
   const fileInputRef = useRef(null); // Ref for triggering file input programmatically
   const [clinicData, setClinicData] = useState(null);
-  const [healthDirectives, setHealthDirectives] = useState({})
-  const [PatientExaminations, setpatientexaminations] = useState({}); 
-  console.log("Patientexaminations",PatientExaminations)
+  const [healthDirectives, setHealthDirectives] = useState([]);
+  const [PatientExaminations, setpatientexaminations] = useState([]);
+  console.log("Patientexaminations", PatientExaminations);
   
-
   // Trigger file input dialog
   const handleFileInputClick = () => {
     handleDownload();
@@ -57,7 +55,6 @@ const inv = () => {
         const clinicResponse = await getAPICall(`/api/clinic/${doctorResponse.clinic_id}`);
         setClinicData(clinicResponse);
         // console.log(clinicResponse.logo);
-        
       }
       
       setGrandTotal(finalAmount);
@@ -76,55 +73,48 @@ const inv = () => {
     }
   };
 
-  // ------------------------------------------------------------------------------------------------- 
-
   // Fetch Health Directives
-
   const fetchHealthDirectives = async () => {
     try {
-        const response = await getAPICall(`/api/healthdirectivesData/${billId ?? billIds}`);
-        setHealthDirectives(Array.isArray(response) ? response : []); // ✅ Ensure it's an array
+      const response = await getAPICall(`/api/healthdirectivesData/${billId ?? billIds}`);
+      setHealthDirectives(Array.isArray(response) ? response : []); // Ensure it's an array
     } catch (error) {
-        console.error("Error fetching prescription data:", error);
-        setHealthDirectives([]); // ✅ Prevent undefined errors
-    }
-};
-
-
-  // Fetch Patient Examinations 
-
-  const fetchPatientExaminations = async () => {
-    try {
-      const response = await getAPICall(`/api/patientexaminationsData/${billId ?? billIds}`);
-      setpatientexaminations(response);
-    } catch (error) {
-      console.error('Error fetching patientexaminationsData data:', error);
+      console.error("Error fetching prescription data:", error);
+      setHealthDirectives([]); // Prevent undefined errors
     }
   };
 
-
- // --------------------------------------------------------------------------------------------------- 
-
- useEffect(() => {
-  let count = 0; // Counter to track iterations
-
-  const interval = setInterval(() => {
-    if (count >= 2) {
-      clearInterval(interval);
-      console.log("Completed 2 iterations, stopping updates.");
-      return;
+  // Fetch Patient Examinations
+  const fetchPatientExaminations = async () => {
+    try {
+      const response = await getAPICall(`/api/patientexaminationsData/${billId ?? billIds}`);
+      setpatientexaminations(Array.isArray(response) ? response : []);
+    } catch (error) {
+      console.error('Error fetching patientexaminationsData data:', error);
+      setpatientexaminations([]);
     }
+  };
 
-    fetchProduct();
-    fetchDescriptions();
-    fetchHealthDirectives();
-    fetchPatientExaminations();
+  useEffect(() => {
+    let count = 0; // Counter to track iterations
 
-    count++; // Increment counter
-  }, 100);
+    const interval = setInterval(() => {
+      if (count >= 2) {
+        clearInterval(interval);
+        console.log("Completed 2 iterations, stopping updates.");
+        return;
+      }
 
-  return () => clearInterval(interval); // Cleanup on unmount
-}, [billId]);
+      fetchProduct();
+      fetchDescriptions();
+      fetchHealthDirectives();
+      fetchPatientExaminations();
+
+      count++; // Increment counter
+    }, 100);
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [billId]);
 
   const numberToWords = (number) => {
     const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -168,7 +158,6 @@ const inv = () => {
     return words.trim();
   };
 
-
   const handleDownload = () => {
     const totalAmount = descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
     
@@ -189,10 +178,6 @@ const inv = () => {
       totalAmount
     );
   };
-  
-
-
-  
 
   const handleSendWhatsApp = async (selectedFile) => {
     if (!selectedFile) {
@@ -218,16 +203,60 @@ const inv = () => {
     }
   };
 
+  // Function to check if the field has data
+  const hasData = (field) => field && field !== "N/A" && field !== "";
+
+  // Get the observation fields that have data
+  const getObservationFields = () => {
+    if (!PatientExaminations || PatientExaminations.length === 0) return [];
+    
+    const observation = PatientExaminations[0];
+    const fields = [];
+    
+    if (hasData(observation?.bp)) fields.push({ name: "BP", value: observation.bp });
+    if (hasData(observation?.pulse)) fields.push({ name: "Pulse", value: observation.pulse });
+    if (hasData(observation?.height)) fields.push({ name: "Height", value: observation.height });
+    if (hasData(observation?.weight)) fields.push({ name: "Weight", value: observation.weight });
+    if (hasData(observation?.past_history)) fields.push({ name: "Past History", value: observation.past_history });
+    if (hasData(observation?.complaints)) fields.push({ name: "Complaints", value: observation.complaints });
+    if (hasData(observation?.systemic_exam_general)) fields.push({ name: "Systemic Examination", value: observation.systemic_exam_general });
+    if (hasData(observation?.systemic_exam_pa)) fields.push({ name: "Diagnosis", value: observation.systemic_exam_pa });
+    
+    return fields;
+  };
+
+  // Check if prescriptions have data for specific columns
+  const hasPrescriptionData = (column) => {
+    return healthDirectives.some(item => hasData(item[column]));
+  };
+
+  // Get prescription columns that have data
+  const getPrescriptionColumns = () => {
+    const columns = [
+      { id: 'medicine', label: 'Medicine' },
+      { id: 'strength', label: 'Strength' },
+      { id: 'dosage', label: 'Dosage' },
+      { id: 'timing', label: 'Timing' },
+      { id: 'frequency', label: 'Frequency' },
+      { id: 'duration', label: 'Duration' }
+    ];
+    
+    return columns.filter(column => hasPrescriptionData(column.id));
+  };
+
+  const observationFields = getObservationFields();
+  const prescriptionColumns = getPrescriptionColumns();
+
   return (
     <CCard className="mb-4">
       <CCardBody>
         <CContainer className="container-md invoice-content">
           {/* Clinic Header */}
           <div className="row align-items-center text-center text-md-start mb-4">
-          <div className="col-12 col-md-3 text-center">
-            <img src={clinicData?.logo} className="img-fluid" alt="Logo" style={{ maxWidth: '120px', height: 'auto' }} />
-          </div>
-          <div className="col-12 d-md-none"><hr /></div> {/* Break line for small screens */}
+            <div className="col-12 col-md-3 text-center">
+              <img src={clinicData?.logo} className="img-fluid" alt="Logo" style={{ maxWidth: '120px', height: 'auto' }} />
+            </div>
+            <div className="col-12 d-md-none"><hr /></div> {/* Break line for small screens */}
 
             <div className="col-12 col-md-6 text-center">
               <h1 className="h1">{clinicData?.clinic_name}</h1>
@@ -279,129 +308,123 @@ const inv = () => {
           </div>
           <hr />
   
-          {/* Patient Examination */}
-{PatientExaminations.length > 0 && (
-  <div className="row mt-3">
-    <div className="col-12">
-      <h6 className="fw-bold">Medical Observation:</h6>
-      <div className="table-responsive">
-        <table className="table table-bordered text-center table-responsive-md">
-          <tbody>
-            <tr>
-              <td><strong>BP</strong></td>
-              <td>{PatientExaminations[0]?.bp || "N/A"}</td>
-              <td><strong>Pulse</strong></td>
-              <td>{PatientExaminations[0]?.pulse || "N/A"}</td>
-            </tr>
-            <tr>
-              <td><strong>Past History</strong></td>
-              <td>{PatientExaminations[0]?.past_history || "N/A"}</td>
-              <td><strong>Complaints</strong></td>
-              <td>{PatientExaminations[0]?.complaints || "N/A"}</td>
-            </tr>
-            <tr>
-              <td><strong>Systemic Examination</strong></td>
-              <td>{PatientExaminations[0]?.systemic_exam_general || "N/A"}</td>
-              <td><strong>Diagnosis</strong></td>
-              <td>{PatientExaminations[0]?.systemic_exam_pa || "N/A"}</td>
-            </tr>
-          </tbody>
-        </table>
-        <hr />
-      </div>
-    </div>
-  </div>
+          {/* Patient Examination - Only Show if There's Data */}
+          {observationFields.length > 0 && (
+            <div className="row mt-3">
+              <div className="col-12">
+                <h6 className="fw-bold">Medical Observation:</h6>
+                <div className="table-responsive">
+                  <table className="table table-bordered text-center table-responsive-md">
+                    <tbody>
+                      {/* Create rows with exactly 2 fields (4 cells) per row for proper alignment */}
+                      {Array(Math.ceil(observationFields.length / 2)).fill().map((_, rowIndex) => {
+                        const rowFields = observationFields.slice(rowIndex * 2, rowIndex * 2 + 2);
+                        // Fill remaining cells if we have an odd number of fields
+                        while (rowFields.length < 2) {
+                          rowFields.push({ name: "", value: "" });
+                        }
+                        
+                        return (
+                          <tr key={rowIndex}>
+                            <td width="20%"><strong>{rowFields[0].name}</strong></td>
+                            <td width="30%">{rowFields[0].value}</td>
+                            <td width="20%"><strong>{rowFields[1].name}</strong></td>
+                            <td width="30%">{rowFields[1].value}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  <hr />
+                </div>
+              </div>
+            </div>
+          )}
   
-)}
+          {/* Prescription Section - Only Show if There's Data */}
+          {healthDirectives.length > 0 && prescriptionColumns.length > 0 && (
+            <div className="row">
+              <div className="col-12">
+                <h6 className="fw-bold">Prescription:</h6>
+                <div className="table-responsive">
+                  <table className="table table-bordered border-black table-responsive-md">
+                    <thead className="table-success">
+                      <tr>
+                        <th>Sr No</th>
+                        {prescriptionColumns.map((column, index) => (
+                          <th key={index}>{column.label}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {healthDirectives.map((item, index) => (
+                        <tr key={index}>
+                          <td>{index + 1}</td>
+                          {prescriptionColumns.map((column, colIndex) => (
+                            <td key={colIndex}>{item[column.id] || "N/A"}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+          {(healthDirectives.length > 0 || observationFields.length > 0) && <hr />}
 
-
-  
-          {/* Prescription Section */}
-          <div className="row">
+          {/* Billing Section */}
+          <div className="row mt-3">
             <div className="col-12">
-              <h6 className="fw-bold">Prescription :</h6>
+              <h6 className="fw-bold">Bill:</h6>
               <div className="table-responsive">
-                <table className="table table-bordered border-black table-responsive-md">
-                  <thead className="table-success">
+                <table className="table table-bordered border-black text-center">
+                  <thead className="table-success border-black">
                     <tr>
                       <th>Sr No</th>
-                      <th>Medicine</th>
-                      <th>Strength</th>
-                      <th>Dosage</th>
-                      <th>Timing</th>
-                      <th>Frequency</th>
-                      <th>Duration</th>
+                      <th>Description</th>
+                      <th>Quantity</th>
+                      <th>Price</th>
+                      <th>GST</th>
+                      <th>Total</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {healthDirectives.length > 0 ? (
-                      healthDirectives.map((item, index) => (
-                        <tr key={index}>
-                          <td>{index + 1}</td>
-                          <td>{item.medicine}</td>
-                          <td>{item.strength}</td>
-                          <td>{item.dosage}</td>
-                          <td>{item.timing}</td>
-                          <td>{item.frequency}</td>
-                          <td>{item.duration}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr><td colSpan="7" className="text-center">No prescriptions available.</td></tr>
-                    )}
+                    {descriptions.map((product, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{product.description}</td>
+                        <td>{product.quantity}</td>
+                        <td>{product.price}</td>
+                        <td>{product.gst}</td>
+                        <td>{product.total}</td>
+                      </tr>
+                    ))}
+                    {/* Grand Total Row */}
+                    <tr className="fw-bold table-warning">
+                      <td colSpan="2" className="text-end"><strong>Grand Total:</strong></td>
+                      <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0)}</td>
+                      <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0).toFixed(2)}</td>
+                      <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.gst) || 0), 0).toFixed(2)}</td>
+                      <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0).toFixed(2)}</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
           <hr />
-
-          {/* Billing Section */}
-<div className="row mt-3">
-  <div className="col-12">
-    <h6 className="fw-bold">Bill :</h6>
-    <div className="table-responsive">
-      <table className="table table-bordered border-black text-center">
-        <thead className="table-success border-black">
-          <tr>
-            <th>Sr No</th>
-            <th>Description</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>GST</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {descriptions.map((product, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{product.description}</td>
-              <td>{product.quantity}</td>
-              <td>{product.price}</td>
-              <td>{product.gst}</td>
-              <td>{product.total}</td>
-            </tr>
-          ))}
-          {/* Grand Total Row */}
-          <tr className="fw-bold table-warning">
-            <td colSpan="2" className="text-end"><strong>Grand Total:</strong></td>
-            <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0)}</td>
-            <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0).toFixed(2)}</td>
-            <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.gst) || 0), 0).toFixed(2)}</td>
-            <td>{descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0).toFixed(2)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-<hr />
-
   
           {/* Footer */}
           <div className="d-flex justify-content-center">
             <CButton color="success" onClick={handleDownload}>Download</CButton>&nbsp;&nbsp;
+            {/* Hidden file input for WhatsApp */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
             {/* <CButton color="success" onClick={handleFileInputClick}>Send Bill on WhatsApp</CButton> */}
           </div>
         </CContainer>
@@ -411,4 +434,3 @@ const inv = () => {
 };  
 
 export default inv;
-

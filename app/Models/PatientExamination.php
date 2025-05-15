@@ -16,6 +16,8 @@ class PatientExamination extends Model
         'patient_id', 
         'bp',
         'pulse',
+        'height',
+        'weight',
         'past_history',
         'complaints',
         'systemic_exam_general',

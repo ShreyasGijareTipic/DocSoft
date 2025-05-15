@@ -68,5 +68,10 @@ public function patients()
     return $this->hasMany(Patient::class, 'doctor_id');
 }
 
+public function medicalObservations()
+{
+    return $this->hasOne(DoctorMedicalObservation::class, 'doctor_id');
+}
+
 }
 
