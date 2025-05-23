@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MantineReactTable } from 'mantine-react-table';
 import { Loader, Alert } from '@mantine/core';
 import { getAPICall } from '../../../util/api';
-import { CButton } from '@coreui/react';
+import { CButton, CBadge } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import CIcon from '@coreui/icons-react';
 import { cilCog } from '@coreui/icons';
@@ -21,15 +21,23 @@ function WhatsappClinicRegister() {
         header: 'Action',
         accessorKey: 'actions',
         Cell: ({ row }) => (
-          <CButton
-            color="secondary"
-            onClick={() => handleEdit(row.original.id)} // Pass the ID dynamically
-          >
-            Setting  &nbsp;
-            <CIcon icon={cilCog}
-             onClick={() => handleEdit(row.original.id)}
-            />
-          </CButton>
+          // <CButton
+          //   color="secondary"
+          //   onClick={() => handleEdit(row.original.id)} // Pass the ID dynamically
+          // >
+          //   Setting  &nbsp;
+          //   <CIcon icon={cilCog}
+          //    onClick={() => handleEdit(row.original.id)}
+          //   />
+          // </CButton>
+          <CBadge 
+  color="secondary" 
+  className="px-2 py-1 d-inline-flex align-items-center cursor-pointer"
+  onClick={() => handleEdit(row.original.id)}
+  style={{ cursor: 'pointer' }}
+>Add Details &nbsp;
+  {/* <CIcon icon={cilCog} /> */}
+</CBadge>
         ),
       },
       { accessorKey: 'clinic_name', header: 'Clinic Name' },
@@ -70,8 +78,8 @@ function WhatsappClinicRegister() {
 
   return (
     <>
-      {loading && <Loader />} {/* Show loader */}
-      {error && <Alert color="red">{error}</Alert>} {/* Show error */}
+      {/* {loading && <Loader />} 
+      {error && <Alert color="red">{error}</Alert>} 
       {!loading && !error && (
         <MantineReactTable
           columns={columns}
@@ -80,7 +88,42 @@ function WhatsappClinicRegister() {
           enableFullScreenToggle={false}
           enableDensityToggle={true}
         />
-      )}
+      )} */}
+
+
+  <MantineReactTable
+    columns={columns}
+    data={data}
+    initialState={{ density: 'density' }}
+    enableFullScreenToggle={false}
+    enableDensityToggle={true}
+    mantineTableBodyCellProps={{
+      style: {
+        padding: '20px 20px',
+        fontSize: '14px',
+      },
+    }}
+    mantineTableHeadCellProps={{
+      style: {
+        padding: '20px 20px',
+        backgroundColor: '#f8f9fa',
+        fontWeight: 600,
+      },
+    }}
+    mantineTableContainerProps={{
+      style: {
+        width: '100%',
+        margin: '0 auto', // center horizontally
+        borderRadius: '8px',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+        padding: 0, // Ensure inner container has no padding
+      },
+    }}
+  />
+
+
+
+
     </>
   );
 }

@@ -23,7 +23,7 @@ const [editData, setEditData] = useState({
 
  const columns = useMemo(
     () => [
-      { accessorKey: 'id', header: 'ID' },
+      // { accessorKey: 'id', header: 'ID' },
       { accessorKey: 'drug_name', header: 'Drug Name' },
       // { accessorKey: 'generic_name', header: 'Generic Name' },
       { accessorKey: 'category', header: 'Category' },

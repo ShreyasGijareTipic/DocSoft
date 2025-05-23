@@ -26,7 +26,7 @@ console.log("editData",editData);
   // Define the columns for the table
   const columns = useMemo(
     () => [
-      { accessorKey: 'id', header: 'ID' },
+      // { accessorKey: 'id', header: 'ID' },
       { accessorKey: 'name', header: 'Name' },
       { accessorKey: 'address', header: 'Address' },
       { accessorKey: 'email', header: 'Email' },

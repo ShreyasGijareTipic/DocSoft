@@ -20,10 +20,13 @@ import {
   cilAvTimer,
   cilPlaylistAdd,
   cilListRich,
+  cilClock,
+  cilBarcode,
   
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle,  } from '@coreui/react'
 import { getUser } from './util/session';
+import classNames from 'classnames';
 
 
 
@@ -183,17 +186,45 @@ const getNavigation = () => {
           //   icon: <CIcon icon={cilUserPlus} customClassName="nav-icon" />,
             
           // },
+          // {
+          //   component: CNavItem,
+          //   name: 'Patients',
+          //   to: '/Patient',
+          //   icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+          // }, 
+          // {
+          //   component: CNavItem,
+          //   name: 'Bills',
+          //   to: '/Billstable',
+          //   icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+          // },
           {
-            component: CNavItem,
-            name: 'Patients',
-            to: '/Patient',
+            component: CNavGroup,
+            name: 'Report',
             icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
-          }, 
-          {
+            items: [
+              {
+                component: CNavItem,
+                name: 'Patients',
+                to: '/Patient',
+                // icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+                className:"ms-4",
+              },
+              {
+                component: CNavItem,
+                name: 'Bills',
+                to: '/Billstable',
+                // icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+                 className:"ms-4",
+              },
+               {
             component: CNavItem,
-            name: 'Bills',
-            to: '/Billstable',
-            icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+            name: 'Medicines',
+            to: '/MedicinesShow',
+            // icon: <CIcon icon={cilPlaylistAdd} customClassName="nav-icon" />,
+             className:"ms-4",
+          },
+            ],
           },
           {
             component: CNavItem,
@@ -201,23 +232,23 @@ const getNavigation = () => {
             to: '/Medicines',
             icon: <CIcon icon={cilMedicalCross} customClassName="nav-icon" />,
           },
-          {
-            component: CNavItem,
-            name: 'Medicines',
-            to: '/MedicinesShow',
-            icon: <CIcon icon={cilPlaylistAdd} customClassName="nav-icon" />,
-          },
-          {
-            component: CNavItem,
-            name: 'Time Slots',
-            to: '/Timeslots',
-            icon: <CIcon icon={cilAvTimer} customClassName="nav-icon" />,
-          },
+          // {
+          //   component: CNavItem,
+          //   name: 'Medicines',
+          //   to: '/MedicinesShow',
+          //   icon: <CIcon icon={cilPlaylistAdd} customClassName="nav-icon" />,
+          // },
+          // {
+          //   component: CNavItem,
+          //   name: 'Time Slots',
+          //   to: '/Timeslots',
+          //   icon: <CIcon icon={cilAvTimer} customClassName="nav-icon" />,
+          // },
           {
                 component: CNavItem,
                 name: 'Token',
                 to: '/PatientTokanForm',
-                icon: <CIcon icon={cilHospital} customClassName="nav-icon" />,
+                icon: <CIcon icon={cilBarcode} customClassName="nav-icon" />,
                 
               },
 
@@ -239,6 +270,34 @@ const getNavigation = () => {
         icon: <CIcon icon={cilHospital} customClassName="nav-icon" />,
         
       },
+       {
+            component: CNavGroup,
+            name: 'Report',
+            icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+            items: [
+              {
+                component: CNavItem,
+                name: 'Patients',
+                to: '/Patient',
+                // icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+                className:"ms-4",
+              },
+              {
+                component: CNavItem,
+                name: 'Bills',
+                to: '/Billstable',
+                // icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+                 className:"ms-4",
+              },
+               {
+            component: CNavItem,
+            name: 'Medicines',
+            to: '/MedicinesShow',
+            // icon: <CIcon icon={cilPlaylistAdd} customClassName="nav-icon" />,
+             className:"ms-4",
+          },
+            ],
+          },
 
     ]
    }

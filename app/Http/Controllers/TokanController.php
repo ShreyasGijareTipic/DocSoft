@@ -126,22 +126,56 @@ class TokanController extends Controller
     //     }
     // }
 
+// ------------------ 
 
-    public function getTodaysTokans()
+//     public function getTodaysTokans()
+// {
+//     try {
+//         $today = Carbon::today()->toDateString();
+//         $clinicId = auth()->user()->clinic_id; // Get logged-in user's clinic ID
+
+//         $tokans = Tokan::whereDate('date', $today)
+//                        ->where('clinic_id', $clinicId) // Filter by clinic ID
+//                        ->orderBy('tokan_number', 'asc')
+//                        ->get();
+
+//         return response()->json([
+//             'success' => true,
+//             'data' => $tokans
+//         ], 200);
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'success' => false,
+//             'message' => 'Error fetching today\'s tokens',
+//             'error' => $e->getMessage()
+//         ], 500);
+//     }
+// }
+
+public function getTodaysTokans()
 {
     try {
         $today = Carbon::today()->toDateString();
-        $clinicId = auth()->user()->clinic_id; // Get logged-in user's clinic ID
+        $clinicId = auth()->user()->clinic_id;
+        $userType = auth()->user()->type;
+        $doctorId = auth()->user()->id;
 
-        $tokans = Tokan::whereDate('date', $today)
-                       ->where('clinic_id', $clinicId) // Filter by clinic ID
-                       ->orderBy('tokan_number', 'asc')
-                       ->get();
+        $tokansQuery = Tokan::with('patient')
+                            ->whereDate('date', $today)
+                            ->where('clinic_id', $clinicId);
+
+        // If user is a doctor (not receptionist), restrict to only their patients
+        if ($userType != 2) {
+            $tokansQuery->where('doctor_id', $doctorId);
+        }
+
+        $tokans = $tokansQuery->orderBy('tokan_number', 'asc')->get();
 
         return response()->json([
             'success' => true,
             'data' => $tokans
         ], 200);
+
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
@@ -150,6 +184,8 @@ class TokanController extends Controller
         ], 500);
     }
 }
+
+
 
 
 

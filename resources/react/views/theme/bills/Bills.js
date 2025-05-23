@@ -629,25 +629,47 @@ const [showTable, setShowTable] = useState(false);
 
   
 
-  useEffect(() => {
-    const fetchObservationSettings = async () => {
-      try {
-        const doctorId = userData.user.id;
-        const res = await getAPICall(`/api/doctor-medical-observations/${doctorId}`);
-        console.log("✅ Observation settings fetched:", res);
+  // useEffect(() => {
+  //   const fetchObservationSettings = async () => {
+  //     try {
+  //       const doctorId = userData.user.id;
+  //       const res = await getAPICall(`/api/doctor-medical-observations/${doctorId}`);
+  //       console.log("✅ Observation settings fetched:", res);
   
-        const normalized = Object.fromEntries(
-          Object.entries(res).map(([key, val]) => [key, Boolean(Number(val))])
-        );
+  //       const normalized = Object.fromEntries(
+  //         Object.entries(res).map(([key, val]) => [key, Boolean(Number(val))])
+  //       );
   
-        setDoctorObservationSettings(normalized);
-      } catch (error) {
-        console.error("❌ Error fetching observation settings:", error);
-      }
-    };
+  //       setDoctorObservationSettings(normalized);
+  //     } catch (error) {
+  //       console.error("❌ Error fetching observation settings:", error);
+  //     }
+  //   };
   
-    fetchObservationSettings();
-  }, [userData]);
+  //   fetchObservationSettings();
+  // }, [userData]);
+useEffect(() => {
+  if (!userData?.user?.id) return;
+
+  const fetchObservationSettings = async () => {
+    try {
+      const doctorId = userData.user.id;
+      const res = await getAPICall(`/api/doctor-medical-observations/${doctorId}`);
+      console.log("✅ Observation settings fetched:", res);
+
+      const normalized = Object.fromEntries(
+        Object.entries(res).map(([key, val]) => [key, Boolean(Number(val))])
+      );
+
+      setDoctorObservationSettings(normalized);
+    } catch (error) {
+      console.error("❌ Error fetching observation settings:", error);
+    }
+  };
+
+  fetchObservationSettings();
+}, [userData?.user?.id]); // 👈 Run only when doctorId is available
+
   
   
   
@@ -1026,89 +1048,102 @@ const [selectedOption, setSelectedOption] = useState('');
 
 
     {/* Row 2: Contact | Email | DOB | Visit Date */}
-    <CCol xs={12} sm={6} md={3}  className="d-flex align-items-center mb-2">
-      <CFormLabel className="me-2 mb-0" style={{fontWeight:'bold', minWidth: '120px' }}>Mobile Number</CFormLabel>
-      <CFormInput
-        type="tel"
-        value={phone || data?.patient?.phone || ''}
-        // value={data?.patient?.phone}
-        onChange={(e) => setContactNumber(e.target.value)}
-        onInput={(e) => {
-          if (e.target.value.length > 10) {
-            e.target.value = e.target.value.slice(0, 10);
-          }
-        }}
-        placeholder="Enter contact number"
-        required
-      />
-      {errors.phone && <div style={{ color: 'red' }}>{errors.phone}</div>}
-    </CCol>
-
-    <CCol xs={12} sm={6} md={3} className="d-flex align-items-center mb-2">
-      <CFormLabel className="me-2 mb-0" style={{fontWeight:'bold', minWidth: '50px' }}>Email</CFormLabel>
-      <CFormInput
-        type="email"
-        value={email || data?.patient?.email || ''}
-        // value={data?.patient?.email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Enter email address"
-        required
-      />
-      {errors.email && <div style={{ color: 'red' }}>{errors.email}</div>}
-    </CCol>
-
-    <CCol xs={12} sm={6} md={3} className="d-flex align-items-center mb-2">
-      <CFormLabel className="me-2 mb-0" style={{fontWeight:'bold', minWidth: '120px' }}>Patient DOB</CFormLabel>
-      <CFormInput
-        type="date"
-        value={
-          data?.patient?.dob
-            ? new Date(data.patient.dob).toISOString().split("T")[0]
-            : dob || ""
+    
+    <CRow className="">
+      
+  <CCol xs={12} md={6} lg={3}>
+    <CFormLabel htmlFor="phone" className="fw-bold">Mobile Number</CFormLabel>
+    <CFormInput
+      id="phone"
+      type="tel"
+      value={phone || data?.patient?.phone || ''}
+      onChange={(e) => setContactNumber(e.target.value)}
+      onInput={(e) => {
+        if (e.target.value.length > 10) {
+          e.target.value = e.target.value.slice(0, 10);
         }
-        onChange={(e) => {
-          const input = e.target.value;
-          const selectedDate = new Date(input);
-          const currentDate = new Date();
-          const year = selectedDate.getFullYear();
+      }}
+      placeholder="Enter contact number"
+      required
+    />
+    {errors.phone && <div className="text-danger">{errors.phone}</div>}
+  </CCol>
 
-          if (year >= 1900 && selectedDate <= currentDate) {
-            setDob(input);
-            if (errors.dob) {
-              setErrors((prev) => ({ ...prev, dob: "" }));
-            }
-          } else {
-            setDob("");
-            setErrors((prev) => ({
-              ...prev,
-              dob: "Please enter a valid DOB (not in the future & after 1900).",
-            }));
+  <CCol xs={12} md={6} lg={3}>
+    <CFormLabel htmlFor="email" className="fw-bold">Email</CFormLabel>
+    <CFormInput
+      id="email"
+      type="email"
+      value={email || data?.patient?.email || ''}
+      onChange={(e) => setEmail(e.target.value)}
+      placeholder="Enter email address"
+      required
+    />
+    {errors.email && <div className="text-danger">{errors.email}</div>}
+  </CCol>
+
+
+
+
+  <CCol xs={12} md={6} lg={3}  className='ms-3'>
+    <CFormLabel htmlFor="dob" className="fw-bold">Patient DOB</CFormLabel>
+    <CFormInput
+      id="dob"
+     
+      type="date"
+      value={
+        data?.patient?.dob
+          ? new Date(data.patient.dob).toISOString().split("T")[0]
+          : dob || ""
+      }
+      onChange={(e) => {
+        const input = e.target.value;
+        const selectedDate = new Date(input);
+        const currentDate = new Date();
+        const year = selectedDate.getFullYear();
+
+        if (year >= 1900 && selectedDate <= currentDate) {
+          setDob(input);
+          if (errors.dob) {
+            setErrors((prev) => ({ ...prev, dob: "" }));
           }
-        }}
-        max={new Date().toISOString().split("T")[0]}
-        placeholder="Enter patient DOB"
-        required
-      />
-      {errors.dob && <div style={{ color: 'red' }}>{errors.dob}</div>}
-    </CCol>
+        } else {
+          setDob("");
+          setErrors((prev) => ({
+            ...prev,
+            dob: "Please enter a valid DOB (not in the future & after 1900).",
+          }));
+        }
+      }}
+      max={new Date().toISOString().split("T")[0]}
+      placeholder="Enter patient DOB"
+      required
+    />
+    {errors.dob && <div className="text-danger">{errors.dob}</div>}
+  </CCol>
 
-    <CCol xs={12} sm={6} md={2} className="d-flex align-items-center mb-2">
-      <CFormLabel className="me-2 mb-0 " style={{fontWeight:'bold', minWidth: '95px' }}>Visit Date</CFormLabel>
-      <CFormInput
-        type="date"
-        value={visitDate}
-        onChange={(e) => setVisitDate(e.target.value)}
-        max={new Date().toISOString().split("T")[0]}
-      />
-      {errors.visitDate && <div style={{ color: 'red' }}>{errors.visitDate}</div>}
-    </CCol>
+  <CCol xs={12} md={6} lg={2} className='ms-3'>
+    <CFormLabel htmlFor="visitDate" className="fw-bold">Visit Date</CFormLabel>
+    <CFormInput
+      id="visitDate"
+      type="date"
+      value={visitDate}
+      onChange={(e) => setVisitDate(e.target.value)}
+      max={new Date().toISOString().split("T")[0]}
+      required
+    />
+    {errors.visitDate && <div className="text-danger">{errors.visitDate}</div>}
+  </CCol>
+
+</CRow>
+
   </CRow>
 {/* </CCard> */}
 
 
 {/* Old Bill Displyed POP up */}
 
-{showPatientCard && lastBill && (
+{/* {showPatientCard && lastBill && (
   <>
     {healthdirectives.map((directive, index) => {
       const exam = patientExaminations[index];
@@ -1116,24 +1151,23 @@ const [selectedOption, setSelectedOption] = useState('');
       return (
         <CAlert key={index} color="success" className="p-2 rounded-md shadow-md mb-2 border border-secondary">
 
-        {/* Bill Visit Date */}
+        Bill Visit Date
         {bill && (
             <div className="mb-2 text-dark">
               <strong>Visit Date:</strong> {bill.visit_date}
             </div>
           )}
 
-          {/* Health Directive */}
+          Health Directive
           <div className="mb-2">
             <div className="d-flex flex-wrap gap-4 text-dark">
-            {/* <strong>Visit Date:</strong> {bill.visit_date} */}
+         
               <div><strong>Medicine:</strong> {directive.medicine}</div>
               <div><strong>Frequency:</strong> {directive.frequency}</div>
               <div><strong>Duration:</strong> {directive.duration}</div>
             </div>
           </div>
 
-          {/* Patient Examination (if available) */}
           {exam && (
             <div>
               <div className="d-flex flex-wrap gap-3 text-dark">
@@ -1150,7 +1184,56 @@ const [selectedOption, setSelectedOption] = useState('');
       );
     })}
   </>
-)}
+)} */}
+{showPatientCard && lastBill && lastBill.map((bill, index) => {
+  // Filter directives and examinations that match this bill's ID
+  const directivesForBill = healthdirectives.filter(d => d.p_p_i_id == bill.id);
+  const examsForBill = patientExaminations.filter(e => e.p_p_i_id == bill.id);
+
+  return (
+    <CAlert key={index} color="success" className="p-3 rounded-md shadow-md mb-3 border border-secondary">
+      {/* Visit Date */}
+      <div className="mb-2 text-dark">
+        <strong>Visit Date:</strong> {bill.visit_date}
+      </div>
+
+      {/* Health Directives */}
+      {directivesForBill.length > 0 && (
+        <>
+          <div className="mb-2 text-dark"><strong>Health Directives</strong></div>
+          {directivesForBill.map((directive, dIndex) => (
+            <div key={dIndex} className="border-bottom pb-2 mb-2">
+              <div className="d-flex flex-wrap gap-4 text-dark">
+                <div><strong>Medicine:</strong> {directive.medicine}</div>
+                {/* <div><strong>Strength:</strong> {directive.strength}</div> */}
+                {/* <div><strong>Dosage:</strong> {directive.dosage}</div>
+                <div><strong>Timing:</strong> {directive.timing}</div> */}
+                <div><strong>Frequency:</strong> {directive.frequency}</div>
+                <div><strong>Duration:</strong> {directive.duration}</div>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Patient Examination */}
+      {examsForBill.length > 0 && examsForBill.map((exam, eIndex) => (
+        <div key={eIndex} className="mt-2">
+          <div className="mb-2 text-dark"><strong>Examination</strong></div>
+          <div className="d-flex flex-wrap gap-3 text-dark">
+            <div><strong>Blood Pressure:</strong> {exam.bp}</div>
+            <div><strong>Pulse:</strong> {exam.pulse}</div>
+            <div><strong>Past History:</strong> {exam.past_history}</div>
+            <div><strong>Complaints:</strong> {exam.complaints}</div>
+          </div>
+        </div>
+      ))}
+    </CAlert>
+  );
+})}
+
+
+
 
 
 
@@ -1210,14 +1293,14 @@ const [selectedOption, setSelectedOption] = useState('');
     <h6 className="mb-0 fw-semibold">Medical Observations</h6>&nbsp;&nbsp;
   </div>
   <CButton
-    color="light"
+    color="success"
     variant="outline"
     shape="rounded-pill"
     className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
     onClick={toggleForm}
   >
     <span className="fs-5 text-dark" >{isExpanded ? '−' : '+'}</span>
-    <span className="fw-medium text-dark" >
+    <span className="fw-medium text-dark"  >
       {isExpanded ? 'Close' : 'Add Observation'}
     </span>
   </CButton>
@@ -1360,7 +1443,7 @@ const [selectedOption, setSelectedOption] = useState('');
   <h6 className="mb-0 fw-semibold">Medical Prescriptions</h6>&nbsp;&nbsp;
 </div>
 <CButton
-  color="light"
+  color="success"
   variant="outline"
   shape="rounded-pill"
   className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
@@ -2066,3 +2149,44 @@ export default Typography;
                   </CFormSelect>
                   {rowErrors[index]?.description && <div className="text-danger">{rowErrors[index].description}</div>}
                 </CTableDataCell> */}
+
+
+
+//                 {showPatientCard && (
+//   <>
+//     {lastBill?.[0] && (
+//       <CAlert color="success" className="p-2 rounded-md shadow-md mb-2 border border-secondary">
+//         <div className="mb-2 text-dark">
+//           <strong>Visit Date:</strong> {lastBill[0].visit_date}
+//         </div>
+//       </CAlert>
+//     )}
+
+//     {healthdirectives.length > 0 && healthdirectives.map((directive, index) => (
+//       <CAlert key={`directive-${index}`} color="success" className="p-2 rounded-md shadow-md mb-2 border border-secondary">
+//         <div className="mb-2 text-dark">
+//           <strong>Health Directive</strong>
+//         </div>
+//         <div className="d-flex flex-wrap gap-4 text-dark">
+//           <div><strong>Medicine:</strong> {directive.medicine}</div>
+//           <div><strong>Frequency:</strong> {directive.frequency}</div>
+//           <div><strong>Duration:</strong> {directive.duration}</div>
+//         </div>
+//       </CAlert>
+//     ))}
+
+//     {patientExaminations.length > 0 && patientExaminations.map((exam, index) => (
+//       <CAlert key={`exam-${index}`} color="success" className="p-2 rounded-md shadow-md mb-2 border border-secondary">
+//         <div className="mb-2 text-dark">
+//           <strong>Examination</strong>
+//         </div>
+//         <div className="d-flex flex-wrap gap-3 text-dark">
+//           <div><strong>Blood Pressure:</strong> {exam.bp}</div>
+//           <div><strong>Pulse:</strong> {exam.pulse}</div>
+//           <div><strong>Past History:</strong> {exam.past_history}</div>
+//           <div><strong>Complaints:</strong> {exam.complaints}</div>
+//         </div>
+//       </CAlert>
+//     ))}
+//   </>
+// )}

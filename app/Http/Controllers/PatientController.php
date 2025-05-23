@@ -489,26 +489,66 @@ public function manuallyAddPatient(Request $request)
 //         'patient_examinations' => $patientExaminations,
 //     ]);
 // }
+
+// ------------------ 
+// public function getPatientDetails($id)
+// {
+//     $doctorId = Auth::id(); // Ensure the doctor owns this patient
+
+//     $patient = Patient::where('id', $id)
+//                 ->where('doctor_id', $doctorId)
+//                 ->first();
+
+//     if (!$patient) {
+//         return response()->json(['error' => 'Patient not found'], 404);
+//     }
+
+//     // Get the latest bill for the patient
+//     $lastBill = Bill::where('patient_id', $id)
+//                 // ->latest('created_at')
+//                 // ->first();
+//                 ->orderBy('created_at', 'desc')
+//                 ->take(3)
+//                 ->get();
+
+
+//     // Get latest 3 health directives
+//     $healthDirectives = HealthDirective::where('patient_id', $id)
+//                         ->orderBy('created_at', 'desc')
+//                         ->take(3)
+//                         ->get();
+
+//     // Get latest 3 patient examinations
+//     $patientExaminations = PatientExamination::where('patient_id', $id)
+//                             ->orderBy('created_at', 'desc')
+//                             ->take(3)
+//                             ->get();
+
+//     return response()->json([
+//         'patient' => $patient,
+//         'last_bill' => $lastBill,
+//         'health_directives' => $healthDirectives,
+//         'patient_examinations' => $patientExaminations,
+//     ]);
+// }
 public function getPatientDetails($id)
 {
-    $doctorId = Auth::id(); // Ensure the doctor owns this patient
+    $clinicId = Auth::user()->clinic_id; // Get clinic ID of the logged-in user
 
+    // Get the patient under the same clinic
     $patient = Patient::where('id', $id)
-                ->where('doctor_id', $doctorId)
+                ->where('clinic_id', $clinicId)
                 ->first();
 
     if (!$patient) {
         return response()->json(['error' => 'Patient not found'], 404);
     }
 
-    // Get the latest bill for the patient
+    // Get the latest 3 bills for the patient
     $lastBill = Bill::where('patient_id', $id)
-                // ->latest('created_at')
-                // ->first();
                 ->orderBy('created_at', 'desc')
                 ->take(3)
                 ->get();
-
 
     // Get latest 3 health directives
     $healthDirectives = HealthDirective::where('patient_id', $id)
@@ -529,6 +569,7 @@ public function getPatientDetails($id)
         'patient_examinations' => $patientExaminations,
     ]);
 }
+
 
 
 
@@ -692,47 +733,90 @@ public function getPatientDetails($id)
     //     }
     // }
 
+// -------------------- 
 
+//     public function getPatientInfoForBill(Request $request)
+// {
+//     try {
+//         // Validate the request to ensure a valid 'tokan_number' is provided
+//         $request->validate([
+//             'tokan_number' => 'required|integer',
+//         ]);
 
-    public function getPatientInfoForBill(Request $request)
+//         // Get the 'tokan_number' from the request
+//         $tokanNumber = $request->input('tokan_number');
+
+//         // Get the logged-in doctor's clinic ID
+//         $clinicId = auth()->user()->clinic_id;
+
+//         // Fetch the token where the clinic ID matches the logged-in doctor's clinic ID
+//         $tokan = Tokan::where('tokan_number', $tokanNumber)
+//             ->whereDate('date', now()->toDateString()) // Ensure the token is for today
+//             ->where('clinic_id', $clinicId) // Match logged-in doctor's clinic ID
+//             ->with('patient') // Assuming a 'patient' relationship exists in the Tokan model
+//             ->first();
+
+//         // Check if the token exists and belongs to the same clinic
+//         if (!$tokan) {
+//             return response()->json(['message' => 'Token not found, expired, or does not belong to this clinic'], 404);
+//         }
+
+//         // Check if patient data is associated with the token
+//         if (!$tokan->patient) {
+//             return response()->json(['message' => 'No patient data found for this token'], 404);
+//         }
+
+//         // Return the patient and token data
+//         return response()->json([
+//             'tokan' => $tokan,
+//             'patient' => $tokan->patient,
+//         ], 200);
+
+//     } catch (\Exception $e) {
+//         // Handle any unexpected errors and log them
+//         \Log::error('Error fetching patient info by token: ' . $e->getMessage());
+
+//         return response()->json([
+//             'error' => 'An error occurred while fetching patient data',
+//             'message' => $e->getMessage(),
+//         ], 500);
+//     }
+// }
+public function getPatientInfoForBill(Request $request)
 {
     try {
-        // Validate the request to ensure a valid 'tokan_number' is provided
         $request->validate([
             'tokan_number' => 'required|integer',
         ]);
 
-        // Get the 'tokan_number' from the request
         $tokanNumber = $request->input('tokan_number');
-
-        // Get the logged-in doctor's clinic ID
+        $loggedInDoctorId = auth()->user()->id;
         $clinicId = auth()->user()->clinic_id;
 
-        // Fetch the token where the clinic ID matches the logged-in doctor's clinic ID
+        // Fetch token directly assigned to the logged-in doctor
         $tokan = Tokan::where('tokan_number', $tokanNumber)
-            ->whereDate('date', now()->toDateString()) // Ensure the token is for today
-            ->where('clinic_id', $clinicId) // Match logged-in doctor's clinic ID
-            ->with('patient') // Assuming a 'patient' relationship exists in the Tokan model
+            ->whereDate('date', now()->toDateString())
+            ->where('clinic_id', $clinicId)
+            ->where('doctor_id', $loggedInDoctorId) // ✅ Enforce doctor-token assignment in query
+            ->with('patient')
             ->first();
 
-        // Check if the token exists and belongs to the same clinic
         if (!$tokan) {
-            return response()->json(['message' => 'Token not found, expired, or does not belong to this clinic'], 404);
+            return response()->json([
+                'message' => 'Token not found, expired, or not assigned to you.'
+            ], 404);
         }
 
-        // Check if patient data is associated with the token
         if (!$tokan->patient) {
             return response()->json(['message' => 'No patient data found for this token'], 404);
         }
 
-        // Return the patient and token data
         return response()->json([
             'tokan' => $tokan,
             'patient' => $tokan->patient,
         ], 200);
 
     } catch (\Exception $e) {
-        // Handle any unexpected errors and log them
         \Log::error('Error fetching patient info by token: ' . $e->getMessage());
 
         return response()->json([

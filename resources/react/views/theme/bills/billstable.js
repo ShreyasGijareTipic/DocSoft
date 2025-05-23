@@ -17,7 +17,7 @@ const BasicMantineTable = () => {
   // Define the columns for the table
   const columns = useMemo(
     () => [
-      { accessorKey: 'id', header: 'ID' },
+      // { accessorKey: 'id', header: 'ID' },
       { accessorKey: 'patient_name', header: 'Patient Name' },
       { accessorKey: 'doctor_name', header: 'Doctor Name' },
       { accessorKey: 'registration_number', header: 'Registration Number' },

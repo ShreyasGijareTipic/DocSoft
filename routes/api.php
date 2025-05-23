@@ -98,7 +98,8 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/registerUser', [AuthController::class, 'registerUser']);
     // Route::put('/appUsers', [AuthController::class, 'update']);
-    Route::put('/appUsers/{id}', [AuthController::class, 'update']);
+    Route::put('/appUsers/{id}', [AuthController::class, 'update']); 
+    Route::put('/blockedUser/{id}', [AuthController::class, 'blockedUser']);
     Route::get('/appUsers', [AuthController::class, 'allUsers']);
 
     Route::post('/sendBill', [WhatsAppController::class, 'sendBill']);

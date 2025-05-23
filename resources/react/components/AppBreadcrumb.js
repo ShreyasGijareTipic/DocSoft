@@ -35,7 +35,7 @@ const AppBreadcrumb = () => {
 
   return (
     <CBreadcrumb className="my-0">
-      <CBreadcrumbItem href="/#/Dashboard">Home</CBreadcrumbItem>
+      <CBreadcrumbItem href="/#/Dashboard2">Home</CBreadcrumbItem>
       {breadcrumbs.map((breadcrumb, index) => {
         return (
           <CBreadcrumbItem

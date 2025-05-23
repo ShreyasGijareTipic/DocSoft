@@ -428,6 +428,8 @@ public function update(Request $request)
         'registration_number' => 'nullable|string',
         'speciality' => 'nullable|string',
         'education' => 'nullable|string',
+        'consulting_fee'=>'nullable|string',
+        
     ]);
 
     $user = User::find($request->id);
@@ -441,6 +443,7 @@ public function update(Request $request)
         'registration_number' => $request->registration_number,
         'speciality' => $request->speciality,
         'education' => $request->education,
+        'consulting_fee' => $request->consulting_fee,
     ]);
 
     return response()->json([
@@ -449,6 +452,34 @@ public function update(Request $request)
         'user' => $user
     ]);
 }
+
+
+
+public function blockedUser(Request $request)
+{
+    $request->validate([
+        // 'id' => 'required|exists:users,id',
+        'blocked' => 'nullable|integer'
+    ]);
+
+    $user = User::findOrFail($request->id);
+
+    // Only update fields that are actually present in the request
+    if ($request->has('blocked')) {
+        $user->blocked = $request->blocked;
+    }
+
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'User updated successfully.',
+        'user' => $user
+    ]);
+}
+
+
+
 
     
 
