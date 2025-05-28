@@ -14,14 +14,11 @@ class ClinicReceiptController extends Controller
 {
     /**
      * Store a newly created receipt in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'clinic_id' => 'nullable|exists:clinic_info,clinic_id', // Changed to nullable
+            'clinic_id' => 'nullable|exists:clinic,id',
             'plan_id' => 'required|exists:plans,id',
             'user_id' => 'required|exists:users,id',
             'total_amount' => 'required|numeric',
@@ -40,9 +37,9 @@ class ClinicReceiptController extends Controller
             // Create the receipt
             $receipt = ClinicReceipt::create($request->all());
 
-            // Update the clinic's subscription details - but only if clinic_id is provided
-            if ($request->has('clinic_id') && $request->clinic_id) {
-                $clinic = Clinic::where('clinic_id', $request->clinic_id)->first();
+            // Update clinic subscription if clinic_id is provided
+            if ($request->filled('clinic_id')) {
+                $clinic = Clinic::find($request->clinic_id);
                 if ($clinic) {
                     $clinic->subscribed_plan = $request->plan_id;
                     $clinic->subscription_validity = $request->valid_till;
@@ -52,11 +49,10 @@ class ClinicReceiptController extends Controller
 
             DB::commit();
 
-            // Get receipt with related data - but handle cases where clinic_id might be null
-            if ($request->has('clinic_id') && $request->clinic_id) {
-                // Full receipt data with clinic info
+            // Fetch receipt details
+            if ($request->filled('clinic_id')) {
                 $data = DB::table('clinic_receipts as cr')
-                    ->join('clinic_info as ci', 'cr.clinic_id', '=', 'ci.clinic_id')
+                    ->join('clinic as c', 'cr.clinic_id', '=', 'c.id')
                     ->join('plans as p', 'cr.plan_id', '=', 'p.id')
                     ->join('users as u', 'cr.user_id', '=', 'u.id')
                     ->select(
@@ -66,10 +62,10 @@ class ClinicReceiptController extends Controller
                         'cr.total_amount',
                         'cr.valid_till',
                         'cr.created_at',
-                        'ci.clinic_name',
-                        'ci.clinic_registration_no',
-                        'ci.clinic_mobile',
-                        'ci.clinic_address',
+                        'c.clinic_name',
+                        'c.clinic_registration_no',
+                        'c.clinic_mobile',
+                        'c.clinic_address',
                         'p.name as plan_name',
                         'p.price as plan_price',
                         'u.name as user_name'
@@ -77,7 +73,6 @@ class ClinicReceiptController extends Controller
                     ->where('cr.id', $receipt->id)
                     ->get();
             } else {
-                // Limited receipt data (no clinic info)
                 $data = DB::table('clinic_receipts as cr')
                     ->join('plans as p', 'cr.plan_id', '=', 'p.id')
                     ->join('users as u', 'cr.user_id', '=', 'u.id')
@@ -112,15 +107,12 @@ class ClinicReceiptController extends Controller
 
     /**
      * Display a listing of receipts for a specific clinic.
-     *
-     * @param  int  $clinicId
-     * @return \Illuminate\Http\Response
      */
     public function getClinicReceipts($clinicId)
     {
         try {
             $receipts = DB::table('clinic_receipts as cr')
-                ->join('clinic_info as ci', 'cr.clinic_id', '=', 'ci.clinic_id')
+                ->join('clinic as c', 'cr.clinic_id', '=', 'c.id')
                 ->join('plans as p', 'cr.plan_id', '=', 'p.id')
                 ->join('users as u', 'cr.user_id', '=', 'u.id')
                 ->select(
@@ -130,7 +122,7 @@ class ClinicReceiptController extends Controller
                     'cr.total_amount',
                     'cr.valid_till',
                     'cr.created_at',
-                    'ci.clinic_name',
+                    'c.clinic_name',
                     'p.name as plan_name',
                     'u.name as user_name'
                 )
@@ -152,8 +144,6 @@ class ClinicReceiptController extends Controller
 
     /**
      * Get details for clinic registration form.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function getDetailsForClinic()
     {
