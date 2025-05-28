@@ -53,7 +53,7 @@ console.log("user",user.consulting_fee);
 
   const navigate = useNavigate(); // Initialize useNavigate
   const [rows, setRows] = useState([
-    { description: 'Consulting', quantity: 0, price: user?.consulting_fee || 0, gst: 0, total: 500 }
+    { description: 'Consulting', quantity: 0, price: user?.consulting_fee || 0, gst: 0, total: 0 }
   ]);
   
   const [patientName, setPatientName] = useState(formDataa?.patient_name || '');

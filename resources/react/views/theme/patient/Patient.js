@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MantineReactTable } from 'mantine-react-table';
 import { Loader, Alert } from '@mantine/core';
 import { getAPICall, put } from '../../../util/api';
-import { CButton, CForm, CFormInput, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from '@coreui/react';
+import { CButton,CBadge, CForm, CFormInput, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from '@coreui/react';
 
 const BasicMantineTable = () => {
   const [data, setData] = useState([]); // State to hold patient data
@@ -38,13 +38,13 @@ console.log("editData",editData);
                    Cell: ({ row }) => (
                      <>
                        
-                         <CButton className='bg-warning' 
+                         <CBadge className='bg-warning' 
                          shape='rounded-pill'
                          // onClick={() => setVisible(!visible)} 
                          onClick={() => handleEdit(row.original)}
                         >
                           Update 
-                         </CButton>
+                         </CBadge>
                     
                      </>
                    ),

@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MantineReactTable } from 'mantine-react-table';
 import { Loader, Alert } from '@mantine/core';
 import { getAPICall } from '../../../util/api';
-import { CButton } from '@coreui/react';
+import { CButton, CBadge } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 
 const BasicMantineTable = () => {
@@ -29,13 +29,13 @@ const BasicMantineTable = () => {
                          Cell: ({ row }) => (
                            <>
                              
-                               <CButton className='bg-info' 
+                               <CBadge className='bg-info' 
                                shape='rounded-pill'
                                // onClick={() => setVisible(!visible)} 
                                onClick={() => handleEdit(row.original.id)}
                               >
                                Privious Bill
-                               </CButton>
+                               </CBadge>
                           
                            </>
                          ),
@@ -135,8 +135,8 @@ const BasicMantineTable = () => {
 
 
       <>
-        {loading && <Loader />} {/* Loading Spinner */}
-        {error && <Alert color="red">{error}</Alert>} {/* Error Message */}
+        {/* {loading && <Loader />} 
+        {error && <Alert color="red">{error}</Alert>} 
       
         {!loading && !error && (
           <MantineReactTable
@@ -188,7 +188,65 @@ const BasicMantineTable = () => {
               },
             }}
           />
-        )}
+        )} */}
+        {!loading && !error && (
+  data.length > 0 ? (
+    <MantineReactTable
+      columns={columns}
+      data={data}
+      initialState={{
+        density: 'comfortable',
+        pagination: { pageSize: 10 },
+        showColumnFilters: true,
+      }}
+      enableFullScreenToggle={false}
+      enableDensityToggle={true}
+      enableColumnResizing
+      enableColumnActions
+      enableRowNumbers
+      enableStickyHeader
+      enableSorting
+      enableGlobalFilter
+      enableColumnFilters
+      enableHiding
+      enableRowSelection
+      positionToolbarAlertBanner="bottom"
+      muiTableBodyRowProps={{
+        sx: {
+          '&:hover': {
+            backgroundColor: '#f9f9f9',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease-in-out',
+          },
+        },
+      }}
+      muiTableHeadCellProps={{
+        sx: {
+          backgroundColor: '#f1f5f9',
+          fontWeight: '600',
+          color: '#1f2937',
+        },
+      }}
+      muiTablePaperProps={{
+        sx: {
+          borderRadius: '10px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          overflow: 'hidden',
+        },
+      }}
+      muiTableContainerProps={{
+        sx: {
+          maxHeight: '600px',
+        },
+      }}
+    />
+  ) : (
+    <Alert color="yellow" style={{ marginTop: '1rem' }}>
+      No data available.
+    </Alert>
+  )
+)}
+
       </>
 
       </>

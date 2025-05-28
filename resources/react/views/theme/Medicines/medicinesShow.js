@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { MantineReactTable } from 'mantine-react-table';
 import { getAPICall, put } from '../../../util/api';
-import { CButton, CFormInput, CFormLabel, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from '@coreui/react';
+import { CButton,CBadge, CFormInput, CFormLabel, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from '@coreui/react';
 import { Loader } from '@mantine/core';
 import { Alert } from '@coreui/coreui';
 
@@ -34,13 +34,13 @@ const [editData, setEditData] = useState({
                               Cell: ({ row }) => (
                                 <>
                                   
-                                    <CButton className='bg-info'
+                                    <CBadge className='bg-info'
                                     shape='rounded-pill' 
                                     // onClick={() => setVisible(!visible)} 
                                     onClick={() => handleEdit(row.original)}
                                    >
                                      Update Medicine
-                                    </CButton>
+                                    </CBadge>
                                
                                 </>
                               ),
