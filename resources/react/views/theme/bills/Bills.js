@@ -983,161 +983,191 @@ const [selectedOption, setSelectedOption] = useState('');
 
 
 
-  <CRow className="p-3">
-    {/* Row 1: Patient Name & Address */}
-    <CCol xs={12} md={6}  className="d-flex align-items-start mb-3" style={{ position: 'relative' }}>
-  <CFormLabel className="me-2 mb-0" style={{ fontWeight: 'bold', minWidth: '120px' }}>
-    Patient Name
-  </CFormLabel>
+<CRow className="p-2 p-md-2 mb-2">
+  {/* Patient Name & Address - Always stacked on mobile, side by side on desktop */}
+  <CCol xs={12} md={6} className="mb-2 ">
+    {/* Mobile: Block layout, Desktop: Flex layout */}
+    <div className="d-block d-md-flex align-items-start" style={{ position: 'relative' }}>
+      <CFormLabel className="me-md-1 mb-1 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
+        Patient Name
+      </CFormLabel>
+      
+      {/* Wrapper around input + suggestion */}
+      <div style={{ width: '90%', position: 'relative' }} >
+        <CFormInput
+          value={patientName || data?.patient?.name || ''}
+          onChange={(e) => setPatientName(e.target.value)}
+          placeholder="Enter patient name"
+          required
+          className="w-100"
+        />
 
-  {/* Wrapper around input + suggestion */}
-  <div style={{ width: '100%', position: 'relative' }}>
-    <CFormInput
-      value={patientName || data?.patient?.name || ''}
-      onChange={(e) => setPatientName(e.target.value)}
-      placeholder="Enter patient name"
-      required
-    />
-
-    {/* Suggestions dropdown */}
-    {Array.isArray(suggestions) && suggestions.length > 0 && !selectedPatient && (
-      <CListGroup
-        className="shadow"
-        style={{
-          position: 'absolute',
-          top: '100%',
-          left: 0,
-          right: 0,
-          zIndex: 9999,
-          maxHeight: '200px',
-          overflowY: 'auto',
-          backgroundColor: '#fff',
-        }}
-      >
-        {suggestions.map((patient) => (
-          <CListGroupItem
-            key={patient.id}
-            onClick={() => handleSuggestionClick(patient)}
-            style={{ cursor: 'pointer' }}
+        {/* Suggestions dropdown */}
+        {Array.isArray(suggestions) && suggestions.length > 0 && !selectedPatient && (
+          <CListGroup
+            className="shadow"
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              zIndex: 9999,
+              maxHeight: '200px',
+              overflowY: 'auto',
+              backgroundColor: '#fff',
+              borderRadius: '0.375rem',
+              marginTop: '2px'
+            }}
           >
-            {patient.name}
-          </CListGroupItem>
-        ))}
-      </CListGroup>
-    )}
+            {suggestions.map((patient) => (
+              <CListGroupItem
+                key={patient.id}
+                onClick={() => handleSuggestionClick(patient)}
+                style={{ 
+                  cursor: 'pointer',
+                  padding: '0.75rem 1rem',
+                  fontSize: '0.875rem'
+                }}
+                className="border-0 border-bottom"
+              >
+                {patient.name}
+              </CListGroupItem>
+            ))}
+          </CListGroup>
+        )}
 
-    {/* Validation Error */}
-    {errors.patientName && <div style={{ color: 'red' }}>{errors.patientName}</div>}
-  </div>
-</CCol>
+        {/* Validation Error */}
+        {errors.patientName && (
+          <div className="text-danger mt-1 small">{errors.patientName}</div>
+        )}
+      </div>
+    </div>
+  </CCol>
 
+  <CCol xs={12} md={6} className="mb-2">
+    {/* Mobile: Block layout, Desktop: Flex layout */}
+    <div className="d-block d-md-flex align-items-center">
+      <CFormLabel className="me-md-2 mb-2 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
+        Patient Address
+      </CFormLabel>
+      <div style={{ width: '90%', position: 'relative' }}>
+        <CFormInput
+          value={patientAddress || data?.patient?.address || ''}
+          onChange={(e) => setPatientAddress(e.target.value)}
+          placeholder="Full Address / Pincode"
+          required
+          className="w-100"
+        />
+        {errors.patientAddress && (
+          <div className="text-danger mt-1 small">{errors.patientAddress}</div>
+        )}
+      </div>
+    </div>
+  </CCol>
 
-    <CCol xs={12} md={6} className="d-flex align-items-center mb-3">
-      <CFormLabel className="me-2 mb-0" style={{fontWeight:'bold', minWidth: '120px' }}>Patient Address</CFormLabel>
+  {/* Contact Details Row - Responsive layout */}
+  <CRow className="">
+    <CCol xs={12} md={6} lg={3}>
+      <CFormLabel htmlFor="phone" className="fw-bold mb-2 d-block">
+        Mobile Number
+      </CFormLabel>
       <CFormInput
-        value={patientAddress || data?.patient?.address || ''}
-        // value={data?.patient?.address}
-        onChange={(e) => setPatientAddress(e.target.value)}
-        placeholder="Full Address / Pincode"
+        id="phone"
+        type="tel"
+        value={phone || data?.patient?.phone || ''}
+        onChange={(e) => setContactNumber(e.target.value)}
+        onInput={(e) => {
+          if (e.target.value.length > 10) {
+            e.target.value = e.target.value.slice(0, 10);
+          }
+        }}
+        placeholder="Enter contact number"
         required
+        className="w-100"
       />
-      {errors.patientAddress && <div style={{ color: 'red' }}>{errors.patientAddress}</div>}
+      {errors.phone && (
+        <div className="text-danger mt-1 small">{errors.phone}</div>
+      )}
     </CCol>
 
-    {/* <h1>Grand Total: {lastBill?.grand_total}</h1> */}
+    <CCol xs={12} md={6} lg={3}>
+      <CFormLabel htmlFor="email" className="fw-bold mb-2 d-block">
+        Email
+      </CFormLabel>
+      <CFormInput
+        id="email"
+        type="email"
+        value={email || data?.patient?.email || ''}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter email address"
+        required
+        className="w-100"
+      />
+      {errors.email && (
+        <div className="text-danger mt-1 small">{errors.email}</div>
+      )}
+    </CCol>
 
-
-    {/* Row 2: Contact | Email | DOB | Visit Date */}
-    
-    <CRow className="">
-      
-  <CCol xs={12} md={6} lg={3}>
-    <CFormLabel htmlFor="phone" className="fw-bold">Mobile Number</CFormLabel>
-    <CFormInput
-      id="phone"
-      type="tel"
-      value={phone || data?.patient?.phone || ''}
-      onChange={(e) => setContactNumber(e.target.value)}
-      onInput={(e) => {
-        if (e.target.value.length > 10) {
-          e.target.value = e.target.value.slice(0, 10);
+    <CCol xs={12} md={6} lg={3}>
+      <CFormLabel htmlFor="dob" className="fw-bold mb-2 d-block">
+        Patient DOB
+      </CFormLabel>
+      <CFormInput
+        id="dob"
+        type="date"
+        value={
+          data?.patient?.dob
+            ? new Date(data.patient.dob).toISOString().split("T")[0]
+            : dob || ""
         }
-      }}
-      placeholder="Enter contact number"
-      required
-    />
-    {errors.phone && <div className="text-danger">{errors.phone}</div>}
-  </CCol>
+        onChange={(e) => {
+          const input = e.target.value;
+          const selectedDate = new Date(input);
+          const currentDate = new Date();
+          const year = selectedDate.getFullYear();
 
-  <CCol xs={12} md={6} lg={3}>
-    <CFormLabel htmlFor="email" className="fw-bold">Email</CFormLabel>
-    <CFormInput
-      id="email"
-      type="email"
-      value={email || data?.patient?.email || ''}
-      onChange={(e) => setEmail(e.target.value)}
-      placeholder="Enter email address"
-      required
-    />
-    {errors.email && <div className="text-danger">{errors.email}</div>}
-  </CCol>
-
-
-
-
-  <CCol xs={12} md={6} lg={3}  className='ms-3'>
-    <CFormLabel htmlFor="dob" className="fw-bold">Patient DOB</CFormLabel>
-    <CFormInput
-      id="dob"
-     
-      type="date"
-      value={
-        data?.patient?.dob
-          ? new Date(data.patient.dob).toISOString().split("T")[0]
-          : dob || ""
-      }
-      onChange={(e) => {
-        const input = e.target.value;
-        const selectedDate = new Date(input);
-        const currentDate = new Date();
-        const year = selectedDate.getFullYear();
-
-        if (year >= 1900 && selectedDate <= currentDate) {
-          setDob(input);
-          if (errors.dob) {
-            setErrors((prev) => ({ ...prev, dob: "" }));
+          if (year >= 1900 && selectedDate <= currentDate) {
+            setDob(input);
+            if (errors.dob) {
+              setErrors((prev) => ({ ...prev, dob: "" }));
+            }
+          } else {
+            setDob("");
+            setErrors((prev) => ({
+              ...prev,
+              dob: "Please enter a valid DOB (not in the future & after 1900).",
+            }));
           }
-        } else {
-          setDob("");
-          setErrors((prev) => ({
-            ...prev,
-            dob: "Please enter a valid DOB (not in the future & after 1900).",
-          }));
-        }
-      }}
-      max={new Date().toISOString().split("T")[0]}
-      placeholder="Enter patient DOB"
-      required
-    />
-    {errors.dob && <div className="text-danger">{errors.dob}</div>}
-  </CCol>
+        }}
+        max={new Date().toISOString().split("T")[0]}
+        placeholder="Enter patient DOB"
+        required
+        className="w-100"
+      />
+      {errors.dob && (
+        <div className="text-danger mt-1 small">{errors.dob}</div>
+      )}
+    </CCol>
 
-  <CCol xs={12} md={6} lg={2} className='ms-3'>
-    <CFormLabel htmlFor="visitDate" className="fw-bold">Visit Date</CFormLabel>
-    <CFormInput
-      id="visitDate"
-      type="date"
-      value={visitDate}
-      onChange={(e) => setVisitDate(e.target.value)}
-      max={new Date().toISOString().split("T")[0]}
-      required
-    />
-    {errors.visitDate && <div className="text-danger">{errors.visitDate}</div>}
-  </CCol>
-
-</CRow>
-
+    <CCol xs={12} md={6} lg={3}>
+      <CFormLabel htmlFor="visitDate" className="fw-bold mb-2 d-block">
+        Visit Date
+      </CFormLabel>
+      <CFormInput
+        id="visitDate"
+        type="date"
+        value={visitDate}
+        onChange={(e) => setVisitDate(e.target.value)}
+        max={new Date().toISOString().split("T")[0]}
+        required
+        className="w-100"
+      />
+      {errors.visitDate && (
+        <div className="text-danger mt-1 small">{errors.visitDate}</div>
+      )}
+    </CCol>
   </CRow>
+</CRow>
 {/* </CCard> */}
 
 
