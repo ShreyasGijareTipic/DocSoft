@@ -73,5 +73,10 @@ public function medicalObservations()
     return $this->hasOne(DoctorMedicalObservation::class, 'doctor_id');
 }
 
+public function clinic()
+{
+    return $this->belongsTo(Clinic::class, 'clinic_id');
+}
+
 }
 

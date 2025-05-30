@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CBadge, CCard, CAlert, CCol, CRow } from '@coreui/react';
+import { CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CBadge, CCard, CAlert, CCol, CRow, CButton } from '@coreui/react';
 import { getAPICall, post} from '../../util/api';
+import CIcon from '@coreui/icons-react';
+import { cilChatBubble, cilPhone } from '@coreui/icons';
+import { getUser } from '../../util/session';
 
 const Dashboard = () => {
   const [tokens, setTokens] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [selectedToken, setSelectedToken] = useState(null);
   const [selectedTokens, setSelectedTokens] = useState([]);
-
-
+  const company = getUser()?.company_info?.company_name || 'Clinic';
 
   useEffect(() => {
     const loadTokens = async () => {
@@ -31,11 +33,17 @@ const Dashboard = () => {
                 return {
                   ...token,
                   patient_name: patientResponse?.name || 'Unknown',
+                  patient_phone: patientResponse?.phone || patientResponse?.mobile || '',
                   doctor_name: doctorResponse?.name || 'Unknown',
                 };
               } catch (error) {
                 console.error(`Error fetching details for token ${token.id}:`, error);
-                return { ...token, patient_name: 'Unknown', doctor_name: 'Unknown' };
+                return { 
+                  ...token, 
+                  patient_name: 'Unknown', 
+                  doctor_name: 'Unknown',
+                  patient_phone: ''
+                };
               }
             })
           );
@@ -70,10 +78,7 @@ const Dashboard = () => {
     setSelectedTokens(filteredTokens); // Store all matches
   };
   
-  
 // ----------------------------------------------------
-
-
 
   const updateStatus = async (tokanNumber, newStatus) => {
     try {
@@ -93,6 +98,20 @@ const Dashboard = () => {
       console.error('Error updating status:', error);
     }
   };
+
+  // Generate message based on token status
+  const generateMessage = (token) => {
+    const patientName = token.patient_name;
+    const doctorName = token.doctor_name;
+    
+    if (token.status === 'pending') {
+      return `Dear ${patientName}, you have missed your today's appointment with Dr. ${doctorName}. Please schedule your appointment for tomorrow. - ${company}`;
+    } else if (token.status === 'Completed') {
+      return `Dear ${patientName}, thank you for visiting Dr. ${doctorName} today. Take care and follow the prescribed medication. - ${company}`;
+    } else {
+      return `Dear ${patientName}, your appointment with Dr. ${doctorName} is in progress. Please wait for your turn. - ${company}`;
+    }
+  };
   
   const renderTokens = (slot) => {
     const filteredTokens = tokens.filter(token => token.slot === slot);
@@ -106,6 +125,7 @@ const Dashboard = () => {
             <CTableHeaderCell>Doctor</CTableHeaderCell>
             <CTableHeaderCell>Date</CTableHeaderCell>
             <CTableHeaderCell>Status</CTableHeaderCell>
+            <CTableHeaderCell>Contact</CTableHeaderCell>
           </CTableRow>
         </CTableHead>
         <CTableBody>
@@ -128,18 +148,39 @@ const Dashboard = () => {
                       updateStatus(token.tokan_number, "Completed");
                     }
                   }}
-
-
-
                   >
                     {token.status}
                   </CBadge>
+                </CTableDataCell>
+                <CTableDataCell>
+                  {token.patient_phone && (
+                    <>
+                      <a
+                        className="btn btn-outline-primary btn-sm"
+                        href={`tel:+${token.patient_phone.replace(/^(\+)?/, '')}`}
+                        title="Call Patient"
+                      >
+                        <CIcon icon={cilPhone} />
+                      </a>
+                      &nbsp;
+                      <a
+                        className="btn btn-outline-success btn-sm"
+                        href={`sms:+${token.patient_phone.replace(/^(\+)?/, '')}?body=${encodeURIComponent(generateMessage(token))}`}
+                        title="Send Message"
+                      >
+                        <CIcon icon={cilChatBubble} />
+                      </a>
+                    </>
+                  )}
+                  {!token.patient_phone && (
+                    <span className="text-muted">No contact</span>
+                  )}
                 </CTableDataCell>
               </CTableRow>
             ))
           ) : (
             <CTableRow>
-              <CTableDataCell colSpan="6" className="text-center">No tokens available.</CTableDataCell>
+              <CTableDataCell colSpan="7" className="text-center">No tokens available.</CTableDataCell>
             </CTableRow>
           )}
         </CTableBody>
@@ -148,140 +189,78 @@ const Dashboard = () => {
   };
 
   return (
-
     <>
-
-    {/* // <div className="p-1">
-    //   <h1 className="text-1 font-bold mb-4">Today's Tokens</h1>
-    //   <h2 className="text-xl font-semibold mt-4 mb-2">Morning</h2>
-    //   {renderTokens("morning")}
-    //   <h2 className="text-xl font-semibold mt-4 mb-2">Afternoon</h2>
-    //   {renderTokens("afternoon")}
-    //   <h2 className="text-xl font-semibold mt-4 mb-2">Evening</h2>
-    //   {renderTokens("evening")}
-    // </div> */}
-
-
-  {/* Header Card */}
-  {/* <CCard className="p-2 shadow-md rounded-2xl mb-2">
-    <div className="flex items-center gap-2">
-      <h4 className="text-1xl font-bold text-gray-800">Today's Tokens</h4>
-    </div>
-  </CCard> */}
-  <CCard className="p-4 shadow-smrounded-2xl mb-4 bg-gradient-to-r from-white to-blue-50 border border-blue-100">
-  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <CRow>
-      <CCol>
-    <h4 className="text-2xl font-bold text-blue-800 tracking-wide">
-      🗓️ Today's Tokens
-    </h4>
-    </CCol>
-    <CCol className=''>
-    <input
-      type="text"
-      className="w-full sm:w-72 px-4 py-2 text-sm border border-blue-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-      placeholder="🔍 Search patient name..."
-      value={searchText}
-      onChange={handleSearchChange}
-    />
-    </CCol>
-    </CRow>
-  </div>
-</CCard>
-
-
-{/* ----------------------------------  */}
-
-{/* {selectedTokens.length > 0 && (
-  
-<CAlert color="success">
-  <div className="">
-    <div className="">
-      <button
-        onClick={() => setSelectedToken([])}
-        className="bg-none"
-      >
-        ✕
-      </button>
-
-      {selectedTokens.map((token, index) => (
-        <div key={index} className="border-b border-green-300 pb-2">
-          <p className="font-semibold text-base">
-            <span className="font-bold">Name:</span> {token.patient_name} ({token.phone})
-          </p>
-          <p><span className="font-bold">Token Number:</span> {token.token_number}</p>
-          <p><span className="font-bold">Slot:</span> {token.slot}</p>
-          <p>
-            <span className="font-bold">Status:</span>{" "}
-            <span className="bg-green-200 text-green-800 px-2 py-0.5 rounded-full text-sm">
-              Active
-            </span>
-          </p>
+      {/* Header Card */}
+      <CCard className="p-4 shadow-smrounded-2xl mb-4 bg-gradient-to-r from-white to-blue-50 border border-blue-100">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CRow>
+            <CCol>
+              <h4 className="text-2xl font-bold text-blue-800 tracking-wide">
+                🗓️ Today's Tokens
+              </h4>
+            </CCol>
+            <CCol className=''>
+              <input
+                type="text"
+                className="w-full sm:w-72 px-4 py-2 text-sm border border-blue-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                placeholder="🔍 Search patient name..."
+                value={searchText}
+                onChange={handleSearchChange}
+              />
+            </CCol>
+          </CRow>
         </div>
+      </CCard>
+
+      {/* Search Results */}
+      {selectedTokens.map((token, index) => (
+        <CAlert color="success" key={index}>
+          <div className="">
+            <p className="font-semibold text-base mb-1">
+              <span className="font-bold" style={{fontWeight: "bold" }}>Token Number:</span>
+              <span style={{ fontSize: "20px", fontWeight: "bold" }}>{token.tokan_number}</span>&nbsp;&nbsp;&nbsp;
+              <span className="font-bold gap-6" style={{fontWeight: "bold" }}>Name:</span>
+              <span style={{ fontSize: "20px", fontWeight: "bold" }}>{token.patient_name}</span>&nbsp;&nbsp;&nbsp;
+              <span className="font-bold" style={{fontWeight: "bold" }}>Slot:</span> 
+              <span style={{ fontSize: "20px", fontWeight: "bold" }}>{token.slot}</span>
+            </p>
+          </div>
+        </CAlert>
       ))}
-    </div>
-  </div>
-  </CAlert>
-)} */}
 
+      {/* Morning Card */}
+      <CCard className="p-4 shadow-md rounded-2xl mb-2">
+        <div className="flex items-center justify-between mb-3">
+          <h5 className="text-xl font-semibold text-blue-700">🌅 Morning</h5>
+          <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
+            6:00 AM - 12:00 PM
+          </span>
+        </div>
+        <div>{renderTokens("morning")}</div>
+      </CCard>
 
-{selectedTokens.map((token, index) => (
-  <CAlert color="success">
-  <div
-    key={index}
-    className=""
-  >
-    <p className="font-semibold text-base mb-1">
-      <span className="font-bold" style={{fontWeight: "bold" }}>Token Number:</span><sapn style={{ fontSize: "20px", fontWeight: "bold" }}>{token.tokan_number}</sapn>&nbsp;&nbsp;&nbsp;
-      <span className="font-bold gap-6" style={{fontWeight: "bold" }}>Name:</span><span style={{ fontSize: "20px", fontWeight: "bold" }}>{token.patient_name}</span>&nbsp;&nbsp;&nbsp;   {/*({token.phone}) */}
-     <span className="font-bold" style={{fontWeight: "bold" }}>Slot:</span> <span style={{ fontSize: "20px", fontWeight: "bold" }}>{token.slot}</span>
-    
-    </p>
-  </div>
-  </CAlert>
-))}
+      {/* Afternoon Card */}
+      <CCard className="p-4 shadow-md rounded-2xl mb-2">
+        <div className="flex items-center justify-between mb-3">
+          <h5 className="text-xl font-semibold text-yellow-600">🌞 Afternoon</h5>
+          <span className="bg-yellow-100 text-yellow-700 text-xs font-medium px-2 py-1 rounded-full">
+            12:00 PM - 4:00 PM
+          </span>
+        </div>
+        <div>{renderTokens("afternoon")}</div>
+      </CCard>
 
-
-{/* -------------------------------------- */}
-
-
-  {/* Morning Card */}
-  <CCard className="p-4 shadow-md rounded-2xl mb-2">
-    <div className="flex items-center justify-between mb-3">
-      <h5 className="text-xl font-semibold text-blue-700">🌅 Morning</h5>
-      <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
-        6:00 AM - 12:00 PM
-      </span>
-    </div>
-    <div>{renderTokens("morning")}</div>
-  </CCard>
-
-  {/* Afternoon Card */}
-  <CCard className="p-4 shadow-md rounded-2xl mb-2">
-    <div className="flex items-center justify-between mb-3">
-      <h5 className="text-xl font-semibold text-yellow-600">🌞 Afternoon</h5>
-      <span className="bg-yellow-100 text-yellow-700 text-xs font-medium px-2 py-1 rounded-full">
-        12:00 PM - 4:00 PM
-      </span>
-    </div>
-    <div>{renderTokens("afternoon")}</div>
-  </CCard>
-
-  {/* Evening Card */}
-  <CCard className="p-4 shadow-md rounded-2xl mb-2">
-    <div className="flex items-center justify-between mb-3">
-      <h5 className="text-xl font-semibold text-purple-700">🌇 Evening</h5>
-      <span className="bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded-full">
-        4:00 PM - 8:00 PM
-      </span>
-    </div>
-    <div>{renderTokens("evening")}</div>
-  </CCard>
-
-
-
-
-</>
+      {/* Evening Card */}
+      <CCard className="p-4 shadow-md rounded-2xl mb-2">
+        <div className="flex items-center justify-between mb-3">
+          <h5 className="text-xl font-semibold text-purple-700">🌇 Evening</h5>
+          <span className="bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded-full">
+            4:00 PM - 8:00 PM
+          </span>
+        </div>
+        <div>{renderTokens("evening")}</div>
+      </CCard>
+    </>
   );
 };
 

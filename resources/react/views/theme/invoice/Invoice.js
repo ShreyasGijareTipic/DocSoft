@@ -3,11 +3,13 @@ import { CButton, CCard, CCardBody, CCardHeader, CContainer } from '@coreui/reac
 import { generatePDF } from './invoicePDF';
 import { getAPICall, post, postFormData } from '../../../util/api';
 import { useParams, useLocation } from 'react-router-dom';
+import { useToast } from '../../common/toast/ToastContext';
 
 const inv = () => {
   const location = useLocation();
   const { billId , billIds} = location.state || {};
   const param = useParams();
+  const { showToast } = useToast();
   console.log(billIds);
   
   const [remainingAmount, setRemainingAmount] = useState(0);
@@ -24,10 +26,10 @@ const inv = () => {
   console.log("Patientexaminations", PatientExaminations);
   
   // Trigger file input dialog
-  const handleFileInputClick = () => {
-    handleDownload();
-    fileInputRef.current.click(); // Triggers the file input click
-  };
+  // const handleFileInputClick = () => {
+  //   handleDownload();
+  //   fileInputRef.current.click(); // Triggers the file input click
+  // };
 
   // Handle file selection
   const handleFileChange = (e) => {
@@ -179,6 +181,152 @@ const inv = () => {
     );
   };
 
+const handleShareWhatsApp = async () => {
+  const billNumber = formData.id || billId;
+  const totalAmount = descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+
+  // Get the patient's phone number
+  const patientPhone = formData.patient_contact;
+  if (!patientPhone) {
+    showToast('warning', 'Patient contact number is not available');
+    return;
+  }
+  
+  // Remove any non-numeric characters from phone number
+  const formattedPhone = patientPhone.replace(/\D/g, '');
+
+  try {
+    console.log('Starting PDF generation for WhatsApp sharing...');
+    
+    // Validate required data before PDF generation
+    if (!formData || !descriptions || descriptions.length === 0) {
+      throw new Error('Missing required data for PDF generation');
+    }
+
+    // Generate PDF - Note: Pass all parameters properly
+    const pdfResult = generatePDF(
+      grandTotal || totalAmount || 0, 
+      billNumber || "N/A", 
+      formData.patient_name || "N/A", 
+      formData, 
+      remainingAmount || 0, 
+      totalAmountWords || "Zero", 
+      descriptions, 
+      doctorData || {}, 
+      clinicData || {}, 
+      healthDirectives || [],   
+      PatientExaminations || [],
+      billId || billNumber,
+      formData.visit_date || new Date().toISOString().split('T')[0], // Use visit_date instead of DeliveryDate
+      totalAmount,
+      true // isWhatsAppShare = true
+    );
+
+    // Check if PDF was generated successfully
+    if (!pdfResult || !(pdfResult instanceof Blob)) {
+      throw new Error('PDF generation failed - invalid blob returned');
+    }
+
+    // Verify blob has content
+    if (pdfResult.size === 0) {
+      throw new Error('PDF generation failed - empty file generated');
+    }
+
+    console.log('PDF generated successfully, size:', pdfResult.size, 'bytes');
+
+    const fileName = `Bill-${billNumber}-${formData.patient_name?.replace(/[^a-zA-Z0-9]/g, '') || 'Patient'}.pdf`;
+    
+    // Method 1: Try Web Share API first (works best on mobile devices)
+    if (navigator.share) {
+      try {
+        const file = new File([pdfResult], fileName, { 
+          type: 'application/pdf',
+          lastModified: Date.now()
+        });
+        
+        const shareData = {
+          title: `Medical Bill - ${formData.patient_name}`,
+          text: `Medical Bill #${billNumber} for ${formData.patient_name}. Total Amount: Rs. ${totalAmount}`,
+          files: [file]
+        };
+
+        // Check if sharing files is supported
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          console.log('Using Web Share API...');
+          await navigator.share(shareData);
+          showToast('success', 'Bill shared successfully!');
+          return;
+        } else {
+          console.log('Web Share API does not support file sharing on this device');
+        }
+      } catch (shareError) {
+        console.log('Web Share API failed:', shareError);
+        // Continue to fallback method
+      }
+    }
+
+    // Method 2: Fallback - Create temporary download and open WhatsApp
+    console.log('Using fallback method - temporary download and WhatsApp...');
+    
+    const url = URL.createObjectURL(pdfResult);
+    
+    // Create WhatsApp message
+    const message = encodeURIComponent(
+      `Hello ${formData.patient_name}!\n\n` +
+      `Here is your medical bill:\n` +
+      `📄 Bill Number: ${billNumber}\n` +
+      `💰 Total Amount: Rs. ${totalAmount}\n` +
+      `📅 Date: ${formData.visit_date}\n\n` +
+      `Please find the attached PDF file.\n\n` +
+      `Thank you!`
+    );
+
+    // Create a temporary download link (won't trigger download in most browsers unless clicked by user)
+    const downloadLink = document.createElement('a');
+    downloadLink.href = url;
+    downloadLink.download = fileName;
+    downloadLink.style.display = 'none';
+    
+    // Only append to DOM temporarily for WhatsApp sharing context
+    document.body.appendChild(downloadLink);
+    
+    // Open WhatsApp directly without forcing download
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${message}`;
+    console.log('Opening WhatsApp:', whatsappUrl);
+    window.open(whatsappUrl, '_blank');
+    
+    // Clean up immediately since we're not downloading
+    setTimeout(() => {
+      if (document.body.contains(downloadLink)) {
+        document.body.removeChild(downloadLink);
+      }
+      URL.revokeObjectURL(url);
+      console.log('Cleanup completed');
+    }, 1000);
+    
+    showToast('success', 'WhatsApp opened! You can share the bill directly from the chat.');
+    
+  } catch (error) {
+    console.error('Error in WhatsApp sharing:', error);
+    showToast('danger', 'Error generating PDF for WhatsApp sharing: ' + error.message);
+    
+    // Fallback to alternative method if main method fails
+    try {
+      console.log('Attempting fallback to alternative WhatsApp method...');
+      await handleShareWhatsAppAlternative();
+    } catch (fallbackError) {
+      console.error('All WhatsApp sharing methods failed:', fallbackError);
+      showToast('danger', 'Unable to share via WhatsApp. Please try the download option instead.');
+    }
+  }
+};
+
+// Also, remove the handleDownload call from handleFileInputClick
+const handleFileInputClick = () => {
+  // Removed handleDownload() call - no need to download when just opening file picker
+  fileInputRef.current.click(); // Triggers the file input click
+};
+
   const handleSendWhatsApp = async (selectedFile) => {
     if (!selectedFile) {
       alert("Please upload the bill file!");
@@ -194,11 +342,14 @@ const inv = () => {
     try {
       const response = await postFormData("/api/sendBill", formDataToSend);
       console.log("WhatsApp message sent successfully!", response.data);
+      showToast('success', 'Bill sent via WhatsApp successfully!');
     } catch (error) {
       if (error.response) {
         console.error("Server Error Response:", error.response.data); // Backend error
+        showToast('danger', 'Error sending WhatsApp: ' + error.response.data.message);
       } else {
         console.error("Error sending WhatsApp:", error.message); // Network or client error
+        showToast('danger', 'Error sending WhatsApp: ' + error.message);
       }
     }
   };
@@ -416,17 +567,40 @@ const inv = () => {
           <hr />
   
           {/* Footer */}
-          <div className="d-flex justify-content-center">
-            <CButton color="success" onClick={handleDownload}>Download</CButton>&nbsp;&nbsp;
-            {/* Hidden file input for WhatsApp */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              onChange={handleFileChange}
-            />
-            {/* <CButton color="success" onClick={handleFileInputClick}>Send Bill on WhatsApp</CButton> */}
-          </div>
+          {/* Updated Footer Section with improved buttons */}
+<div className="d-flex justify-content-center flex-wrap gap-2">
+  <CButton color="success" onClick={handleDownload} className="me-2">
+    Download PDF
+  </CButton>
+  
+  {/* Primary WhatsApp Share Button */}
+  <CButton 
+    color="success" 
+    style={{ backgroundColor: '#25D366', color: 'white', borderColor: '#25D366' }} 
+    onClick={handleShareWhatsApp}
+    className="me-2"
+  >
+    📱 Share on WhatsApp
+  </CButton>
+  
+  {/* Alternative WhatsApp Share (via Backend)
+  <CButton 
+    color="info" 
+    variant="outline"
+    onClick={handleShareWhatsAppAlternative}
+    className="me-2"
+  >
+    📤 Send via WhatsApp API
+  </CButton> */}
+  
+  {/* Hidden file input - keep for backward compatibility if needed */}
+  <input
+    type="file"
+    ref={fileInputRef}
+    style={{ display: 'none' }}
+    onChange={handleFileChange}
+  />
+</div>
         </CContainer>
       </CCardBody>
     </CCard>

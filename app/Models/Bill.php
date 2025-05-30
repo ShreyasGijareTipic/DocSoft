@@ -21,6 +21,7 @@ class Bill extends Model
         'doctor_name',
         'registration_number',
         'visit_date',
+        'followup_date',
         'grand_total',
     ];
 
