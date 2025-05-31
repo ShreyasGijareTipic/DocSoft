@@ -186,7 +186,7 @@ const FollowupDashboard = () => {
           <CRow className="w-100">
             <CCol md={6}>
               <h4 className="text-2xl font-bold text-green-800 tracking-wide">
-                📅 Followup Appointments
+                📅 Follow-up Appointments
               </h4>
             </CCol>
             <CCol md={3}>
@@ -200,12 +200,7 @@ const FollowupDashboard = () => {
                   style={getDateInputStyle()}
                 />
               </div>
-              <div className="mt-2">
-                <small className="text-muted">
-                  <span style={{color: '#0066cc'}}>🔵 Today</span> | 
-                  <span style={{color: '#28a745'}}> 🟢 Has Followups</span>
-                </small>
-              </div>
+              
             </CCol>
             <CCol md={3}>
               <CFormInput

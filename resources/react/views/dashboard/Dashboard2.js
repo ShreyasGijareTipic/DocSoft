@@ -157,7 +157,7 @@ const Dashboard = () => {
                     <>
                       <a
                         className="btn btn-outline-primary btn-sm"
-                        href={`tel:+${token.patient_phone.replace(/^(\+)?/, '')}`}
+                        href={`tel:${token.patient_phone.replace(/^(\+)?/, '')}`}
                         title="Call Patient"
                       >
                         <CIcon icon={cilPhone} />
@@ -165,7 +165,7 @@ const Dashboard = () => {
                       &nbsp;
                       <a
                         className="btn btn-outline-success btn-sm"
-                        href={`sms:+${token.patient_phone.replace(/^(\+)?/, '')}?body=${encodeURIComponent(generateMessage(token))}`}
+                        href={`sms:${token.patient_phone.replace(/^(\+)?/, '')}?body=${encodeURIComponent(generateMessage(token))}`}
                         title="Send Message"
                       >
                         <CIcon icon={cilChatBubble} />
