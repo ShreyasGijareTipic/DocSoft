@@ -150,7 +150,7 @@ Route::post('/patientexaminations', [PatientExaminationController::class, 'store
 Route::get('/patientexaminations/{id}', [PatientExaminationController::class, 'show']);
 Route::get('/patientexaminations/p_p_i_id/{p_p_i_id}', [PatientExaminationController::class, 'showByBillId']);
 Route::get('/patientexaminationsData/{p_p_i_id}', [PatientExaminationController::class, 'getPatientExaminationsByBillId']);
-
+Route::get('/ayurvedicexaminationsData/{p_p_i_id}', [PatientExaminationController::class, 'getAyurvedictExaminationsByBillId']);
 
 
 Route::get('/healthdirectives', [HealthDirectiveController::class, 'index']);

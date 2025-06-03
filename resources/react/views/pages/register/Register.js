@@ -35,6 +35,21 @@ const Register = () => {
     complaint: false
   });
 
+  const [ayurvedicObservations, setAyurvedicObservations] = useState({
+ 
+  occupation: false,
+  pincode: false,
+  email: false,
+  past_history: false,
+  prasavvedan_parikshayein: false,
+  habits: false,
+  lab_investigation: false,
+  personal_history: false,
+  food_and_drug_allergy: false,
+  lmp: false,
+  edd: false,
+});
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,6 +72,13 @@ const Register = () => {
       [e.target.name]: e.target.checked 
     });
   };
+
+  const handleAyurvedicObservationChange = (e) => {
+  setAyurvedicObservations({
+    ...ayurvedicObservations,
+    [e.target.name]: e.target.checked,
+  });
+};
 
   const validateForm = () => {
     const newErrors = {};
@@ -103,10 +125,16 @@ const Register = () => {
         medicalObsForSubmit[key] = medicalObservations[key] ? 1 : 0;
       });
 
+      const ayurvedicObsForSubmit = {};
+Object.keys(ayurvedicObservations).forEach(key => {
+  ayurvedicObsForSubmit[key] = ayurvedicObservations[key] ? 1 : 0;
+});
+
       // Prepare data for submission with medical observations
       const dataToSubmit = {
         ...formData,
-        medical_observations: medicalObsForSubmit
+        medical_observations: medicalObsForSubmit,
+         ayurvedic_observations: ayurvedicObsForSubmit,
       };
 
       const response = await post('/api/register', dataToSubmit);
@@ -133,8 +161,8 @@ const Register = () => {
     <CContainer className="mt-2">
       <CRow className="mt-2">
         <CCol md={12} lg={12} xl={12}>
-          <CCard className="mx-4">
-            <CCardBody className="p-4">
+          <CCard className="">
+            <CCardBody className="">
               <CForm onSubmit={handleSubmit} autoComplete="off">
                 <h3 className="text-center">Doctor Registration</h3>
                 <br />
@@ -339,6 +367,126 @@ const Register = () => {
                     </CRow>
                   </CCardBody>
                 </CCard>
+
+                <CCard className="mb-4">
+  <CCardHeader>
+    <strong>Ayurvedic Diagnosis</strong>
+    <small> (Select fields to display)</small>
+  </CCardHeader>
+  <CCardBody>
+    <CRow>
+      
+      <CCol md={3}>
+        <CFormCheck
+          id="occupation-check"
+          label="Occupation"
+          name="occupation"
+          checked={ayurvedicObservations.occupation}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="pincode-check"
+          label="Pincode"
+          name="pincode"
+          checked={ayurvedicObservations.pincode}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="email-check"
+          label="Email"
+          name="email"
+          checked={ayurvedicObservations.email}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+    </CRow>
+
+    <CRow className="mt-3">
+      <CCol md={3}>
+        <CFormCheck
+          id="past_history-check"
+          label="Past History"
+          name="past_history"
+          checked={ayurvedicObservations.past_history}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="prasavvedan_parikshayein-check"
+          label="Prasavvedan Parikshayein"
+          name="prasavvedan_parikshayein"
+          checked={ayurvedicObservations.prasavvedan_parikshayein}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="habits-check"
+          label="Habits"
+          name="habits"
+          checked={ayurvedicObservations.habits}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="lab_investigation-check"
+          label="Lab Investigation"
+          name="lab_investigation"
+          checked={ayurvedicObservations.lab_investigation}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+    </CRow>
+
+    <CRow className="mt-3">
+      <CCol md={3}>
+        <CFormCheck
+          id="personal_history-check"
+          label="Personal History"
+          name="personal_history"
+          checked={ayurvedicObservations.personal_history}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="food_and_drug_allergy-check"
+          label="Food and Drug Allergy"
+          name="food_and_drug_allergy"
+          checked={ayurvedicObservations.food_and_drug_allergy}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="lmp-check"
+          label="LMP"
+          name="lmp"
+          checked={ayurvedicObservations.lmp}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="edd-check"
+          label="EDD"
+          name="edd"
+          checked={ayurvedicObservations.edd}
+          onChange={handleAyurvedicObservationChange}
+        />
+      </CCol>
+    </CRow>
+  </CCardBody>
+</CCard>
+
+
+
 
                 <CButton color="success" type="submit" disabled={isLoading}>
                   {isLoading ? (

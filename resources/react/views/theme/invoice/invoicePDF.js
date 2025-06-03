@@ -13,6 +13,7 @@ export function generatePDF(
     clinicData,
     healthDirectives,
     patientExaminations,
+     AyurvedicExaminations,
     billId,
     billDate,
     DeliveryDate,
@@ -111,47 +112,77 @@ export function generatePDF(
         y += lineHeight * 3;
     }
 
-    function drawPatientExamination() {
-        if (!Array.isArray(patientExaminations) || patientExaminations.length === 0) return;
-    
-        const patientData = patientExaminations[0] || {};
-        const fields = [
-            { label: "BP", value: patientData?.bp },
-            { label: "Pulse", value: patientData?.pulse },
-            { label: "Height", value: patientData?.height },
-            { label: "Weight", value: patientData?.weight },
-            { label: "Past History", value: patientData?.past_history },
-            { label: "Complaints", value: patientData?.complaints },
-            { label: "Systemic Examination", value: patientData?.systemic_exam_general },
-            { label: "Diagnosis", value: patientData?.systemic_exam_pa }
-        ];
-    
-        // Filter out N/A or empty values
-        const validFields = fields.filter(f => f.value && f.value !== "N/A");
-    
-        if (validFields.length === 0) return;
-    
-        pdf.setFontSize(13);
-        pdf.text("Medical Observation:", marginLeft, y);
-        y += lineHeight;
-    
-        const bodyData = validFields.map(field => [
-            { content: field.label, styles: { fontStyle: "bold", halign: "left" } },
-            field.value
-        ]);
-    
-        pdf.autoTable({
-            startY: y,
-            head: [["Field", "Value"]],
-            body: bodyData,
-            theme: "grid",
-            styles: { fontSize: 10, font: "times", halign: "left" },
-            headStyles: { fillColor: 	[173, 216, 230]},
-        });
-    
-        y = pdf.autoTable.previous.finalY + lineHeight;
-    }
-    
+
+
+
+// function drawAyurvedicExamination() {
+//     if (!Array.isArray(AyurvedicExaminations) || AyurvedicExaminations.length === 0) return;
+
+//     const observation = AyurvedicExaminations[0] || {};
+//     const fields = [
+//         { label: "Occupation", value: observation?.occupation },
+//         { label: "Pincode", value: observation?.pincode },
+//         { label: "Past History", value: observation?.ayurPastHistory },
+//         { label: "Prasavvedan Parikshayein", value: observation?.prasavvedan_parikshayein },
+//         { label: "Habits", value: observation?.habits },
+//         { label: "Lab Investigation", value: observation?.lab_investigation },
+//         { label: "Personal History", value: observation?.personal_history },
+//         { label: "Food & Drug Allergy", value: observation?.food_and_drug_allergy },
+//         { label: "LMP", value: observation?.lmp },
+//         { label: "EDD", value: observation?.edd }
+//     ];
+
+//     // Filter out "NA", "N/A", or empty/null values
+//     const validFields = fields.filter(f =>
+//         f.value && typeof f.value === "string" &&
+//         f.value.trim().toUpperCase() !== "NA" &&
+//         f.value.trim().toUpperCase() !== "N/A" &&
+//         f.value.trim() !== ""
+//     );
+
+//     if (validFields.length === 0) return;
+
+//     pdf.setFontSize(13);
+//     pdf.text("Ayurvedic Observation:", marginLeft, y);
+//     y += lineHeight;
+
+//     const bodyData = [];
+
+//     // Combine fields into two columns per row (4 cells per row)
+//     for (let i = 0; i < validFields.length; i += 2) {
+//         const row = [];
+
+//         const field1 = validFields[i];
+//         row.push({ content: field1.label, styles: { fontStyle: "bold" } });
+//         row.push(field1.value);
+
+//         if (i + 1 < validFields.length) {
+//             const field2 = validFields[i + 1];
+//             row.push({ content: field2.label, styles: { fontStyle: "bold" } });
+//             row.push(field2.value);
+//         } else {
+//             // Fill empty cells if odd number of fields
+//             row.push("", "");
+//         }
+
+//         bodyData.push(row);
+//     }
+
+//     pdf.autoTable({
+//         startY: y,
+//         head: [['Field', 'Value', 'Field', 'Value']],
+//         body: bodyData,
+//         theme: "grid",
+//         styles: { fontSize: 10, font: "times", halign: "left" },
+//         headStyles: { fillColor: [144, 238, 144] } // Light green for header
+//     });
+
+//     y = pdf.autoTable.previous.finalY + lineHeight;
+// }
+
+
+
+
 
     function drawBillingDetails() {
         pdf.setFontSize(13);
@@ -188,9 +219,159 @@ export function generatePDF(
     drawBorder();
     drawHeader();
     drawPatientAndDoctorDetails();
-    drawPatientExamination();
+    // drawPatientExamination();
+    // drawAyurvedicExamination();
     drawBillingDetails();
     drawSignature();
+
+
+    
+
+        // ====== Conditionally Add Patient Examination Page ======
+const hasPatientExam = Array.isArray(patientExaminations) && patientExaminations.length > 0;
+
+if (hasPatientExam) {
+    pdf.addPage();
+    drawHeader();
+    drawPatientAndDoctorDetails();
+
+    
+    function drawPatientExamination() {
+    if (!Array.isArray(patientExaminations) || patientExaminations.length === 0) return;
+
+    const patientData = patientExaminations[0] || {};
+    const fields = [
+        { label: "BP", value: patientData?.bp },
+        { label: "Pulse", value: patientData?.pulse },
+        { label: "Height", value: patientData?.height },
+        { label: "Weight", value: patientData?.weight },
+        { label: "Past History", value: patientData?.past_history },
+        { label: "Complaints", value: patientData?.complaints },
+        { label: "Systemic Examination", value: patientData?.systemic_exam_general },
+        { label: "Diagnosis", value: patientData?.systemic_exam_pa }
+    ];
+
+    // Filter out empty or N/A values
+    const validFields = fields.filter(f =>
+        f.value && typeof f.value === "string" &&
+        f.value.trim().toUpperCase() !== "NA" &&
+        f.value.trim().toUpperCase() !== "N/A" &&
+        f.value.trim() !== ""
+    );
+
+    if (validFields.length === 0) return;
+
+    pdf.setFontSize(13);
+    pdf.text("Medical Observation:", marginLeft, y);
+    y += lineHeight;
+
+    const bodyData = [];
+
+    // Format into two columns per row (4 cells per row)
+    for (let i = 0; i < validFields.length; i += 2) {
+        const row = [];
+
+        const field1 = validFields[i];
+        row.push({ content: field1.label, styles: { fontStyle: "bold" } });
+        row.push(field1.value);
+
+        if (i + 1 < validFields.length) {
+            const field2 = validFields[i + 1];
+            row.push({ content: field2.label, styles: { fontStyle: "bold" } });
+            row.push(field2.value);
+        } else {
+            row.push("", ""); // fill empty if only one field in last row
+        }
+
+        bodyData.push(row);
+    }
+
+    pdf.autoTable({
+        startY: y,
+        head: [["Field", "Value", "Field", "Value"]],
+        body: bodyData,
+        theme: "grid",
+        styles: { fontSize: 10, font: "times", halign: "left" },
+        headStyles: { fillColor: [173, 216, 230] } // Light blue
+    });
+
+    y = pdf.autoTable.previous.finalY + lineHeight;
+}
+
+    
+
+   function drawAyurvedicExamination() {
+    if (!Array.isArray(AyurvedicExaminations) || AyurvedicExaminations.length === 0) return;
+
+    const observation = AyurvedicExaminations[0] || {};
+    const fields = [
+        { label: "Occupation", value: observation?.occupation },
+        { label: "Pincode", value: observation?.pincode },
+        { label: "Past History", value: observation?.ayurPastHistory },
+        { label: "Prasavvedan Parikshayein", value: observation?.prasavvedan_parikshayein },
+        { label: "Habits", value: observation?.habits },
+        { label: "Lab Investigation", value: observation?.lab_investigation },
+        { label: "Personal History", value: observation?.personal_history },
+        { label: "Food & Drug Allergy", value: observation?.food_and_drug_allergy },
+        { label: "LMP", value: observation?.lmp },
+        { label: "EDD", value: observation?.edd }
+    ];
+
+    // Filter out "NA", "N/A", or empty/null values
+    const validFields = fields.filter(f =>
+        f.value && typeof f.value === "string" &&
+        f.value.trim().toUpperCase() !== "NA" &&
+        f.value.trim().toUpperCase() !== "N/A" &&
+        f.value.trim() !== ""
+    );
+
+    if (validFields.length === 0) return;
+
+    pdf.setFontSize(13);
+    pdf.text("Ayurvedic Observation:", marginLeft, y);
+    y += lineHeight;
+
+    const bodyData = [];
+
+    // Combine fields into two columns per row (4 cells per row)
+    for (let i = 0; i < validFields.length; i += 2) {
+        const row = [];
+
+        const field1 = validFields[i];
+        row.push({ content: field1.label, styles: { fontStyle: "bold" } });
+        row.push(field1.value);
+
+        if (i + 1 < validFields.length) {
+            const field2 = validFields[i + 1];
+            row.push({ content: field2.label, styles: { fontStyle: "bold" } });
+            row.push(field2.value);
+        } else {
+            // Fill empty cells if odd number of fields
+            row.push("", "");
+        }
+
+        bodyData.push(row);
+    }
+
+    pdf.autoTable({
+        startY: y,
+        head: [['Field', 'Value', 'Field', 'Value']],
+        body: bodyData,
+        theme: "grid",
+        styles: { fontSize: 10, font: "times", halign: "left" },
+        headStyles: { fillColor: [144, 238, 144] } // Light green for header
+    });
+
+    y = pdf.autoTable.previous.finalY + lineHeight;
+}
+drawPatientExamination();
+     drawAyurvedicExamination();
+    drawBorder();
+    drawSignature();
+}
+
+
+
 
     // ====== Conditionally Add Prescription Page ======
     const hasPrescription = Array.isArray(healthDirectives) && healthDirectives.length > 0;
@@ -223,6 +404,8 @@ export function generatePDF(
         drawBorder();
         drawSignature();
     }
+
+
 
     // ====== Footer on all pages ======
     const totalPages = pdf.internal.getNumberOfPages();

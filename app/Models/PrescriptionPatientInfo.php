@@ -40,4 +40,6 @@ class PrescriptionPatientInfo extends Model
         return $this->hasMany(HealthDirective::class);
     }
 
+    
+
 }

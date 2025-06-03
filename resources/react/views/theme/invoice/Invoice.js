@@ -22,6 +22,8 @@ const inv = () => {
   const [healthDirectives, setHealthDirectives] = useState([]);
   const [PatientExaminations, setpatientexaminations] = useState([]);
   console.log("Patientexaminations", PatientExaminations);
+  const [AyurvedicExaminations, setayurvedicExaminations] = useState([]);
+  console.log("AyurvedicExaminations", AyurvedicExaminations);
   
   // Trigger file input dialog
   const handleFileInputClick = () => {
@@ -88,10 +90,26 @@ const inv = () => {
   const fetchPatientExaminations = async () => {
     try {
       const response = await getAPICall(`/api/patientexaminationsData/${billId ?? billIds}`);
+      console.log(response);
+      
       setpatientexaminations(Array.isArray(response) ? response : []);
     } catch (error) {
       console.error('Error fetching patientexaminationsData data:', error);
       setpatientexaminations([]);
+    }
+  }; 
+
+
+   // Fetch Ayurvedic Examinations
+  const fetchAyurvedicExaminations = async () => {
+    try {
+      const response = await getAPICall(`/api/ayurvedicexaminationsData/${billId ?? billIds}`);
+      console.log(response);
+      
+      setayurvedicExaminations(Array.isArray(response) ? response : []);
+    } catch (error) {
+      console.error('Error fetching ayurvedicexaminationsData data:', error);
+     setayurvedicExaminations([]);
     }
   };
 
@@ -109,7 +127,7 @@ const inv = () => {
       fetchDescriptions();
       fetchHealthDirectives();
       fetchPatientExaminations();
-
+     fetchAyurvedicExaminations();
       count++; // Increment counter
     }, 100);
 
@@ -173,6 +191,7 @@ const inv = () => {
       clinicData || {}, 
       healthDirectives || [],   
       PatientExaminations || [],
+      AyurvedicExaminations || [],
       billId,
       formData.DeliveryDate ||{},
       totalAmount
@@ -225,10 +244,42 @@ const inv = () => {
     return fields;
   };
 
+
+  // Utility function to check if a field has valid data
+const hasData1 = (field) => {
+  return field && field.trim().toUpperCase() !== "NA";
+};
+
+// Get valid Ayurvedic observation fields
+const getAyurvedicObservationFields = () => {
+  if (!AyurvedicExaminations || AyurvedicExaminations.length === 0) return [];
+
+  const observation = AyurvedicExaminations[0]; // assuming only one record or we show the first
+  const fields = [];
+
+  if (hasData1(observation?.occupation)) fields.push({ name: "Occupation", value: observation.occupation });
+  if (hasData1(observation?.pincode)) fields.push({ name: "Pincode", value: observation.pincode });
+  if (hasData1(observation?.email)) fields.push({ name: "Email", value: observation.email });
+  if (hasData1(observation?.ayurPastHistory)) fields.push({ name: "Past History", value: observation.ayurPastHistory });
+  if (hasData1(observation?.prasavvedan_parikshayein)) fields.push({ name: "Prasavvedan Parikshayein", value: observation.prasavvedan_parikshayein });
+  if (hasData1(observation?.habits)) fields.push({ name: "Habits", value: observation.habits });
+  if (hasData1(observation?.lab_investigation)) fields.push({ name: "Lab Investigation", value: observation.lab_investigation });
+  if (hasData1(observation?.personal_history)) fields.push({ name: "Personal History", value: observation.personal_history });
+  if (hasData1(observation?.food_and_drug_allergy)) fields.push({ name: "Food & Drug Allergy", value: observation.food_and_drug_allergy });
+  if (hasData1(observation?.lmp)) fields.push({ name: "LMP", value: observation.lmp });
+  if (hasData1(observation?.edd)) fields.push({ name: "EDD", value: observation.edd });
+
+  return fields;
+};
+
+
+
   // Check if prescriptions have data for specific columns
   const hasPrescriptionData = (column) => {
     return healthDirectives.some(item => hasData(item[column]));
   };
+  
+  
 
   // Get prescription columns that have data
   const getPrescriptionColumns = () => {
@@ -246,9 +297,14 @@ const inv = () => {
 
   const observationFields = getObservationFields();
   const prescriptionColumns = getPrescriptionColumns();
+  const ayurvedicExamination = getAyurvedicObservationFields();
+
+
+
 
   return (
     <CCard className="mb-4">
+      
       <CCardBody>
         <CContainer className="container-md invoice-content">
           {/* Clinic Header */}
@@ -340,6 +396,43 @@ const inv = () => {
               </div>
             </div>
           )}
+
+
+ {/* Ayurvedic Examination - Only Show if There's Data */}
+       {getAyurvedicObservationFields().length > 0 && (
+  <div className="row mt-3">
+    <div className="col-12">
+      <h6 className="fw-bold">Ayurvedic Observation:</h6>
+      <div className="table-responsive">
+        <table className="table table-bordered text-center table-responsive-md">
+          <tbody>
+            {Array(Math.ceil(getAyurvedicObservationFields().length / 2)).fill().map((_, rowIndex) => {
+              const ayurFields = getAyurvedicObservationFields();
+              const rowFields = ayurFields.slice(rowIndex * 2, rowIndex * 2 + 2);
+
+              // Fill remaining cells if odd count
+              while (rowFields.length < 2) {
+                rowFields.push({ name: "", value: "" });
+              }
+
+              return (
+                <tr key={rowIndex}>
+                  <td width="20%"><strong>{rowFields[0].name}</strong></td>
+                  <td width="30%">{rowFields[0].value}</td>
+                  <td width="20%"><strong>{rowFields[1].name}</strong></td>
+                  <td width="30%">{rowFields[1].value}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <hr />
+      </div>
+    </div>
+  </div>
+)}
+
+
   
           {/* Prescription Section - Only Show if There's Data */}
           {healthDirectives.length > 0 && prescriptionColumns.length > 0 && (

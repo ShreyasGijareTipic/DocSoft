@@ -456,8 +456,8 @@ function ClinicRegister() {
     <CContainer>
       <CRow className="mt-2">
         <CCol md={12} lg={12} xl={12}>
-          <CCard className="mx-4">
-            <CCardBody className="p-4">
+          <CCard className="">
+            <CCardBody className="">
               <CForm onSubmit={handleSubmit} validated={validated}>
                 <h3 className='text-center'>Clinic Registration</h3><br/>
 

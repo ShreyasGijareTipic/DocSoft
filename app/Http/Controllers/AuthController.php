@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;;
 use App\Models\Clinic;
+use App\Models\DoctorAyurvedicObservation;
 
 
 class AuthController extends Controller
@@ -113,6 +114,25 @@ class AuthController extends Controller
                     'complaint' => $request->medical_observations['complaint'],
                 ]);
             }
+
+            // Handle ayurvedic observations if provided and if this is a doctor (type = 1)
+if ($request->has('ayurvedic_observations') && $request->type == 1) {
+    DoctorAyurvedicObservation::create([
+        'doctor_id' => $user->id,
+        'occupation' => $request->ayurvedic_observations['occupation'],
+        'pincode' => $request->ayurvedic_observations['pincode'],
+        'email' => $request->ayurvedic_observations['email'],
+        'past_history' => $request->ayurvedic_observations['past_history'],
+        'prasavvedan_parikshayein' => $request->ayurvedic_observations['prasavvedan_parikshayein'],
+        'habits' => $request->ayurvedic_observations['habits'],
+        'lab_investigation' => $request->ayurvedic_observations['lab_investigation'],
+        'personal_history' => $request->ayurvedic_observations['personal_history'],
+        'food_and_drug_allergy' => $request->ayurvedic_observations['food_and_drug_allergy'],
+        'lmp' => $request->ayurvedic_observations['lmp'],
+        'edd' => $request->ayurvedic_observations['edd'],
+    ]);
+}
+
 
             return response()->json([
                 'message' => 'User registered successfully',

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PatientExamination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\AyurvedicDiagnosis;
 
 class PatientExaminationController extends Controller
 {
@@ -23,27 +23,177 @@ class PatientExaminationController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        // Validate the request data
-        $validatedData = $request->validate([
-            'p_p_i_id' => 'required|exists:Bills,id',
-            'patient_id' => 'nullable|exists:patients,id', // <- NEW
-            'bp' => 'nullable|string',
-            'height' => 'nullable|string',
-            'weight' => 'nullable|string',
-            'pulse' => 'nullable|string',
-            'past_history' => 'nullable|string',
-            'complaints' => 'nullable|string',
-            'systemic_exam_general' => 'nullable|string',
-            'systemic_exam_pa' => 'nullable|string',
-        ]);
+    // public function store(Request $request)
+    // {
+    //     // Validate the request data
+    //     $validatedData = $request->validate([
+    //         'p_p_i_id' => 'required|exists:Bills,id',
+    //         'patient_id' => 'nullable|exists:patients,id', // <- NEW
+    //         'bp' => 'nullable|string',
+    //         'height' => 'nullable|string',
+    //         'weight' => 'nullable|string',
+    //         'pulse' => 'nullable|string',
+    //         'past_history' => 'nullable|string',
+    //         'complaints' => 'nullable|string',
+    //         'systemic_exam_general' => 'nullable|string',
+    //         'systemic_exam_pa' => 'nullable|string',
+    //     ]);
 
-        // Create a new patient examination record
-        $examination = PatientExamination::create($validatedData);
+    //     // Create a new patient examination record
+    //     $examination = PatientExamination::create($validatedData);
 
-        return response()->json($examination, 201); // Return with status code 201 (Created)
+    //     return response()->json($examination, 201); // Return with status code 201 (Created)
+    // }
+
+
+// public function store(Request $request)
+// {
+//     // Validate the request data
+//     $validatedData = $request->validate([
+//         'p_p_i_id' => 'required|exists:Bills,id',
+//         'patient_id' => 'nullable|exists:patients,id',
+//         'bp' => 'nullable|string',
+//         'height' => 'nullable|string',
+//         'weight' => 'nullable|string',
+//         'pulse' => 'nullable|string',
+//         'past_history' => 'nullable|string',
+//         'complaints' => 'nullable|string',
+//         'systemic_exam_general' => 'nullable|string',
+//         'systemic_exam_pa' => 'nullable|string',
+
+//         // AyurvedicDiagnosis fields
+//         'occupation' => 'nullable|string',
+//         'pincode' => 'nullable|string',
+//         'email' => 'nullable|string',
+//         'ayurPastHistory'=> 'nullable|string',
+//         'prasavvedan_parikshayein' => 'nullable|string',
+//         'habits' => 'nullable|string',
+//         'lab_investigation' => 'nullable|string',
+//         'personal_history' => 'nullable|string',
+//         'food_and_drug_allergy' => 'nullable|string',
+//         'lmp' => 'nullable|string',
+//         'edd' => 'nullable|string',
+//     ]);
+
+//     // Create PatientExamination
+//     $examinationData = $request->only([
+//         'p_p_i_id',
+//         'patient_id',
+//         'bp',
+//         'height',
+//         'weight',
+//         'pulse',
+//         'past_history',
+//         'complaints',
+//         'systemic_exam_general',
+//         'systemic_exam_pa',
+//     ]);
+//     $examination = PatientExamination::create($examinationData);
+
+//     // Create AyurvedicDiagnosis
+//     $ayurvedicData = $request->only([
+//         'p_p_i_id',
+//         'patient_id',
+//         'occupation',
+//         'pincode',
+//         'email',
+//         'ayurPastHistory',
+//         'prasavvedan_parikshayein',
+//         'habits',
+//         'lab_investigation',
+//         'personal_history',
+//         'food_and_drug_allergy',
+//         'lmp',
+//         'edd',
+//     ]);
+//     $ayurvedicDiagnosis = AyurvedicDiagnosis::create($ayurvedicData);
+
+//     return response()->json([
+//         'examination' => $examination,
+//         'ayurvedic_diagnosis' => $ayurvedicDiagnosis
+//     ], 201);
+// }
+public function store(Request $request)
+{
+    // Validate the request data
+    $validatedData = $request->validate([
+        'p_p_i_id' => 'required|exists:Bills,id',
+        'patient_id' => 'nullable|exists:patients,id',
+        'bp' => 'nullable|string',
+        'height' => 'nullable|string',
+        'weight' => 'nullable|string',
+        'pulse' => 'nullable|string',
+        'past_history' => 'nullable|string',
+        'complaints' => 'nullable|string',
+        'systemic_exam_general' => 'nullable|string',
+        'systemic_exam_pa' => 'nullable|string',
+
+        // AyurvedicDiagnosis fields
+        'occupation' => 'nullable|string',
+        'pincode' => 'nullable|string',
+        'email' => 'nullable|string',
+        'ayurPastHistory' => 'nullable|string',
+        'prasavvedan_parikshayein' => 'nullable|string',
+        'habits' => 'nullable|string',
+        'lab_investigation' => 'nullable|string',
+        'personal_history' => 'nullable|string',
+        'food_and_drug_allergy' => 'nullable|string',
+        'lmp' => 'nullable|string',
+        'edd' => 'nullable|string',
+    ]);
+
+    $examination = null;
+    $ayurvedicDiagnosis = null;
+
+    // Extract PatientExamination fields
+    $examinationData = $request->only([
+        'p_p_i_id',
+        'patient_id',
+        'bp',
+        'height',
+        'weight',
+        'pulse',
+        'past_history',
+        'complaints',
+        'systemic_exam_general',
+        'systemic_exam_pa',
+    ]);
+
+    // Check if at least one field (excluding p_p_i_id and patient_id) is filled
+    $examinationContent = collect($examinationData)->except(['p_p_i_id', 'patient_id']);
+    if ($examinationContent->filter()->isNotEmpty()) {
+        $examination = PatientExamination::create($examinationData);
     }
+
+    // Extract AyurvedicDiagnosis fields
+    $ayurvedicData = $request->only([
+        'p_p_i_id',
+        'patient_id',
+        'occupation',
+        'pincode',
+        'email',
+        'ayurPastHistory',
+        'prasavvedan_parikshayein',
+        'habits',
+        'lab_investigation',
+        'personal_history',
+        'food_and_drug_allergy',
+        'lmp',
+        'edd',
+    ]);
+
+    // Check if at least one field (excluding p_p_i_id and patient_id) is filled
+    $ayurContent = collect($ayurvedicData)->except(['p_p_i_id', 'patient_id']);
+    if ($ayurContent->filter()->isNotEmpty()) {
+        $ayurvedicDiagnosis = AyurvedicDiagnosis::create($ayurvedicData);
+    }
+
+    return response()->json([
+        'examination' => $examination,
+        'ayurvedic_diagnosis' => $ayurvedicDiagnosis
+    ], 201);
+}
+
 
     /**
      * Display the specified resource.
@@ -127,13 +277,23 @@ public function getPatientExaminationsByBillId($p_p_i_id) {
             ->where('p_p_i_id', $p_p_i_id)
             ->get();
 
+        // Fetch data from the 'ayurvedic_diagnoses' table
+// $ayurvedicExamination = DB::table('ayurvedic_diagnoses')
+//     ->where('p_p_i_id', $p_p_i_id)
+//     ->get();    
+
         // Check if any data exists for the given p_p_i_id
-        if ($patientExaminations->isEmpty()) {
-            return response()->json(['message' => 'PatientExaminations not found'], 404);
+        if ($patientExaminations->isEmpty() ) {
+            return response()->json(['message' => 'PatientExaminations not found or Ayurvedic Observation'], 404);
         }
+
+
+
+         
 
         // Return the fetched data as a JSON response
         return response()->json($patientExaminations, 200);
+
     } catch (\Exception $e) {
         // Log the error for debugging purposes
         \Log::error('Error fetching PatientExaminations: ' . $e->getMessage());
@@ -141,6 +301,46 @@ public function getPatientExaminationsByBillId($p_p_i_id) {
         // Return a generic error response
         return response()->json([
             'error' => 'An error occurred while fetching PatientExaminations.',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+
+
+public function getAyurvedictExaminationsByBillId($p_p_i_id) {
+    try {
+        // Validate the input ID (ensure it's not empty and is numeric)
+        if (empty($p_p_i_id) || !is_numeric($p_p_i_id)) {
+            return response()->json(['message' => 'Invalid p_p_i_id provided'], 400);
+        }
+
+        
+        // Fetch data from the 'ayurvedic_diagnoses' table
+$ayurvedicExamination = DB::table('ayurvedic_diagnoses')
+    ->where('p_p_i_id', $p_p_i_id)
+    ->get();    
+
+        // Check if any data exists for the given p_p_i_id
+        if ($ayurvedicExamination->isEmpty() ) {
+            return response()->json(['message' => 'Ayurvedic Observation not found  '], 404);
+        }
+
+
+
+         
+
+        // Return the fetched data as a JSON response
+        return response()->json($ayurvedicExamination, 200);
+
+    } catch (\Exception $e) {
+        // Log the error for debugging purposes
+        \Log::error('Error fetching Ayurvedic Observation: ' . $e->getMessage());
+
+        // Return a generic error response
+        return response()->json([
+            'error' => 'An error occurred while fetching Ayurvedic Observation.',
             'message' => $e->getMessage(),
         ], 500);
     }

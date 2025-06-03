@@ -11,6 +11,7 @@ use App\Models\Tokan;
 use App\Models\HealthDirective;
 use App\Models\PatientExamination;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AyurvedicDiagnosis;
 
 use Illuminate\Support\Facades\Log;
 
@@ -531,6 +532,7 @@ public function manuallyAddPatient(Request $request)
 //         'patient_examinations' => $patientExaminations,
 //     ]);
 // }
+
 public function getPatientDetails($id)
 {
     $clinicId = Auth::user()->clinic_id; // Get clinic ID of the logged-in user
@@ -562,11 +564,18 @@ public function getPatientDetails($id)
                             ->take(3)
                             ->get();
 
+                              // Get latest 3 patient examinations 
+    $ayurvedicExaminations = AyurvedicDiagnosis::where('patient_id', $id)
+                            ->orderBy('created_at', 'desc')
+                            ->take(3)
+                            ->get();
+
     return response()->json([
         'patient' => $patient,
         'last_bill' => $lastBill,
         'health_directives' => $healthDirectives,
         'patient_examinations' => $patientExaminations,
+        'ayurvedic_examintion' => $ayurvedicExaminations,
     ]);
 }
 

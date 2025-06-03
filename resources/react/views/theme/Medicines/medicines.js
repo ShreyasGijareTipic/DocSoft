@@ -419,15 +419,21 @@ return (
 
             {/* Price */}
             <CTableDataCell>
-              <CFormInput
-                type="text"
-                value={row.price}
-                onChange={(e) => handleRowChange(index, 'price', e.target.value)}
-              />
-              {rowErrors[index]?.price && (
-                <div style={{ color: 'red', fontSize: '0.8rem' }}>{rowErrors[index].price}</div>
-              )}
-            </CTableDataCell>
+  <CFormInput
+    type="number"
+    value={row.price}
+    onChange={(e) => {
+      const value = Number(e.target.value);
+      if (value >= 0 || e.target.value === '') {
+        handleRowChange(index, 'price', e.target.value);
+      }
+    }}
+    min="0"
+  />
+  {rowErrors[index]?.price && (
+    <div style={{ color: 'red', fontSize: '0.8rem' }}>{rowErrors[index].price}</div>
+  )}
+</CTableDataCell>
 
             {/* Stock Quantity */}
             <CTableDataCell>
