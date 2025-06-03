@@ -10,6 +10,7 @@ use App\Models\HealthDirective;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\User;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 
 
@@ -29,6 +30,7 @@ class BillController extends Controller
             'doctor_name' => 'string',
             'registration_number' => 'string',
             'visit_date' => 'required|date',
+            'followup_date'=>'date|nullable',
             'grand_total' => 'string',
         ]);
     
@@ -47,6 +49,7 @@ class BillController extends Controller
             'doctor_name' => $request->doctor_name,
             'registration_number' => $request->registration_number,
             'visit_date' => $request->visit_date,
+            'followup_date' => $request->followup_date,
             'grand_total' => $request->grand_total,
         ]);
     
@@ -330,7 +333,95 @@ public function showPreviousFunction($billId)
 //     ]);
 // }
 
+// Add this method to your BillController class
 
+/**
+ * Get followup appointments for the logged-in doctor
+ * Only shows today and future dates
+ */
+public function getFollowupAppointments(Request $request)
+{
+    try {
+        $doctorId = Auth::user()->id;
+        $selectedDate = $request->query('date'); // Optional date filter
+        
+        // Build the query
+        $query = Bill::where('doctor_id', $doctorId)
+                    ->whereNotNull('followup_date')
+                    ->where('followup_date', '>=', now()->toDateString()) // Only today and future dates
+                    ->orderBy('followup_date', 'asc')
+                    ->orderBy('created_at', 'desc');
+        
+        // If a specific date is requested, filter by that date
+        if ($selectedDate) {
+            // Validate date format
+            if (!strtotime($selectedDate)) {
+                return response()->json(['error' => 'Invalid date format'], 400);
+            }
+            
+            $query->whereDate('followup_date', $selectedDate);
+        }
+        
+        $followupBills = $query->get();
+        
+        // Group by date for better organization
+        $groupedFollowups = $followupBills->groupBy(function($bill) {
+            return Carbon::parse($bill->followup_date)->format('Y-m-d');
+        });
+        
+        return response()->json([
+            'success' => true,
+            'data' => $followupBills,
+            'grouped_data' => $groupedFollowups,
+            'total_count' => $followupBills->count()
+        ], 200);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to retrieve followup appointments: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+/**
+ * Get followup appointments for a specific date
+ */
+public function getFollowupByDate($date)
+{
+    try {
+        $doctorId = Auth::user()->id;
+        
+        // Validate date
+        if (!strtotime($date)) {
+            return response()->json(['error' => 'Invalid date format'], 400);
+        }
+        
+        // Don't allow past dates
+        if (Carbon::parse($date)->isPast() && !Carbon::parse($date)->isToday()) {
+            return response()->json(['error' => 'Cannot fetch past date appointments'], 400);
+        }
+        
+        $followupBills = Bill::where('doctor_id', $doctorId)
+                            ->whereNotNull('followup_date')
+                            ->whereDate('followup_date', $date)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $followupBills,
+            'date' => $date,
+            'count' => $followupBills->count()
+        ], 200);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Failed to retrieve followup appointments: ' . $e->getMessage()
+        ], 500);
+    }
+}
 
 
 

@@ -111,6 +111,8 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('/bills', [BillController::class, 'store']);
     Route::get('/bill/{id} ', [BillController::class, 'index']);
     Route::get('/bills', [BillController::class, 'show']);
+     Route::get('/followup-appointments', [BillController::class, 'getFollowupAppointments']);
+    Route::get('/followup-appointments/{date}', [BillController::class, 'getFollowupByDate']);
 
     // Route::get('/patients/search', [BillController::class, 'search']); 
 

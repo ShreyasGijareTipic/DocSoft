@@ -174,6 +174,13 @@ const getNavigation = () => {
           },
           {
             component: CNavItem,
+            name: 'Follow Up',
+            to: '/followupdashboard',
+            icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
+            
+          },
+          {
+            component: CNavItem,
             name: 'Create Bill',
             to: '/Bills',
             icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
