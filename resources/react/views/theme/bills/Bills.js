@@ -1523,46 +1523,34 @@ useEffect(() => {
       {isExpanded ? 'Close' : 'Add Observation'}
     </span>
   </CButton> */}
+ <div className="d-flex flex-column flex-md-row gap-2">
   <CButton
-  color="primary"
-  variant="outline"
-  shape="rounded-pill"
-  className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
-  onClick={toggleMedicalForm}
->
-  <span className="fs-5 text-dark">{isMedicalExpanded ? '−' : '+'}</span>
-  <span className="fw-medium text-dark">
-    {isMedicalExpanded ? 'Close' : 'Add Medical Observation'}
-  </span>
-</CButton>
-&nbsp;
-&nbsp;
+    color="primary"
+    variant="outline"
+    shape="rounded-pill"
+    className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
+    onClick={toggleMedicalForm}
+  >
+    <span className="fs-5 text-dark">{isMedicalExpanded ? '−' : '+'}</span>
+    <span className="fw-medium text-dark">
+      {isMedicalExpanded ? 'Close' : 'Add Medical Observation'}
+    </span>
+  </CButton>
 
- {/* <CButton
+  <CButton
     color="success"
     variant="outline"
     shape="rounded-pill"
     className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
-    // onClick={toggleForm}
+    onClick={toggleAyurvedicForm}
   >
-    <span className="fs-5 text-dark" >{isExpanded ? '−' : '+'}</span>
-    <span className="fw-medium text-dark"  >
-      {/* {isExpanded ? 'Close' : 'Ayurvedic Diagnosis'} 
-      Ayurvedic Diagnosis
+    <span className="fs-5 text-dark">{isAyurvedicExpanded ? '−' : '+'}</span>
+    <span className="fw-medium text-dark">
+      {isAyurvedicExpanded ? 'Close' : 'Add Ayurvedic Observation'}
     </span>
-  </CButton> */}
-  <CButton
-  color="success"
-  variant="outline"
-  shape="rounded-pill"
-  className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
-  onClick={toggleAyurvedicForm}
->
-  <span className="fs-5 text-dark">{isAyurvedicExpanded ? '−' : '+'}</span>
-  <span className="fw-medium text-dark">
-    {isAyurvedicExpanded ? 'Close' : 'Add Ayurvedic Observation'}
-  </span>
-</CButton>
+  </CButton>
+</div>
+
 
 
 </div>
