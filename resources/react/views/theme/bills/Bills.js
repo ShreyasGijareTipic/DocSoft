@@ -86,6 +86,8 @@ const [AyurvedicExaminations , setayurvedicExaminations ] = useState([{}]);
   const [registration_number, setRegistration] = useState('');
   const [suggestionFlags, setSuggestionFlags] = useState({});
   
+  const [followupdate, setfollowupdate] = useState();
+  
   const toggleSuggestion = (index, type, value) => {
     setSuggestionFlags((prev) => ({
       ...prev,
@@ -596,6 +598,7 @@ const handleSubmit = async () => {
       doctor_name: d_name,
       registration_number: r_num,
       visit_date: visitDate,
+      followup_date: followupdate,
       grand_total: grandTotal,
     };
 
@@ -1406,6 +1409,25 @@ useEffect(() => {
         <div className="text-danger mt-1 small">{errors.visitDate}</div>
       )}
     </CCol>
+
+    <CCol xs={12} md={6} lg={3}>
+      <CFormLabel htmlFor="visitDate" className="fw-bold mb-2 d-block">
+       Followup Date
+      </CFormLabel>
+      <CFormInput
+        id="followupdate"
+        type="date"
+        value={followupdate}
+        onChange={(e) => setfollowupdate(e.target.value)}
+        // max={new Date().toISOString().split("T")[0]}
+        required
+        className="w-100"
+      />
+      {/* {errors.visitDate && (
+        <div className="text-danger mt-1 small">{errors.visitDate}</div>
+      )} */}
+    </CCol>
+
   </CRow>
 </CRow>
 {/* </CCard> */}

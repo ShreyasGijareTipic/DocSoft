@@ -22,6 +22,7 @@ const BasicMantineTable = () => {
       { accessorKey: 'doctor_name', header: 'Doctor Name' },
       { accessorKey: 'registration_number', header: 'Registration Number' },
       { accessorKey: 'visit_date', header: 'Visit Date' },
+        { accessorKey: 'followup_date', header: 'Follow-Up Date' },
       { accessorKey: 'grand_total', header: 'Amount' },
          {
                          header: 'Action',
@@ -34,7 +35,7 @@ const BasicMantineTable = () => {
                                // onClick={() => setVisible(!visible)} 
                                onClick={() => handleEdit(row.original.id)}
                               >
-                               Privious Bill
+                               Previous Bill
                                </CBadge>
                           
                            </>

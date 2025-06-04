@@ -30,6 +30,7 @@ class BillController extends Controller
             'doctor_name' => 'string',
             'registration_number' => 'string',
             'visit_date' => 'required|date',
+            
             'followup_date'=>'date|nullable',
             'grand_total' => 'string',
         ]);
