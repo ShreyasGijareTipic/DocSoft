@@ -493,7 +493,8 @@ console.log(rowss);
 
 const totalPrice = rowss.reduce((acc, row) => {
 
-  let value = row.drugDetails?.[0]?.price;
+  // let value = row.drugDetails?.[0]?.price;
+   let value = row.price || row.drugDetails?.[0]?.price;
   console.log(value);
   
 
@@ -806,21 +807,27 @@ console.log("Total Price", totalPrice);
   // Handle removing a row
   const handleRemoveRoww = (index) => {
     // Prevent removing the first row
-  if (index === 0) {
-    return;
-  }
+  // if (index === 1) {
+  //   return;
+  // }
 
   // Use the correct state variable 'rowss' for filtering
   const updatedRows = rowss.filter((_, i) => i !== index);
   setRowss(updatedRows);
   };
 
+
+
   // Handle row change
+  const [activeEditableRowIndex, setActiveEditableRowIndex] = useState(null);
   const handleRowChangee = (index, field, value) => {
     const updatedRows = [...rowss];
     updatedRows[index][field] = value;
     setRowss(updatedRows);
+
   };
+ 
+
 
   // State for medical observations
   // const [isExpanded, setIsExpanded] = useState(false);
@@ -1658,27 +1665,29 @@ useEffect(() => {
           <CFormInput value={pincode} onChange={(e) => setPincode(e.target.value)} />
         </CCol>
       )}
-      {doctorAyurvedicObservationSettings.email && (
+      {/* {doctorAyurvedicObservationSettings.email && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">Email</CFormLabel>
           <CFormInput value={emaill} onChange={(e) => setEmail(e.target.value)} />
         </CCol>
-      )}
+      )} */}
       {doctorAyurvedicObservationSettings.past_history && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">Past History</CFormLabel>
           <CFormInput value={ayurPastHistory} onChange={(e) => setAyurPastHistory(e.target.value)} />
         </CCol>
       )}
-    </CRow>
 
-    <CRow className="mb-2">
-      {doctorAyurvedicObservationSettings.prasavvedan_parikshayein && (
+       {doctorAyurvedicObservationSettings.prasavvedan_parikshayein && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">Prasavvedan Parikshayein</CFormLabel>
           <CFormInput value={prasavvedanParikshayein} onChange={(e) => setPrasavvedanParikshayein(e.target.value)} />
         </CCol>
       )}
+    </CRow>
+
+    <CRow className="mb-2">
+     
       {doctorAyurvedicObservationSettings.habits && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">Habits</CFormLabel>
@@ -1697,15 +1706,16 @@ useEffect(() => {
           <CFormInput value={personalHistory} onChange={(e) => setPersonalHistory(e.target.value)} />
         </CCol>
       )}
-    </CRow>
-
-    <CRow className="mb-2">
       {doctorAyurvedicObservationSettings.food_and_drug_allergy && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">Food and Drug Allergy</CFormLabel>
           <CFormInput value={foodAndDrugAllergy} onChange={(e) => setFoodAndDrugAllergy(e.target.value)} />
         </CCol>
       )}
+    </CRow>
+
+    <CRow className="mb-2">
+      
       {doctorAyurvedicObservationSettings.lmp && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">LMP</CFormLabel>
@@ -1761,7 +1771,8 @@ useEffect(() => {
 {showTable && (
 <>
 <div className="d-flex justify-content-start mb-2">
-<CButton   onClick={() => setShowTable(false)}  
+<CButton
+   onClick={() => setShowTable(false)}  
    color="danger"
    variant="outline"
    shape="rounded-pill"
@@ -1961,15 +1972,43 @@ useEffect(() => {
     <div className="text-danger small">{rowErrors[index].price}</div>
   )}
 </CTableDataCell> */}
-<CTableDataCell style={{ width: '16.66%' }}>
+{/* <CTableDataCell style={{ width: '16.66%' }}>
   <CFormInput
     type="number"
     className="text-center"
     value={row.price || row.drugDetails?.[0]?.price || ''} // Use row.price directly
     onChange={(e) =>
-      handleRowChange(index, 'price', Number(e.target.value))
+      handleRowChangee(index, 'price', Number(e.target.value))
     }
-    onFocus={() => handleRowChange(index, 'price', '')}
+    onFocus={() => handleRowChangee(index, 'price', '')}
+  />
+  {rowErrors[index]?.price && (
+    <div className="text-danger small">{rowErrors[index].price}</div>
+  )}
+</CTableDataCell> */}
+<CTableDataCell style={{ width: '16.66%' }}>
+  <CFormInput
+    type="number"
+    className="text-center"
+    value={
+      activeEditableRowIndex === index
+        ? row.price ?? ''
+        : row.price || row.drugDetails?.[0]?.price || ''
+    }
+    onChange={(e) =>
+      handleRowChangee(index, 'price', e.target.value === '' ? '' : Number(e.target.value))
+    }
+    onFocus={() => {
+      setActiveEditableRowIndex(index);
+      handleRowChangee(index, 'price', ''); // Clear the field on focus
+    }}
+    onBlur={() => {
+  if (row.price === '' || row.price === null || row.price === undefined) {
+    handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
+  }
+  setActiveEditableRowIndex(null);
+}}
+
   />
   {rowErrors[index]?.price && (
     <div className="text-danger small">{rowErrors[index].price}</div>
@@ -1981,10 +2020,15 @@ useEffect(() => {
 
 
 
+
+
+
+
+
               {/* Actions */}
               <CTableDataCell className="px-2 py-2">
                 <div className="d-flex justify-content-center gap-3">
-                  <CButton color="danger" size="sm" onClick={() => handleRemoveRoww(index)} disabled={index === 0}>
+                  <CButton color="danger" size="sm" onClick={() => handleRemoveRoww(index)} disabled={index === 0 && rowss.length === 1}>
                     <CIcon icon={cilDelete} className="text-white" />
                   </CButton>
                   <CButton color="success" size="sm" onClick={handleAddRoww}>
@@ -2000,9 +2044,9 @@ useEffect(() => {
   Total Price: ₹{totalPrice.toFixed(2)}
 </div>
 
-<div className="fw-bold text-end mt-3">
+{/* <div className="fw-bold text-end mt-3">
   Medicine Count: {rowss.length}
-</div>
+</div> */}
 
 
       </CTable>
@@ -2166,7 +2210,7 @@ useEffect(() => {
 
         {/* Mobile View - Price Field */}
         <div className="w-75">
-<CTableDataCell
+{/* <CTableDataCell
   // style={{ width: '16.66%' }}
   className="d-block d-md-table-cell w-100" // Stack on mobile, table style on desktop
 >
@@ -2181,7 +2225,37 @@ useEffect(() => {
   {rowErrors[index]?.price && (
     <div className="text-danger small">{rowErrors[index].price}</div>
   )}
+</CTableDataCell> */}
+<CTableDataCell style={{ width: '16.66%' }}>
+   <strong>Price:</strong>
+  <CFormInput
+    type="number"
+    className="text-center"
+    value={
+      activeEditableRowIndex === index
+        ? row.price ?? ''
+        : row.price || row.drugDetails?.[0]?.price || ''
+    }
+    onChange={(e) =>
+      handleRowChangee(index, 'price', e.target.value === '' ? '' : Number(e.target.value))
+    }
+    onFocus={() => {
+      setActiveEditableRowIndex(index);
+      handleRowChangee(index, 'price', ''); // Clear the field on focus
+    }}
+    onBlur={() => {
+  if (row.price === '' || row.price === null || row.price === undefined) {
+    handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
+  }
+  setActiveEditableRowIndex(null);
+}}
+
+  />
+  {rowErrors[index]?.price && (
+    <div className="text-danger small">{rowErrors[index].price}</div>
+  )}
 </CTableDataCell>
+
 </div>
 </div>
 
@@ -2290,7 +2364,10 @@ useEffect(() => {
                   onChange={(e) => handleRowChange(index, 'quantity', Math.max(0, Number(e.target.value)))}
                   onFocus={() => handleRowChange(index, 'quantity', '')}
                 /> */}
-                <CFormInput
+
+
+
+                {/* <CFormInput
   type="number"
   className="text-center"
   value={row.description === 'Medicine' ? rowss.length : row.quantity}
@@ -2300,7 +2377,33 @@ useEffect(() => {
 
                 {rowErrors[index]?.quantity && (
                   <div className="text-danger small">{rowErrors[index].quantity}</div>
-                )}
+                )} */}
+
+<CFormInput
+  type="number"
+  className="text-center"
+  placeholder='Add Quantity Here'
+  value={
+    row.description === 'Medicine'
+      ? rowss.length
+      : row.quantity === 0
+      ? ''
+      : row.quantity
+  }
+  onChange={(e) => handleRowChange(index, 'quantity', Number(e.target.value))}
+  onFocus={(e) => {
+    if (row.description !== 'Medicine' && (row.quantity === 0 || row.quantity === null)) {
+      handleRowChange(index, 'quantity', '');
+    }
+  }}
+  readOnly={row.description === 'Medicine'}
+/>
+
+{rowErrors[index]?.quantity && (
+  <div className="text-danger small">{rowErrors[index].quantity}</div>
+)}
+
+
               </CTableDataCell>
 
 
@@ -2356,7 +2459,7 @@ useEffect(() => {
                 />
               </CTableDataCell> */}
 
-              {showGST && (
+              {/* {showGST && (
   <CTableDataCell style={{ width: '16.66%' }}>
     <CFormInput
       type="text"
@@ -2366,8 +2469,20 @@ useEffect(() => {
       onFocus={() => handleRowChange(index, 'gst', '')}
     />
   </CTableDataCell>
-)}
+)} */}
 
+{showGST && (
+  <CTableDataCell style={{ width: '16.66%' }}>
+    <CFormInput
+      type="text"
+      className="text-center"
+      value={row.gst}
+      onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
+      onFocus={() => handleRowChange(index, 'gst', '')}
+      disabled={row.description === 'Medicine'} // Disable if description is Medicine
+    />
+  </CTableDataCell>
+)}
 
 
 
@@ -2494,6 +2609,7 @@ useEffect(() => {
               value={row.gst}
               onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
               onFocus={() => handleRowChange(index, 'gst', '')}
+              disabled={row.description === 'Medicine'}
             />
           </CCol>
         </CRow>

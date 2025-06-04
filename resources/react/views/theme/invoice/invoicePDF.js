@@ -1613,6 +1613,8 @@ export function generatePDF(
             pdf.text(`Bill No: ${billId}`, marginLeft, y);
             const formattedDate = formData.visit_date ? formData.visit_date.split("-").reverse().join("-") : "Date Not Available";
             pdf.text(`Bill Date: ${formattedDate}`, marginLeft, y + lineHeight);
+             y += lineHeight * 1;
+             pdf.text(`Follow-Up Date: ${formData.followup_date}`, marginLeft, y + lineHeight);
             y += lineHeight * 3;
         }
 

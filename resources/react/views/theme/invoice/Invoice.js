@@ -612,6 +612,7 @@ const getAyurvedicObservationFields = () => {
               <h6 className="fw-bold">Bill NO.: {billId}</h6>
               <p className="fw-bold"><strong>Date:</strong> {formData.visit_date}</p>
               {formData.InvoiceType === 2 && <p className="fw-bold"><strong>Delivery Date:</strong> {formData.DeliveryDate}</p>}
+              <h6 className="fw-bold">Follow-Up Date: {formData.followup_date}</h6>
             </div>
           </div>
           <hr />
