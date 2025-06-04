@@ -223,7 +223,7 @@ const handleShareWhatsApp = async () => {
     }
 
     // Generate PDF - Note: Pass all parameters properly
-    const pdfResult = generatePDF(
+    const pdfResult =  generatePDF(
       grandTotal || totalAmount || 0, 
       billNumber || "N/A", 
       formData.patient_name || "N/A", 
@@ -235,6 +235,7 @@ const handleShareWhatsApp = async () => {
       clinicData || {}, 
       healthDirectives || [],   
       PatientExaminations || [],
+      AyurvedicExaminations || [],
       billId || billNumber,
       formData.visit_date || new Date().toISOString().split('T')[0], // Use visit_date instead of DeliveryDate
       totalAmount,
@@ -451,6 +452,10 @@ const getAyurvedicObservationFields = () => {
   const ayurvedicExamination = getAyurvedicObservationFields();
 
 
+
+
+
+  
 
 
   return (
