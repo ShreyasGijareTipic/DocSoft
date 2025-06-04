@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CButton, CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react';
-import { generatePDF } from './invoicePDF';
+import { generatePDF, generatePDFBlob } from './invoicePDF';
 import { getAPICall, post, postFormData } from '../../../util/api';
 import { useParams, useLocation } from 'react-router-dom';
 import { useToast } from '../../common/toast/ToastContext';
@@ -222,8 +222,8 @@ const handleShareWhatsApp = async () => {
       throw new Error('Missing required data for PDF generation');
     }
 
-    // Generate PDF - Note: Pass all parameters properly
-    const pdfResult =  generatePDF(
+    // Generate PDF blob (in memory only)
+    const pdfBlob = generatePDFBlob(
       grandTotal || totalAmount || 0, 
       billNumber || "N/A", 
       formData.patient_name || "N/A", 
@@ -237,29 +237,28 @@ const handleShareWhatsApp = async () => {
       PatientExaminations || [],
       AyurvedicExaminations || [],
       billId || billNumber,
-      formData.visit_date || new Date().toISOString().split('T')[0], // Use visit_date instead of DeliveryDate
-      totalAmount,
-      true // isWhatsAppShare = true
+      formData.visit_date || new Date().toISOString().split('T')[0],
+      totalAmount
     );
 
     // Check if PDF was generated successfully
-    if (!pdfResult || !(pdfResult instanceof Blob)) {
+    if (!pdfBlob || !(pdfBlob instanceof Blob)) {
       throw new Error('PDF generation failed - invalid blob returned');
     }
 
     // Verify blob has content
-    if (pdfResult.size === 0) {
+    if (pdfBlob.size === 0) {
       throw new Error('PDF generation failed - empty file generated');
     }
 
-    console.log('PDF generated successfully, size:', pdfResult.size, 'bytes');
+    console.log('PDF generated successfully, size:', pdfBlob.size, 'bytes');
 
     const fileName = `Bill-${billNumber}-${formData.patient_name?.replace(/[^a-zA-Z0-9]/g, '') || 'Patient'}.pdf`;
     
     // Method 1: Try Web Share API first (works best on mobile devices)
     if (navigator.share) {
       try {
-        const file = new File([pdfResult], fileName, { 
+        const file = new File([pdfBlob], fileName, { 
           type: 'application/pdf',
           lastModified: Date.now()
         });
@@ -285,10 +284,11 @@ const handleShareWhatsApp = async () => {
       }
     }
 
-    // Method 2: Fallback - Create temporary download and open WhatsApp
-    console.log('Using fallback method - temporary download and WhatsApp...');
+    // Method 2: Create temporary object URL and share via WhatsApp (NO DOWNLOAD)
+    console.log('Using fallback method - temporary URL for WhatsApp sharing...');
     
-    const url = URL.createObjectURL(pdfResult);
+    // Create temporary URL for the PDF (in memory only)
+    const tempUrl = URL.createObjectURL(pdfBlob);
     
     // Create WhatsApp message
     const message = encodeURIComponent(
@@ -297,43 +297,49 @@ const handleShareWhatsApp = async () => {
       `📄 Bill Number: ${billNumber}\n` +
       `💰 Total Amount: Rs. ${totalAmount}\n` +
       `📅 Date: ${formData.visit_date}\n\n` +
-      `Please find the attached PDF file.\n\n` +
+      `PDF file is ready for sharing.\n\n` +
       `Thank you!`
     );
 
-    // Create a temporary download link (won't trigger download in most browsers unless clicked by user)
-    const downloadLink = document.createElement('a');
-    downloadLink.href = url;
-    downloadLink.download = fileName;
-    downloadLink.style.display = 'none';
-    
-    // Only append to DOM temporarily for WhatsApp sharing context
-    document.body.appendChild(downloadLink);
-    
-    // Open WhatsApp directly without forcing download
+    // Try to share directly via WhatsApp Web API
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${message}`;
     console.log('Opening WhatsApp:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
     
-    // Clean up immediately since we're not downloading
-    setTimeout(() => {
-      if (document.body.contains(downloadLink)) {
-        document.body.removeChild(downloadLink);
-      }
-      URL.revokeObjectURL(url);
-      console.log('Cleanup completed');
-    }, 1000);
+    // For mobile WhatsApp app (alternative approach)
+    // You can also try: whatsapp://send?phone=${formattedPhone}&text=${message}
     
-    showToast('success', 'WhatsApp opened! You can share the bill directly from the chat.');
+    // Show user instructions for sharing the PDF
+    showToast('info', 'WhatsApp opened! You can manually attach the PDF file if needed.');
+    
+    // Clean up the temporary URL after some time
+    setTimeout(() => {
+      URL.revokeObjectURL(tempUrl);
+      console.log('Temporary URL cleaned up');
+    }, 30000); // Clean up after 30 seconds
     
   } catch (error) {
     console.error('Error in WhatsApp sharing:', error);
     showToast('danger', 'Error generating PDF for WhatsApp sharing: ' + error.message);
     
-    // Fallback to alternative method if main method fails
+    // Fallback to text-only sharing if PDF generation fails
     try {
-      console.log('Attempting fallback to alternative WhatsApp method...');
-      await handleShareWhatsAppAlternative();
+      console.log('Attempting fallback to text-only WhatsApp sharing...');
+      
+      const whatsappMessage = encodeURIComponent(
+        `Hello ${formData.patient_name}!\n\n` +
+        `Your medical bill details:\n` +
+        `📄 Bill Number: ${billNumber}\n` +
+        `💰 Total Amount: Rs. ${totalAmount}\n` +
+        `📅 Date: ${formData.visit_date}\n\n` +
+        `Please contact us to get your detailed bill copy.\n\n` +
+        `Thank you!`
+      );
+      
+      const whatsappUrl = `https://wa.me/${formattedPhone}?text=${whatsappMessage}`;
+      window.open(whatsappUrl, '_blank');
+      showToast('info', 'WhatsApp opened with bill details. PDF sharing not available.');
+      
     } catch (fallbackError) {
       console.error('All WhatsApp sharing methods failed:', fallbackError);
       showToast('danger', 'Unable to share via WhatsApp. Please try the download option instead.');
@@ -341,6 +347,96 @@ const handleShareWhatsApp = async () => {
   }
 };
 
+// Alternative method: Direct WhatsApp sharing with Base64 (for better compatibility)
+const handleShareWhatsAppBase64 = async () => {
+  const billNumber = formData.id || billId;
+  const totalAmount = descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+  const patientPhone = formData.patient_contact?.replace(/\D/g, '');
+
+  if (!patientPhone) {
+    showToast('warning', 'Patient contact number is not available');
+    return;
+  }
+
+  try {
+    // Generate PDF blob
+    const pdfBlob = generatePDFBlob(
+      grandTotal || totalAmount || 0, 
+      billNumber || "N/A", 
+      formData.patient_name || "N/A", 
+      formData, 
+      remainingAmount || 0, 
+      totalAmountWords || "Zero", 
+      descriptions, 
+      doctorData || {}, 
+      clinicData || {}, 
+      healthDirectives || [],   
+      PatientExaminations || [],
+      AyurvedicExaminations || [],
+      billId || billNumber,
+      formData.visit_date || new Date().toISOString().split('T')[0],
+      totalAmount
+    );
+
+    // Convert blob to base64 for sharing
+    const reader = new FileReader();
+    reader.onload = function() {
+      const base64Data = reader.result;
+      
+      const message = encodeURIComponent(
+        `Hello ${formData.patient_name}!\n\n` +
+        `Your medical bill is ready:\n` +
+        `📄 Bill Number: ${billNumber}\n` +
+        `💰 Total Amount: Rs. ${totalAmount}\n` +
+        `📅 Date: ${formData.visit_date}\n\n` +
+        `PDF Data: ${base64Data.substring(0, 100)}...\n\n` +
+        `Thank you!`
+      );
+      
+      const whatsappUrl = `https://wa.me/${patientPhone}?text=${message}`;
+      window.open(whatsappUrl, '_blank');
+      showToast('success', 'WhatsApp opened with bill data!');
+    };
+    
+    reader.readAsDataURL(pdfBlob);
+    
+  } catch (error) {
+    console.error('Error in Base64 WhatsApp sharing:', error);
+    showToast('danger', 'Error sharing via WhatsApp: ' + error.message);
+  }
+};
+
+// BONUS: Simple download handler
+const handleDownloadPDF = () => {
+  try {
+    const billNumber = formData.id || billId;
+    const totalAmount = descriptions.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+
+    downloadPDF(
+      grandTotal || totalAmount || 0,
+      billNumber || "N/A",
+      formData.patient_name || "N/A",
+      formData,
+      remainingAmount || 0,
+      totalAmountWords || "Zero",
+      descriptions,
+      doctorData || {},
+      clinicData || {},
+      healthDirectives || [],
+      PatientExaminations || [],
+      AyurvedicExaminations || [],
+      billId || billNumber,
+      formData.visit_date || new Date().toISOString().split('T')[0],
+      totalAmount
+    );
+
+    showToast('success', 'PDF downloaded successfully!');
+
+  } catch (error) {
+    console.error('Error downloading PDF:', error);
+    showToast('danger', 'Error downloading PDF: ' + error.message);
+  }
+};
 // Also, remove the handleDownload call from handleFileInputClick
 const handleFileInputClick = () => {
   // Removed handleDownload() call - no need to download when just opening file picker
