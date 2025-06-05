@@ -182,7 +182,7 @@ const FollowupDashboard = () => {
     <>
       {/* Header Card */}
       <CCard className="p-4 shadow-sm rounded-2xl mb-4 bg-gradient-to-r from-white to-green-50 border border-green-100">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ">
           <CRow className="w-100">
             <CCol md={6}>
               <h4 className="text-2xl font-bold text-green-800 tracking-wide">
@@ -190,7 +190,7 @@ const FollowupDashboard = () => {
               </h4>
             </CCol>
             <CCol md={3}>
-              <div className="d-flex align-items-center gap-2">
+              <div className="d-flex align-items-center gap-2 ms-2">
                 <CIcon icon={cilCalendar} className="text-green-600" />
                 <CFormInput
                   type="date"
@@ -205,7 +205,7 @@ const FollowupDashboard = () => {
             <CCol md={3}>
               <CFormInput
                 type="text"
-                className="form-control-sm"
+                className="form-control-sm mt-2 ms-2"
                 placeholder="🔍 Search patient name..."
                 value={searchText}
                 onChange={handleSearchChange}
@@ -218,7 +218,7 @@ const FollowupDashboard = () => {
       {/* Search Results Alert */}
       {selectedFollowups.length > 0 && searchText && (
         <CAlert color="info" className="mb-3">
-          <div className="d-flex justify-content-between align-items-start">
+          <div className="d-flex justify-content-between align-items-start ">
             <div>
               <strong>Search Results ({selectedFollowups.length} found):</strong>
               {selectedFollowups.slice(0, 3).map((followup, index) => (
@@ -242,6 +242,43 @@ const FollowupDashboard = () => {
           </div>
         </CAlert>
       )}
+
+
+
+   {/* Summary Card */}
+      {filteredFollowups.length > 0 && (
+        <CCard className="p-3 shadow-sm rounded-2xl bg-light mb-3">
+          <CRow>
+            <CCol md={4}>
+              <div className="text-center">
+                <h6 className="text-success">Total Appointments</h6>
+                <h4 className="text-success">{filteredFollowups.length}</h4>
+              </div>
+            </CCol>
+            <CCol md={4}>
+              <div className="text-center">
+                <h6 className="text-info">Today's Followups</h6>
+                <h4 className="text-info">
+                  {filteredFollowups.filter(f => 
+                    new Date(f.followup_date).toDateString() === new Date().toDateString()
+                  ).length}
+                </h4>
+              </div>
+            </CCol>
+            <CCol md={4}>
+              <div className="text-center">
+                <h6 className="text-warning">Upcoming</h6>
+                <h4 className="text-warning">
+                  {filteredFollowups.filter(f => 
+                    new Date(f.followup_date) > new Date()
+                  ).length}
+                </h4>
+              </div>
+            </CCol>
+          </CRow>
+        </CCard>
+      )}
+
 
       {/* Followup Appointments Table */}
       <CCard className="p-4 shadow-md rounded-2xl mb-2">
@@ -332,39 +369,7 @@ const FollowupDashboard = () => {
         )}
       </CCard>
 
-      {/* Summary Card */}
-      {filteredFollowups.length > 0 && (
-        <CCard className="p-3 shadow-sm rounded-2xl bg-light">
-          <CRow>
-            <CCol md={4}>
-              <div className="text-center">
-                <h6 className="text-success">Total Appointments</h6>
-                <h4 className="text-success">{filteredFollowups.length}</h4>
-              </div>
-            </CCol>
-            <CCol md={4}>
-              <div className="text-center">
-                <h6 className="text-info">Today's Followups</h6>
-                <h4 className="text-info">
-                  {filteredFollowups.filter(f => 
-                    new Date(f.followup_date).toDateString() === new Date().toDateString()
-                  ).length}
-                </h4>
-              </div>
-            </CCol>
-            <CCol md={4}>
-              <div className="text-center">
-                <h6 className="text-warning">Upcoming</h6>
-                <h4 className="text-warning">
-                  {filteredFollowups.filter(f => 
-                    new Date(f.followup_date) > new Date()
-                  ).length}
-                </h4>
-              </div>
-            </CCol>
-          </CRow>
-        </CCard>
-      )}
+   
     </>
   );
 };

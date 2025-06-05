@@ -22,6 +22,7 @@ import {
   cilListRich,
   cilClock,
   cilBarcode,
+  cilLoop,
   
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle,  } from '@coreui/react'
@@ -176,7 +177,7 @@ const getNavigation = () => {
             component: CNavItem,
             name: 'Follow Up',
             to: '/followupdashboard',
-            icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
+            icon: <CIcon icon={cilLoop} customClassName="nav-icon" />,
             
           },
           {

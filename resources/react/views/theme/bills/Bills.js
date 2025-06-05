@@ -1130,9 +1130,18 @@ useEffect(() => {
 }, [rowss, totalPrice, showGST]);
 
 
-// Ayurvedic Fields 
+const [expandedVisits, setExpandedVisits] = useState({}); // { [visitId]: true/false }
+const [searchTerm, setSearchTerm] = useState('');
+const toggleVisitExpansion = (visitId) => {
+  setExpandedVisits(prev => ({ ...prev, [visitId]: !prev[visitId] }));
+};
 
-
+const handleSearchChange = (e) => {
+  const value = e.target.value;
+  setSearchTerm(value);
+  setShowAllHistory(!!value); // Show history only if search is not empty
+  setExpandedVisits({}); // Collapse all visit data when input changes
+};
 
 
 
@@ -1460,69 +1469,82 @@ useEffect(() => {
     </CAlert>
 
     {/* Expanded Visit History */}
-    {showAllHistory && lastBill && lastBill.map((bill, index) => {
+   {showAllHistory && lastBill && (
+  <div>
+    {lastBill.map((bill, index) => {
       const directivesForBill = healthdirectives.filter(d => d.p_p_i_id == bill.id);
       const examsForBill = patientExaminations.filter(e => e.p_p_i_id == bill.id);
       const ayurvedicExamination = AyurvedicExaminations.filter(e => e.p_p_i_id == bill.id);
+      const isExpanded = expandedVisits[bill.id];
 
       return (
-        <CAlert key={index} color="success" className="p-3 rounded shadow-sm mb-3 border border-secondary">
-          <div className="mb-2 text-dark">
-            <strong>Visit Date:</strong> {bill.visit_date}
+        <CAlert key={index} color="success" className="p-2 rounded shadow-sm mb-3 border">
+          <div
+            className="d-flex justify-content-between align-items-center cursor-pointer"
+            onClick={() => toggleVisitExpansion(bill.id)}
+          >
+            <strong className="text-dark">Visit Date: {bill.visit_date}</strong>
+            <span>{isExpanded ? '▲' : '▼'}</span>
           </div>
 
-          {/* Health Directives */}
-          {directivesForBill.length > 0 && (
+          {isExpanded && (
             <>
-              <div className="mb-2 text-dark"><strong>Health Directives</strong></div>
-              {directivesForBill.map((directive, dIndex) => (
-                <div key={dIndex} className="border-bottom pb-2 mb-2">
-                  <div className="d-flex flex-wrap gap-4 text-dark">
-                    <div><strong>Medicine:</strong> {directive.medicine}</div>
-                    <div><strong>Frequency:</strong> {directive.frequency}</div>
-                    <div><strong>Duration:</strong> {directive.duration}</div>
-                  </div>
+              {/* Health Directives */}
+              {directivesForBill.length > 0 && (
+                <>
+                  <div className="mt-2 text-dark"><strong>Health Directives</strong></div>
+                  {directivesForBill.map((directive, dIndex) => (
+                    <div key={dIndex} className="border-bottom pb-2 mb-2">
+                      <div className="d-flex flex-wrap gap-4 text-dark">
+                        <div><strong>Medicine:</strong> {directive.medicine}</div>
+                        <div><strong>Frequency:</strong> {directive.frequency}</div>
+                        <div><strong>Duration:</strong> {directive.duration}</div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {/* Examinations */}
+              {examsForBill.length > 0 && (
+                <div className="mt-2">
+                  <div className="mb-2 text-dark"><strong>Examination</strong></div>
+                  {examsForBill.map((exam, eIndex) => (
+                    <div key={eIndex} className="d-flex flex-wrap gap-3 text-dark">
+                      <div><strong>Blood Pressure:</strong> {exam.bp}</div>
+                      <div><strong>Pulse:</strong> {exam.pulse}</div>
+                      <div><strong>Past History:</strong> {exam.past_history}</div>
+                      <div><strong>Complaints:</strong> {exam.complaints}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {/* Ayurvedic Examinations */}
+              {ayurvedicExamination.length > 0 && (
+                <div className="mt-2">
+                  <div className="mb-2 text-dark"><strong>Ayurvedic Examination</strong></div>
+                  {ayurvedicExamination.map((exam, eIndex) => (
+                    <div key={eIndex} className="d-flex flex-wrap gap-3 text-dark">
+                      <div><strong>Occupation:</strong> {exam.occupation}</div>
+                      <div><strong>Pincode:</strong> {exam.pincode}</div>
+                      <div><strong>Past History:</strong> {exam.ayurPastHistory}</div>
+                      <div><strong>Habits:</strong> {exam.habits}</div>
+                      <div><strong>Lab Investigation:</strong> {exam.lab_investigation}</div>
+                      <div><strong>LMP:</strong> {exam.lmp}</div>
+                      <div><strong>EDD:</strong> {exam.edd}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
-
-          {/* Examinations */}
-          {examsForBill.length > 0 && examsForBill.map((exam, eIndex) => (
-            <div key={eIndex} className="mt-2">
-              <div className="mb-2 text-dark"><strong>Examination</strong></div>
-              <div className="d-flex flex-wrap gap-3 text-dark">
-                <div><strong>Blood Pressure:</strong> {exam.bp}</div>
-                <div><strong>Pulse:</strong> {exam.pulse}</div>
-                <div><strong>Past History:</strong> {exam.past_history}</div>
-                <div><strong>Complaints:</strong> {exam.complaints}</div>
-              </div>
-            </div>
-          ))}
-
-           {/* Ayurvedic Examinations */}
-        {ayurvedicExamination.length > 0 && ayurvedicExamination.map((exam, eIndex) => (
-  <div key={eIndex} className="mt-2">
-    <div className="mb-2 text-dark"><strong>Ayurvedic Examination</strong></div>
-    <div className="d-flex flex-wrap gap-3 text-dark">
-      <div><strong>Occupation:</strong> {exam.occupation}</div>
-      <div><strong>Pincode:</strong> {exam.pincode}</div>
-      <div><strong>Ayurvedic Past History:</strong> {exam.ayurPastHistory}</div>
-      <div><strong>Prasavvedan Parikshayein:</strong> {exam.prasavvedan_parikshayein}</div>
-      <div><strong>Habits:</strong> {exam.habits}</div>
-      <div><strong>Lab Investigation:</strong> {exam.lab_investigation}</div>
-      <div><strong>Personal History:</strong> {exam.personal_history}</div>
-      <div><strong>Food and Drug Allergy:</strong> {exam.food_and_drug_allergy}</div>
-      <div><strong>LMP:</strong> {exam.lmp}</div>
-      <div><strong>EDD:</strong> {exam.edd}</div>
-    </div>
-  </div>
-))}
-
-
         </CAlert>
       );
     })}
+  </div>
+)}
+
   </>
 )}
 
@@ -1986,10 +2008,11 @@ useEffect(() => {
     <div className="text-danger small">{rowErrors[index].price}</div>
   )}
 </CTableDataCell> */}
-<CTableDataCell style={{ width: '16.66%' }}>
+{/* <CTableDataCell style={{ width: '16.66%' }}>
   <CFormInput
     type="number"
     className="text-center"
+   
     value={
       activeEditableRowIndex === index
         ? row.price ?? ''
@@ -2013,7 +2036,49 @@ useEffect(() => {
   {rowErrors[index]?.price && (
     <div className="text-danger small">{rowErrors[index].price}</div>
   )}
+</CTableDataCell> */}
+<CTableDataCell style={{ width: '16.66%' }}>
+  <CFormInput
+    type="number"
+    min="0" // Prevents using arrow keys to go below 0
+    className="text-center"
+    value={
+      activeEditableRowIndex === index
+        ? row.price ?? ''
+        : row.price || row.drugDetails?.[0]?.price || ''
+    }
+    onChange={(e) => {
+      const val = e.target.value;
+
+      // Allow empty field to clear value
+      if (val === '') {
+        handleRowChangee(index, 'price', '');
+        return;
+      }
+
+      const numberValue = Number(val);
+
+      // Prevent setting negative values
+      if (numberValue >= 0) {
+        handleRowChangee(index, 'price', numberValue);
+      }
+    }}
+    onFocus={() => {
+      setActiveEditableRowIndex(index);
+      handleRowChangee(index, 'price', ''); // Clear field on focus
+    }}
+    onBlur={() => {
+      if (row.price === '' || row.price === null || row.price === undefined) {
+        handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
+      }
+      setActiveEditableRowIndex(null);
+    }}
+  />
+  {rowErrors[index]?.price && (
+    <div className="text-danger small">{rowErrors[index].price}</div>
+  )}
 </CTableDataCell>
+
 
 
 
@@ -2056,7 +2121,7 @@ useEffect(() => {
 
 
 {/* Mobile View */}
-<div className="d-lg-none">
+<div className="d-lg-none mb-4">
   {rowss.map((row, index) => (
     <div key={index} className="border rounded p-3 mb-3">
       {/* Medicine */}
@@ -2517,7 +2582,7 @@ useEffect(() => {
 </div>
 
 {/* Mobile View */}
-<div className="d-block d-lg-none">
+<div className="d-block d-lg-none mt-2">
 
   {rows.map((row, index) => (
     <CCard className="mb-2 px-2 py-2" key={index}>

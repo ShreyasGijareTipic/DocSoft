@@ -119,6 +119,9 @@ const BasicMantineTable = () => {
     fetchPatients(); // Call the fetch function
   }, []); // Run once on mount
 
+  const totalAmount = data.reduce((sum, row) => sum + (Number(row.grand_total) || 0), 0);
+
+
   return (
     <>
       {/* {loading && <Loader />}
@@ -190,6 +193,32 @@ const BasicMantineTable = () => {
             }}
           />
         )} */}
+
+  {/* ✅ Outside the table - Total Display Below */}
+  <div
+    style={{
+      marginTop: '2px',
+      display: 'flex',
+      justifyContent: 'flex-start', // 👈 left aligned
+      padding: '0.75rem 1rem',
+    }}
+  >
+    <div
+      style={{
+        fontSize: '1.1rem',
+        fontWeight: 'bold',
+        color: '#212529',
+        backgroundColor: '#e9ecef',
+        padding: '0.5rem 1rem',
+        borderRadius: '8px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+      }}
+    >
+      🧾 Total Amount: ₹
+      {data.reduce((sum, row) => sum + (Number(row.grand_total) || 0), 0).toFixed(2)}
+    </div>
+  </div>
+
         {!loading && !error && (
   data.length > 0 ? (
     <MantineReactTable
@@ -240,6 +269,10 @@ const BasicMantineTable = () => {
           maxHeight: '600px',
         },
       }}
+
+      
+      
+
     />
   ) : (
     <Alert color="yellow" style={{ marginTop: '1rem' }}>
