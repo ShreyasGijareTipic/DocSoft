@@ -2508,23 +2508,48 @@ export function generatePDF(
             ];
 
             // 2. Handle Prasavvedan Parikshayein (complex object with arrays)
-    if (hasValidData(observation?.prasavvedan_parikshayein)) {
-        const prasavvedanData = observation.prasavvedan_parikshayein;
+    // if (hasValidData(observation?.prasavvedan_parikshayein)) {
+    //     const prasavvedanData = observation.prasavvedan_parikshayein;
         
-        if (typeof prasavvedanData === 'object') {
-            const textEntries = Object.entries(prasavvedanData)
-                .filter(([key, value]) => Array.isArray(value) && value.length > 0)
-                .map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value.join(', ')}`)
-                .join(' | ');
+    //     if (typeof prasavvedanData === 'object') {
+    //         const textEntries = Object.entries(prasavvedanData)
+    //             .filter(([key, value]) => Array.isArray(value) && value.length > 0)
+    //             .map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value.join(', ')}`)
+    //             .join(' | ');
 
-            if (textEntries) {
-                fields.push({ 
-                    label: "Prasavvedan Parikshayein", 
-                    value: textEntries 
-                });
-            }
+    //         if (textEntries) {
+    //             fields.push({ 
+    //                 label: "Prasavvedan Parikshayein", 
+    //                 value: textEntries 
+    //             });
+    //         }
+    //     }
+    // }
+if (hasValidData(observation?.prasavvedan_parikshayein)) {
+    const prasavvedanData = observation.prasavvedan_parikshayein;
+
+    if (typeof prasavvedanData === 'object' && prasavvedanData !== null) {
+        const textEntries = Object.entries(prasavvedanData)
+            .filter(([_, value]) => Array.isArray(value) && value.length > 0)
+            .map(([key, value]) => {
+                const formattedKey = key.charAt(0).toUpperCase() + key.slice(1);
+                const formattedValue = value.join(', '); // Directly use Marathi text
+                return `${formattedKey}: ${formattedValue}`;
+            })
+            .join(' | ');
+
+        if (textEntries.trim() !== '') {
+            fields.push({ 
+                label: "Prasavvedan Parikshayein", 
+                value: textEntries 
+            });
         }
     }
+}
+
+
+
+
 
     // 3. Handle Habits (object)
     if (hasValidData(observation?.habits)) {
