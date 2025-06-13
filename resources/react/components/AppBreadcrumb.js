@@ -1,9 +1,10 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import routes from '../routes'
 
 import { CBreadcrumb, CBreadcrumbItem } from '@coreui/react'
+import { getUser } from '../util/session'
 
 const AppBreadcrumb = () => {
   const currentLocation = useLocation().pathname
@@ -32,10 +33,25 @@ const AppBreadcrumb = () => {
   const breadcrumbs = getBreadcrumbs(currentLocation)
   console.log("breadcrumbs",breadcrumbs);
   
+const user = getUser();
+console.log(user.type);
+
+
+const navigate = useNavigate()
+
+  const handleHomeClick = () => {
+    if (user.type === 0) {
+      navigate('/register/WhatsappClinicRegister')
+    } else {
+      navigate('/Dashboard2')
+    }
+  }
+
 
   return (
     <CBreadcrumb className="my-0">
-      <CBreadcrumbItem href="/#/Dashboard2">Home</CBreadcrumbItem>
+      <CBreadcrumbItem  style={{ cursor: 'pointer' }}
+ onClick={handleHomeClick} >Home</CBreadcrumbItem>
       {breadcrumbs.map((breadcrumb, index) => {
         return (
           <CBreadcrumbItem

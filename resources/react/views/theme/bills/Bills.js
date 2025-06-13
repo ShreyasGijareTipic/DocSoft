@@ -36,6 +36,7 @@ import { getUser } from '../../../util/session';
 import { showToast } from '../toastContainer/toastContainer'; 
 import { cilFile, cilMedicalCross, cilDelete, cilPlus, cilMinus } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
+import { FaMinus, FaPlus } from 'react-icons/fa';
 
 
 const Typography = () => {
@@ -48,7 +49,7 @@ console.log("user",user.consulting_fee);
 
   const location = useLocation();
   const { formDataa } = location.state || {};
-// console.log("gya data",formDataa);
+  // console.log("data",formDataa?.occupation);
 
 
 
@@ -62,6 +63,13 @@ console.log("user",user.consulting_fee);
   const [email, setEmail] = useState(formDataa?.patient_email || '');
   const [phone, setContactNumber] = useState((formDataa?.patient_contact || ''));
   const [dob, setDob] = useState(formDataa?.patient_dob || '');
+
+  //Occupation and Pincode
+  const [Occupation, setoccupation] = useState(formDataa?.occupation || '');
+  const [Pincode, setpincode] = useState(formDataa?.pincode || '');
+
+
+
   const [patientSuggestionId, setPatientSuggestionId] = useState(null);
   const [lastBill , setLastBill] = useState([{}]);
 // console.log("lastBill",lastBill);
@@ -192,6 +200,8 @@ const [AyurvedicExaminations , setayurvedicExaminations ] = useState([{}]);
     setPatientAddress(patient.address);
     setContactNumber(patient.phone);
     setEmail(patient.email);
+    setoccupation(patient.occupation);
+    setpincode(patient.pincode);
     setDob(patient.dob);
     setIsSuggestionClicked(true); 
     setSuggestions([]);
@@ -518,6 +528,12 @@ const totalPrice = rowss.reduce((acc, row) => {
 const handleSubmit = async () => {
   if (!validateForm()) return;
   if (!validateRows(rows)) return;
+ 
+   // Only validate prescription fields if the section is open
+  if (showTable && !validateAllFields()) {
+    return; // Stop submission if prescription validation fails
+  }
+  
 
   const today = new Date();
   const dobDate = new Date(dob);
@@ -574,6 +590,8 @@ const handleSubmit = async () => {
         phone,
         address: patientAddress,
         dob,
+       occupation :  Occupation,
+        pincode:Pincode
       };
 
       try {
@@ -596,6 +614,8 @@ const handleSubmit = async () => {
       email: data?.patient?.email || email,
       contact: data?.patient?.phone || `91${phone}`,
       dob: data?.patient?.dob || dob,
+      occupation: data?.patient?.occupation || Occupation,
+      pincode: data?.patient?.pincode || Pincode,
       doctor_name: d_name,
       registration_number: r_num,
       visit_date: visitDate,
@@ -659,7 +679,7 @@ await post('/api/descriptions', { descriptions: descriptionData });
 
     const hasPatientExamData = bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA || weight || height;
 
-    const hasAyurvedicDiagnosisData = occupation || pincode || emaill || ayurPastHistory || prasavvedanParikshayein ||
+    const hasAyurvedicDiagnosisData =  emaill || ayurPastHistory || prasavvedanParikshayein ||
   habits || labInvestigation || personalHistory || foodAndDrugAllergy || lmp || edd;
 
   
@@ -724,15 +744,16 @@ if (hasPatientExamData || hasAyurvedicDiagnosisData) {
     ? {
         p_p_i_id: `${billno}`,
         patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get patient ID',
-        occupation: occupation || "",
-        pincode: pincode || "",
+        // occupation: occupation || "",
+        // pincode: pincode || "",
         email: emaill || "",
         ayurPastHistory: ayurPastHistory || "",
-        prasavvedan_parikshayein: prasavvedanParikshayein || "",
-        habits: habits || "",
+        prasavvedan_parikshayein: JSON.stringify(ashtvidhData) || "",
+        habits: JSON.stringify(habits) || "",
         lab_investigation: labInvestigation || "",
-        personal_history: personalHistory || "",
+        personal_history: JSON.stringify(personalHistory) || "",
         food_and_drug_allergy: foodAndDrugAllergy || "",
+        drug_allery:drugAllergy|| "",
         lmp: lmp || "",
         edd: edd || ""
       }
@@ -850,15 +871,17 @@ const toggleAyurvedicForm = () => setIsAyurvedicExpanded(!isAyurvedicExpanded);
   const [sysExPA, setSysExPA] = useState("");
 
   // Ayurvedic Observation
-  const [occupation, setOccupation] = useState('');
-const [pincode, setPincode] = useState('');
+//   const [occupation, setOccupation] = useState('');
+// const [pincode, setPincode] = useState('');
 const [emaill, setEmaill] = useState('');
 const [ayurPastHistory, setAyurPastHistory] = useState('');
 const [prasavvedanParikshayein, setPrasavvedanParikshayein] = useState('');
-const [habits, setHabits] = useState('');
+
 const [labInvestigation, setLabInvestigation] = useState('');
-const [personalHistory, setPersonalHistory] = useState('');
+// const [personalHistory, setPersonalHistory] = useState('');
 const [foodAndDrugAllergy, setFoodAndDrugAllergy] = useState('');
+  const [drugAllergy, setDrugAllergy] = useState('')
+
 const [lmp, setLmp] = useState('');
 const [edd, setEdd] = useState('');
 
@@ -1144,6 +1167,255 @@ const handleSearchChange = (e) => {
 };
 
 
+// just checkin for demo perpose value
+
+const [personalHistory, setPersonalHistory] = useState({
+    diet: '',
+    appetite: '',
+    sleep: '',
+    thirst: '',
+    bowel: '',
+    micturition: '',
+  });
+
+  const handleChange = (field, value) => {
+    setPersonalHistory((prev) => ({ ...prev, [field]: value }));
+  };
+  const [showPersonalHistory, setShowPersonalHistory] = useState(false);
+
+  const [showAshtvidh, setShowAshtvidh] = useState(false);
+  // const [ashtvidhData, setAshtvidhData] = useState({
+  //   nadi: '',
+  //   jihva: '',
+  //   mala: '',
+  //   mutra: '',
+  //   netra: '',
+  //   aakruti: '',
+  //   shabda: '',
+  //   sparsha: '',
+  // });
+  const [ashtvidhData, setAshtvidhData] = useState({
+  nadi: [],
+  jihva: [],
+  mala: [],
+  mutra: [],
+  netra: [],
+  aakruti: [],
+  shabda: [],
+  sparsha: [],
+});
+
+  //  const handleAshtvidhChange = (field, value) => {
+  //   setAshtvidhData((prev) => ({ ...prev, [field]: value }));
+  // };
+const handleAshtvidhChange = (key, value) => {
+  setAshtvidhData((prev) => {
+    const currentValues = prev[key] || [];
+    const updatedValues = currentValues.includes(value)
+      ? currentValues.filter((item) => item !== value)
+      : [...currentValues, value];
+
+    return {
+      ...prev,
+      [key]: updatedValues,
+    };
+  });
+};
+
+const [showAllergyFields, setShowAllergyFields] = useState(false)
+  
+
+  const toggleFields = () => setShowAllergyFields(!showAllergyFields)
+  
+
+   const [showHabits, setShowHabits] = useState(false)
+  const [habits, setHabits] = useState({
+    alcohol: '',
+    cold_drink: '',
+    fast_food: '',
+    salty_food: '',
+    tobbacco: '',
+    
+    chocolate:'',
+    drug_addict:'',
+    late_night_sleep:'',
+    smoking:'',
+    coffee:'',
+    eating_habits:'',
+    pan_masala:'',
+    tea:''
+  });
+
+  const handleHabitChange = (habitKey, value) => {
+  setHabits((prevHabits) => {
+    const currentValues = prevHabits[habitKey]
+      ? prevHabits[habitKey].split(',').map((v) => v.trim())
+      : []
+
+    const updatedValues = currentValues.includes(value)
+      ? currentValues.filter((v) => v !== value)
+      : [...currentValues, value]
+
+    return {
+      ...prevHabits,
+      [habitKey]: updatedValues.join(', ')
+    }
+  })
+}
+
+
+
+// for Prescription shortout
+const validateField = (index, fieldName) => {
+  const row = rowss[index];
+  const errors = { ...rowErrors };
+  
+  if (!errors[index]) errors[index] = {};
+  
+  switch (fieldName) {
+    case 'description':
+      // if (!row.description || !medicineSearch[index]) {
+      //   errors[index].description = 'Medicine selection is required';
+      // } else {
+      //   delete errors[index].description;
+      // }
+      break;
+      
+    case 'strength':
+      if (!row.strength) {
+        errors[index].strength = 'Strength is required';
+      } else {
+        delete errors[index].strength;
+      }
+      break;
+      
+    case 'dosage':
+     const trimmedDosage = String(row.dosage).trim();
+
+if (!trimmedDosage) {
+  errors[index].dosage = 'Dosage is required';
+} else if (!/^[01]-[01]-[01]$/.test(trimmedDosage)) {
+  errors[index].dosage = 'Invalid dosage format. Use format like 1-0-1';
+} else {
+  delete errors[index].dosage;
+}
+      break;
+      
+    case 'timing':
+      if (!row.timing) {
+        errors[index].timing = 'Timing is required';
+      } else {
+        delete errors[index].timing;
+      }
+      break;
+      
+    case 'frequency':
+      if (!row.frequency) {
+        errors[index].frequency = 'Frequency is required';
+      } else {
+        delete errors[index].frequency;
+      }
+      break;
+      
+    case 'duration':
+      if (!row.duration) {
+        errors[index].duration = 'Duration is required';
+      } else {
+        delete errors[index].duration;
+      }
+      break;
+      
+    case 'price':
+      if (!row.price && !row.drugDetails?.[0]?.price) {
+        errors[index].price = 'Price is required';
+      } else {
+        delete errors[index].price;
+      }
+      break;
+  }
+  
+  // Clean up empty error objects
+  if (Object.keys(errors[index]).length === 0) {
+    delete errors[index];
+  }
+  
+  setRowErrors(errors);
+};
+
+const clearFieldError = (index, fieldName) => {
+  setRowErrors(prev => {
+    const updated = { ...prev };
+    if (updated[index]) {
+      delete updated[index][fieldName];
+      if (Object.keys(updated[index]).length === 0) {
+        delete updated[index];
+      }
+    }
+    return updated;
+  });
+};
+
+// Call this function before form submission to validate all fields
+const validateAllFields = () => {
+  let hasErrors = false;
+  const errors = {};
+  
+  rowss.forEach((row, index) => {
+    const rowErrors = {};
+    
+    // if (!row.description || !medicineSearch[index]) {
+    //   rowErrors.description = 'Medicine selection is required';
+    //   hasErrors = true;
+    // }
+    
+    if (!row.strength) {
+      rowErrors.strength = 'Strength is required';
+      hasErrors = true;
+    }
+    
+   if (!row.dosage) {
+  rowErrors.dosage = 'Dosage is required';
+  hasErrors = true;
+} else if (row.dosage.length !== 5 || !row.dosage.includes('-')) {
+  rowErrors.dosage = 'Invalid dosage format. Use format like 1-0-1';
+  hasErrors = true;
+}
+
+    
+    if (!row.timing) {
+      rowErrors.timing = 'Timing is required';
+      hasErrors = true;
+    }
+    
+    if (!row.frequency) {
+      rowErrors.frequency = 'Frequency is required';
+      hasErrors = true;
+    }
+    
+    if (!row.duration) {
+      rowErrors.duration = 'Duration is required';
+      hasErrors = true;
+    }
+    
+    if (!row.price && !row.drugDetails?.[0]?.price) {
+      rowErrors.price = 'Price is required';
+      hasErrors = true;
+    }
+    
+    if (Object.keys(rowErrors).length > 0) {
+      errors[index] = rowErrors;
+    }
+  });
+  
+  setRowErrors(errors);
+  return !hasErrors;
+};
+
+
+
+
+
+
 
 
   return (
@@ -1307,13 +1579,13 @@ const handleSearchChange = (e) => {
     {/* Mobile: Block layout, Desktop: Flex layout */}
     <div className="d-block d-md-flex align-items-center">
       <CFormLabel className="me-md-2 mb-2 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
-        Patient Address
+        Occupation
       </CFormLabel>
       <div style={{ width: '90%', position: 'relative' }}>
         <CFormInput
-          value={patientAddress || data?.patient?.address || ''}
-          onChange={(e) => setPatientAddress(e.target.value)}
-          placeholder="Full Address / Pincode"
+          value={Occupation || data?.patient?.occupation || ''}
+          onChange={(e) => setoccupation(e.target.value)}
+          placeholder="Occupation"
           required
           className="w-100"
         />
@@ -1325,7 +1597,7 @@ const handleSearchChange = (e) => {
   </CCol>
 
   {/* Contact Details Row - Responsive layout */}
-  <CRow className="">
+  <CRow className="mb-2">
     <CCol xs={12} md={6} lg={3}>
       <CFormLabel htmlFor="phone" className="fw-bold mb-2 d-block">
         Mobile Number
@@ -1426,7 +1698,7 @@ const handleSearchChange = (e) => {
       )}
     </CCol>
 
-    <CCol xs={12} md={6} lg={3}>
+    {/* <CCol xs={12} md={6} lg={3}>
       <CFormLabel htmlFor="visitDate" className="fw-bold mb-2 d-block">
        Followup Date
       </CFormLabel>
@@ -1441,10 +1713,57 @@ const handleSearchChange = (e) => {
       />
       {/* {errors.visitDate && (
         <div className="text-danger mt-1 small">{errors.visitDate}</div>
-      )} */}
-    </CCol>
+      )} 
+    </CCol> */}
 
   </CRow>
+
+
+       <CCol xs={12} md={6} className="mb-2">
+    {/* Mobile: Block layout, Desktop: Flex layout */}
+    <div className="d-block d-md-flex align-items-center">
+      <CFormLabel className="me-md-2 mb-2 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
+        Patient Address
+      </CFormLabel>
+      <div style={{ width: '90%', position: 'relative' }}>
+        <CFormInput
+          value={patientAddress || data?.patient?.address || ''}
+          onChange={(e) => setPatientAddress(e.target.value)}
+          placeholder="Full Address / Pincode"
+          required
+          className="w-100"
+        />
+        {errors.patientAddress && (
+          <div className="text-danger mt-1 small">{errors.patientAddress}</div>
+        )}
+      </div>
+    </div>
+  </CCol>
+
+
+         <CCol xs={12} md={6} className="mb-2">
+    {/* Mobile: Block layout, Desktop: Flex layout */}
+    <div className="d-block d-md-flex align-items-center">
+      <CFormLabel className="me-md-2 mb-2 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
+        Pin Code
+      </CFormLabel>
+      <div style={{ width: '90%', position: 'relative' }}>
+        <CFormInput
+          value={Pincode || data?.patient?.pincode || ''}
+          onChange={(e) => setpincode(e.target.value)}
+          placeholder="Pincode"
+          required
+          className="w-100"
+        />
+        {errors.patientAddress && (
+          <div className="text-danger mt-1 small">{errors.patientAddress}</div>
+        )}
+      </div>
+    </div>
+  </CCol>
+
+
+
 </CRow>
 {/* </CCard> */}
 
@@ -1478,10 +1797,11 @@ const handleSearchChange = (e) => {
       const isExpanded = expandedVisits[bill.id];
 
       return (
-        <CAlert key={index} color="success" className="p-2 rounded shadow-sm mb-3 border">
+        <CAlert key={index} color="success" className="p-2 rounded shadow-sm mb-3 border border-black">
           <div
-            className="d-flex justify-content-between align-items-center cursor-pointer"
+            className="d-flex justify-content-between align-items-center "
             onClick={() => toggleVisitExpansion(bill.id)}
+             style={{ cursor: 'pointer' }}
           >
             <strong className="text-dark">Visit Date: {bill.visit_date}</strong>
             <span>{isExpanded ? '▲' : '▼'}</span>
@@ -1529,7 +1849,21 @@ const handleSearchChange = (e) => {
                       <div><strong>Occupation:</strong> {exam.occupation}</div>
                       <div><strong>Pincode:</strong> {exam.pincode}</div>
                       <div><strong>Past History:</strong> {exam.ayurPastHistory}</div>
-                      <div><strong>Habits:</strong> {exam.habits}</div>
+                      {/* <div><strong>Habits:</strong> {exam.habits}</div> */}
+                     {exam?.habits && Object.values(exam.habits).some(val => val && val !== '') && (
+  <div>
+    <strong>Habits:</strong>
+    <ul style={{ marginLeft: '1rem', listStyleType: 'disc' }}>
+      {Object.entries(exam.habits)
+        .filter(([_, val]) => val && val !== '')
+        .map(([key, val]) => (
+          <li key={key}>
+            {key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}: {val}
+          </li> 
+        ))}
+    </ul>  
+  </div>
+)}
                       <div><strong>Lab Investigation:</strong> {exam.lab_investigation}</div>
                       <div><strong>LMP:</strong> {exam.lmp}</div>
                       <div><strong>EDD:</strong> {exam.edd}</div>
@@ -1614,20 +1948,20 @@ const handleSearchChange = (e) => {
       {doctorObservationSettings.bp && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">BP</CFormLabel>
-          <CFormInput value={bp} onChange={(e) => setBp(e.target.value)} />
+          <CFormInput value={bp} type='number' onChange={(e) => setBp(e.target.value)} />
         </CCol>
       )}
 
       {doctorObservationSettings.weight && (
         <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Weight</CFormLabel>
-          <CFormInput value={weight} onChange={(e) => setWeight(e.target.value)} />
+          <CFormLabel className="fw-bold">Weight (Kg)</CFormLabel>
+          <CFormInput value={weight} type='number' onChange={(e) => setWeight(e.target.value)} />
         </CCol>
       )}
       {doctorObservationSettings.height && (
         <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Height</CFormLabel>
-          <CFormInput value={height} onChange={(e) => setHeight(e.target.value)} />
+          <CFormLabel className="fw-bold">Height (CM)</CFormLabel>
+          <CFormInput value={height} type='number' onChange={(e) => setHeight(e.target.value)} />
         </CCol>
       )}
       {doctorObservationSettings.pulse && (
@@ -1675,82 +2009,656 @@ const handleSearchChange = (e) => {
 {isAyurvedicExpanded && doctorAyurvedicObservationSettings && (
   <div className="p-2">
     <CRow className="mb-2">
-      {doctorAyurvedicObservationSettings.occupation && (
-        <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Occupation</CFormLabel>
-          <CFormInput value={occupation} onChange={(e) => setOccupation(e.target.value)} />
-        </CCol>
-      )}
-      {doctorAyurvedicObservationSettings.pincode && (
-        <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Pincode</CFormLabel>
-          <CFormInput value={pincode} onChange={(e) => setPincode(e.target.value)} />
-        </CCol>
-      )}
-      {/* {doctorAyurvedicObservationSettings.email && (
-        <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Email</CFormLabel>
-          <CFormInput value={emaill} onChange={(e) => setEmail(e.target.value)} />
-        </CCol>
-      )} */}
-      {doctorAyurvedicObservationSettings.past_history && (
-        <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Past History</CFormLabel>
-          <CFormInput value={ayurPastHistory} onChange={(e) => setAyurPastHistory(e.target.value)} />
-        </CCol>
-      )}
-
-       {doctorAyurvedicObservationSettings.prasavvedan_parikshayein && (
-        <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Prasavvedan Parikshayein</CFormLabel>
-          <CFormInput value={prasavvedanParikshayein} onChange={(e) => setPrasavvedanParikshayein(e.target.value)} />
-        </CCol>
-      )}
-    </CRow>
-
-    <CRow className="mb-2">
      
-      {doctorAyurvedicObservationSettings.habits && (
-        <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Habits</CFormLabel>
-          <CFormInput value={habits} onChange={(e) => setHabits(e.target.value)} />
-        </CCol>
+
+      {doctorAyurvedicObservationSettings.past_history && (
+        <CCol xs={12} sm={6} >
+          <CFormLabel className="fw-bold">Past History</CFormLabel>
+          <CFormInput value={ayurPastHistory} onChange={(e) => {
+             const onlyText = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+            setAyurPastHistory(e.target.value)}} />
+        </CCol> 
       )}
-      {doctorAyurvedicObservationSettings.lab_investigation && (
+
+       {doctorAyurvedicObservationSettings.lab_investigation && (
         <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Lab Investigation</CFormLabel>
+          <CFormLabel className="fw-bold">Investigation</CFormLabel>
           <CFormInput value={labInvestigation} onChange={(e) => setLabInvestigation(e.target.value)} />
         </CCol>
       )}
-      {doctorAyurvedicObservationSettings.personal_history && (
-        <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Personal History</CFormLabel>
-          <CFormInput value={personalHistory} onChange={(e) => setPersonalHistory(e.target.value)} />
-        </CCol>
-      )}
-      {doctorAyurvedicObservationSettings.food_and_drug_allergy && (
-        <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Food and Drug Allergy</CFormLabel>
-          <CFormInput value={foodAndDrugAllergy} onChange={(e) => setFoodAndDrugAllergy(e.target.value)} />
-        </CCol>
-      )}
+
     </CRow>
 
-    <CRow className="mb-2">
+     <CRow className="mb-2">
       
       {doctorAyurvedicObservationSettings.lmp && (
         <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">LMP</CFormLabel>
-          <CFormInput value={lmp} onChange={(e) => setLmp(e.target.value)} />
+          <CFormLabel  className="fw-bold" >LMP</CFormLabel>
+          <CFormInput type='date' value={lmp} onChange={(e) => setLmp(e.target.value)} />
         </CCol>
       )}
       {doctorAyurvedicObservationSettings.edd && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">EDD</CFormLabel>
-          <CFormInput value={edd} onChange={(e) => setEdd(e.target.value)} />
+          <CFormInput type='date' value={edd} onChange={(e) => setEdd(e.target.value)} />
         </CCol>
       )}
     </CRow>
+
+
+<CRow>
+    {(doctorAyurvedicObservationSettings.food_and_drug_allergy ||  doctorAyurvedicObservationSettings.habits) && ( 
+
+      <CRow className=' align-items-center mb-2 mt-3'>
+{doctorAyurvedicObservationSettings.food_and_drug_allergy && (
+      <CCol xs={12} md={6} className="d-flex justify-content-between align-items-center mb-2">
+        
+          <h6 className="fw-bold mb-0">Allergy</h6>
+          <CButton
+            // color={showAllergyFields ? 'danger' : 'primary'}
+            // size="sm"
+             type="button"
+            onClick={toggleFields}
+            // style={{ padding: '2px 8px' }}
+              className="btn btn-sm btn-outline-primary"
+          >
+            {showAllergyFields ? '-' : '+'}
+          </CButton>
+      
+        </CCol> 
+      )}
+
+{doctorAyurvedicObservationSettings.habits && (
+      <CCol xs={12} md={6} className="d-flex justify-content-between align-items-center">
+     
+        <h6 className="fw-bold mb-0">Habits</h6>
+        <CButton
+          size="sm"
+          // color={showHabits ? 'danger' : 'primary'}
+          onClick={() => setShowHabits(!showHabits)}
+          className="btn btn-sm btn-outline-primary"
+        >
+          {showHabits ? '-' : '+'}
+        </CButton>
+    
+</CCol> 
+)}
+
+
+  </CRow>
+
+
+     )}
+  
+
+    {/* Allergy with Toggle */}
+    {showAllergyFields && (
+      
+      <CRow>
+      {showAllergyFields && (
+          <CCol xs={12} >
+          <div className="d-flex flex-column gap-2">
+            <CFormInput
+              placeholder="Food Allergy"
+              value={foodAndDrugAllergy}
+              onChange={(e) => setFoodAndDrugAllergy(e.target.value)}
+            />
+            <CFormInput
+              placeholder="Drug Allergy"
+              value={drugAllergy}
+              onChange={(e) => setDrugAllergy(e.target.value)}
+            />
+          </div>
+          </CCol>
+        )}
+</CRow>
+        
+     )}  
+
+
+{/* Habits toggle */}
+
+ {doctorAyurvedicObservationSettings.habits && (
+        // <CCol xs={12} sm={6}>
+        //   <CFormLabel className="fw-bold">Habits</CFormLabel>
+        //   <CFormInput value={habits} onChange={(e) => setHabits(e.target.value)} />
+        // </CCol>
+         <CCol xs={12} >
+      
+
+      {showHabits && (
+        <>
+<CRow className="mb-3">
+  {/* === Section 1 === */}
+  <CCol xs={12} md={4}>
+    <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Alcohol</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.alcohol === option}
+            onChange={() => handleHabitChange("alcohol", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+    <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Cold Drink</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.cold_drink === option}
+            onChange={() => handleHabitChange("cold_drink", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+    <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Fast Food</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Sometimes", "Twice In week", "Once In Week"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.fast_food === option}
+            onChange={() => handleHabitChange("fast_food", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+    <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Salty Food</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.salty_food === option}
+            onChange={() => handleHabitChange("salty_food", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+  </CCol>
+
+  {/* === Section 2 === */}
+  <CCol xs={12} md={4}>
+    <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Chocolate</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.chocolate === option}
+            onChange={() => handleHabitChange("chocolate", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+ <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Drug Addict</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.drug_addict === option}
+            onChange={() => handleHabitChange("drug_addict", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+     <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Late Night Sleep</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Sometimes", "Not Regular", "Regular"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.late_night_sleep === option}
+            onChange={() => handleHabitChange("late_night_sleep", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+     <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Smoking</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.smoking === option}
+            onChange={() => handleHabitChange("smoking", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+  </CCol>
+
+  
+
+  {/* === Section 3 === */}
+  <CCol xs={12} md={4}>
+    <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Tobbacco</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.tobbacco === option}
+            onChange={() => handleHabitChange("tobbacco", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+          <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Coffee</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.coffee === option}
+            onChange={() => handleHabitChange("coffee", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+      <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Eating Habits</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.eating_habits === option}
+            onChange={() => handleHabitChange("eating_habits", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+      <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Pan Masala</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.pan_masala === option}
+            onChange={() => handleHabitChange("pan_masala", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+      <CCol xs={12} className="mb-3">
+      <CFormLabel className="fw-bold">Tea</CFormLabel>
+      <div className="d-flex flex-wrap gap-3 mt-1">
+        {["Normal", "Moderate", "Heavy"].map((option) => (
+          <CFormCheck
+            key={option}
+            type="checkbox"
+            label={option}
+            checked={habits.tea === option}
+            onChange={() => handleHabitChange("tea", option)}
+          />
+        ))}
+      </div>
+    </CCol>
+
+  </CCol>
+</CRow> 
+
+
+</>
+
+
+      )}
+    </CCol>
+      )}
+</CRow>
+
+
+
+    <CRow className="mb-2">
+    
+{/* gird for Ashtvidh and Personal history */}
+{(doctorAyurvedicObservationSettings.personal_history || doctorAyurvedicObservationSettings.prasavvedan_parikshayein) && (
+  <CRow className="align-items-center mb-2 mt-3">
+    {doctorAyurvedicObservationSettings.personal_history && (
+      <CCol xs={12} md={6} className="d-flex justify-content-between align-items-center mb-2">
+        <h6 className="fw-bold mb-0">Personal History</h6>
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-primary"
+          onClick={() => setShowPersonalHistory(!showPersonalHistory)}
+        >
+          {showPersonalHistory ? '-' : '+'}
+        </button>
+      </CCol>
+    )}
+
+    {doctorAyurvedicObservationSettings.prasavvedan_parikshayein && (
+      <CCol xs={12} md={6} className="d-flex justify-content-between align-items-center">
+        <h6 className="fw-bold mb-0">Ashtvidh Parikshayein</h6>
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-primary"
+          onClick={() => setShowAshtvidh(!showAshtvidh)}
+        >
+          {showAshtvidh ? '-' : '+'}
+        </button>
+      </CCol>
+    )}
+  </CRow>
+)}
+
+{showPersonalHistory && (
+ <CRow>
+      {/* <CCol xs={12} className="d-flex justify-content-between align-items-center">
+  <h5 className="fw-bold mb-0">Personal History</h5>
+  <button
+    type="button"
+    className="btn btn-sm btn-outline-primary"
+    onClick={() => setShowPersonalHistory(!showPersonalHistory)}
+  >
+    {showPersonalHistory ? '-' : '+'}
+  </button>
+</CCol> */}
+
+      {showPersonalHistory && (
+<>
+  {/* Diet */}
+  <CCol xs={12} sm={6} className="mb-3">
+    <CFormLabel className="fw-bold">Diet </CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["Vegetarian", "Non-Vegetarian", "Mixed"].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={personalHistory.diet === option}
+          onChange={() => handleChange("diet", option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* Appetite */}
+  <CCol xs={12} sm={6} className="mb-3">
+    <CFormLabel className="fw-bold">Appetite</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["Good", "Normal", "Poor"].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={personalHistory.appetite === option}
+          onChange={() => handleChange("appetite", option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* Sleep */}
+  <CCol xs={12} sm={6} className="mb-3">
+    <CFormLabel className="fw-bold">Sleep</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["Sound", "Interrupted", "Insomnia"].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={personalHistory.sleep === option}
+          onChange={() => handleChange("sleep", option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* Thirst */}
+  <CCol xs={12} sm={6} className="mb-3">
+    <CFormLabel className="fw-bold">Thirst</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["Normal", "Medium", "Heavy", "Poor"].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={personalHistory.thirst === option}
+          onChange={() => handleChange("thirst", option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* Bowel */}
+  <CCol xs={12} sm={6} className="mb-3">
+    <CFormLabel className="fw-bold">Bowel</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["Regular", "Irregular", "Constipated"].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={personalHistory.bowel === option}
+          onChange={() => handleChange("bowel", option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* Micturition */}
+  <CCol xs={12} sm={6} className="mb-3">
+    <CFormLabel className="fw-bold">Micturition</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["Normal", "Poor", "Painful", "Burning", "Frequent"].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={personalHistory.micturition === option}
+          onChange={() => handleChange("micturition", option)}
+        />
+      ))}
+    </div>
+  </CCol>
+</>
+
+)}
+    </CRow>
+)}
+
+{showAshtvidh && (
+  <CRow>
+      {/* <CCol xs={12} className="d-flex justify-content-between align-items-center">
+        <h5 className="fw-bold mb-0">Ashtvidh Parikshayein</h5>
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-primary"
+          onClick={() => setShowAshtvidh(!showAshtvidh)}
+        >
+          {showAshtvidh ? '-' : '+'}
+        </button>
+      </CCol> */}
+
+      {showAshtvidh && (
+      <>
+  {/* नाड़ी */}
+  <CCol xs={12} className="mb-3">
+  <CFormLabel className="fw-bold">नाड़ी</CFormLabel>
+  <div className="d-flex flex-wrap gap-3 mt-1">
+    {[
+      "साम", "निराम", "क्षीण", "द्रूत", "गुरु", "वात", "पित", "कफ",
+      "वातपित", "पितकफ", "कफवात", "त्रिदोष", "सर्पवत्", "मन्चुकवत्", "हंसवत्"
+    ].map((option) => (
+      <CFormCheck
+        key={option}
+        type="checkbox"
+        label={option}
+        checked={ashtvidhData.nadi.includes(option)}
+        onChange={() => handleAshtvidhChange('nadi', option)}
+      />
+    ))}
+  </div>
+</CCol>
+
+
+  {/* जिव्हा */}
+  <CCol xs={12} className="mb-3">
+    <CFormLabel className="fw-bold">जिव्हा</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["साम" , "निराम" , "दारुण" , "पिच्छिल" , "स्फुटित"  ,"श्याम" , "निलवर्ण" , "शुष्क" , "वर्ण" , "मुरवपाक" , "सम्यक्" , "निल" , "श्वेत " ," रक्तवर्ण"].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={ashtvidhData.jihva.includes(option)}
+          onChange={() => handleAshtvidhChange('jihva', option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* मल */}
+  <CCol xs={12} className="mb-3">
+    <CFormLabel className="fw-bold">मल</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["सविबन्ध" , "मुह मुह" , "द्रव" , "बध्ध्" , "सरकत" , "भोजनोतर" , "सपूय" , "पिच्छिल" , "सम्यक्" , "वेदनायुक्त" , "Daily" , "Alternate day" , "शुष्क" ,"पिताभवर्ण " ," श्वेतवर्ण"
+].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={ashtvidhData.mala.includes(option)}
+          onChange={() => handleAshtvidhChange('mala', option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* मूत्र */}
+  <CCol xs={12} className="mb-3">
+    <CFormLabel className="fw-bold">मूत्र</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["सदाह" , "अल्पमुत्रता" , "बहुमुत्रता" , "सशुल" , "रात्रिकालिनबहुमुत्रता" , "शैयामूत्रता" , "मेयुकत" , "अवरोधित" , "अनियत्रित" , "दीर्घकालीन स तैलसम" ," श्वेत वर्ण"
+].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={ashtvidhData.mutra.includes(option)}
+          onChange={() => handleAshtvidhChange('mutra', option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* नेत्र */}
+  <CCol xs={12} className="mb-3">
+    <CFormLabel className="fw-bold">नेत्र</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["कंड" , "पिच्छिल" , "मलिन पित्" , "निल", "स्ताव" , "श्पाव" , "शुष्क" , "प्रकाश अराहत्व" , "सशुल" , "दाद् श्रीण" ,"नेत्रविकार" , "सम्यक्" , "संकुचित" , "विस्फारित" , "क्षेत"," अरुण " ," पित"
+].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={ashtvidhData.netra.includes(option)}
+          onChange={() => handleAshtvidhChange('netra', option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* आकृति */}
+  <CCol xs={12} className="mb-3">
+    <CFormLabel className="fw-bold">आकृति</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["कृश", "स्थूल", "मध्यम"].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={ashtvidhData.aakruti.includes(option)}
+          onChange={() => handleAshtvidhChange('aakruti', option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* शब्द */}
+  <CCol xs={12} className="mb-3">
+    <CFormLabel className="fw-bold">शब्द</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["गम्भीर" , "खिग्ध" , "गदगद" , "रुक्ष" ," मिमिन"
+].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={ashtvidhData.shabda.includes(option)}
+          onChange={() => handleAshtvidhChange('shabda', option)}
+        />
+      ))}
+    </div>
+  </CCol>
+
+  {/* स्पर्श */}
+  <CCol xs={12} className="mb-3">
+    <CFormLabel className="fw-bold">स्पर्श</CFormLabel>
+    <div className="d-flex flex-wrap gap-3 mt-1">
+      {["सिाध" , "शीत" , "अनष्णाशीत", "रुक्ष"  ,"उषा" ," प्रशष्"
+].map((option) => (
+        <CFormCheck
+          key={option}
+          type="checkbox"
+          label={option}
+          checked={ashtvidhData.sparsha.includes(option)}
+          onChange={() => handleAshtvidhChange('sparsha', option)}
+        />
+      ))}
+    </div>
+  </CCol>
+</>
+
+      )}
+    </CRow>
+)}
+
+
+    </CRow>
+
+   
   </div>
 )}
 
@@ -1758,597 +2666,634 @@ const handleSearchChange = (e) => {
 
 
 
-       <div>
-  
-
+<div>
   {/* Prescriptions Section */}
   {!showTable && (
-<>
-<div className="d-flex justify-content-start lign-items-center mb-3">
-<div className="d-flex align-items-center gap-2">
-  <CIcon icon={cilMedicalCross} className="text-primary" size="lg" /> &nbsp;
-  <h6 className="mb-0 fw-semibold">Medical Prescriptions</h6>&nbsp;&nbsp;
-</div>
-<CButton
-  color="success"
-  variant="outline"
-  shape="rounded-pill"
-  className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
-  onClick={() => setShowTable(true)}
->
-  <span className="fs-5 text-dark" >{showTable ? '−' : '+'}</span>
-  <span className="fw-medium text-dark" >
-    {showTable ? 'Close' : 'Add Prescriptions'}
-  </span>
-</CButton>
-</div>
-
-
-    {/* <CButton style={{ backgroundColor: '#89dee2' }} className="mt-2 mb-2" onClick={() => setShowTable(true)}>
-     <h6>Add Prescriptions</h6> 
-    </CButton> */}
+    <>
+      <div className="d-flex justify-content-start align-items-center mb-3">
+        <div className="d-flex align-items-center gap-2">
+          <CIcon icon={cilMedicalCross} className="text-primary" size="lg" /> &nbsp;
+          <h6 className="mb-0 fw-semibold">Medical Prescriptions</h6>&nbsp;&nbsp;
+        </div>
+        <CButton
+          color="success"
+          variant="outline"
+          shape="rounded-pill"
+          className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
+          onClick={() => setShowTable(true)}
+        >
+          <span className="fs-5 text-dark" >{showTable ? '−' : '+'}</span>
+          <span className="fw-medium text-dark" >
+            {showTable ? 'Close' : 'Add Prescriptions'}
+          </span>
+        </CButton>
+      </div>
     </>
   )}
 
-{showTable && (
-<>
-<div className="d-flex justify-content-start mb-2">
-<CButton
-   onClick={() => setShowTable(false)}  
-   color="danger"
-   variant="outline"
-   shape="rounded-pill"
-   className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm text-white bg-danger"
-  >
-   Remove Section
-</CButton>
-</div>
-  <CCardBody className="rounded shadow-sm bg-white p-2 mt-2 border border-gray-200">
-    {/* Remove Button */}
-    
-
-    {/* Table */}
-     {/* Desktop View */}
-    <div className="d-none d-lg-block">
-      <CTable
-        responsive
-        className="table-borderless align-middle"
-        style={{ borderCollapse: 'separate', borderSpacing: '0 10px' }}
-      >
-        <CTableHead className="bg-light text-center text-nowrap text-dark fw-semibold">
-          <CTableRow>
-            {['Medicine', 'Strength', 'Dosage', 'Timing', 'Frequency', 'Duration','Price', 'Actions'].map((header) => (
-              <CTableHeaderCell key={header} className="" style={{ width: `${100 / 8}%` }}>
-                {header}
-              </CTableHeaderCell>
-            ))}
-          </CTableRow>
-        </CTableHead>
-
-        <CTableBody>
-          {rowss.map((row, index) => (
-            <CTableRow key={index} className="bg-white rounded">
-              {/* Medicine */}
-              <CTableDataCell className="px-2 py-2 position-relative">
-               <CFormInput
-  type="text"
-  value={medicineSearch[index] || ''}
-  onChange={(e) => handleMedicineSearch(index, e.target.value)}
-  placeholder="Search medicine..."
-  autoComplete="off"
-/>
-
-{medicineOptions[index]?.length > 0 && (
-  <div style={{
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    zIndex: 2000,
-    width: '100%',
-    border: '1px solid #ccc',
-    borderTop: 'none',
-    borderRadius: '0 0 6px 6px',
-    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-    // maxHeight: '150px',
-    overflowY: 'auto',
-    // marginTop: '2px'
-  }}>
-    {medicineOptions[index].map((medicine) => (
-      <div
-        key={medicine.id}
-        className="d-flex justify-content-center align-items-center"
-        style={{
-          padding: '8px',
-          cursor: 'pointer',
-          borderBottom: '1px solid #f1f1f1',
-          transition: 'background 0.2s ease',
-          textAlign: 'center',
-          fontSize: '0.95rem',
-          fontWeight: 500
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
-        onClick={() => {
-          handleRowChangee(index, 'description', medicine.id);
-          handleMedicineChange(index, medicine.id);
-          setMedicineSearch((prev) => ({ ...prev, [index]: medicine.drug_name }));
-          setMedicineOptions((prev) => ({ ...prev, [index]: [] }));
-        }}
-      >
-        {medicine.drug_name}
+  {showTable && (
+    <>
+      <div className="d-flex justify-content-start mb-2">
+        <CButton
+          onClick={() => {
+            setShowTable(false);
+            // Reset all data when removing section
+            setRowss([{
+              description: '',
+              strength: '',
+              dosage: '',
+              timing: '',
+              frequency: '',
+              duration: '',
+              price: '',
+              isCustom: false,
+              drugDetails: []
+            }]);
+            setRowErrors([]);
+            setMedicineSearch({});
+            setMedicineOptions({});
+            setSuggestionFlags({});
+            setActiveEditableRowIndex(null);
+          }}  
+          color="danger"
+          variant="outline"
+          shape="rounded-pill"
+          className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm text-white bg-danger"
+        >
+          Remove Section
+        </CButton>
       </div>
-    ))}
-  </div>
-)}
-                {rowErrors[index]?.description && <div className="text-danger">{rowErrors[index].description}</div>}
-              </CTableDataCell>
+      
+      <CCardBody className="rounded shadow-sm bg-white p-2 mt-2 border border-gray-200">
+        {/* Desktop View */}
+        <div className="d-none d-lg-block">
+          <CTable
+            responsive
+            className="table-borderless align-middle"
+            style={{ borderCollapse: 'separate', borderSpacing: '0 10px' }}
+          >
+            <CTableHead className="bg-light text-center text-nowrap text-dark fw-semibold">
+              <CTableRow>
+                {['Medicine', 'Strength', 'Dosage', 'Timing', 'Frequency', 'Duration','Price', 'Actions'].map((header) => (
+                  <CTableHeaderCell key={header} className="" style={{ width: `${100 / 8}%` }}>
+                    {header}
+                  </CTableHeaderCell>
+                ))}
+              </CTableRow>
+            </CTableHead>
 
-              {/* Strength */}
-              <CTableDataCell className="px-2 py-3 position-relative">
-                <CFormInput
-                  value={row.strength}
-                  onChange={(e) => {
-                    handleRowChangee(index, 'strength', e.target.value);
-                    toggleSuggestion(index, 'showStrength', true);
-                  }}
-                  onFocus={() => toggleSuggestion(index, 'showStrength', true)}
-                  placeholder="Strength"
-                  disabled={!row.description}
-                />
-                {suggestionFlags[index]?.showStrength &&
-                  row.drugDetails?.filter((d) => d.drug_id === parseInt(row.description, 10))?.slice(0, 5).map((drug, i) => (
-                    <div
-                      key={i}
-                      className="position-absolute w-100 bg-white border shadow-sm mt-1 px-2 py-1 rounded cursor-pointer"
-                      style={{ zIndex: 2000 }}
-                      onClick={() => {
-                        handleRowChangee(index, 'strength', drug.strength);
+            <CTableBody>
+              {rowss.map((row, index) => (
+                <CTableRow key={index} className="bg-white rounded">
+                  {/* Medicine */}
+                  <CTableDataCell className="px-2 py-2 position-relative">
+                    <CFormInput
+                      type="text"
+                      value={medicineSearch[index] || ''}
+                      onChange={(e) => handleMedicineSearch(index, e.target.value)}
+                      onBlur={() => validateField(index, 'description')}
+                      placeholder="Search medicine..."
+                      autoComplete="off"
+                    />
+
+                    {medicineOptions[index]?.length > 0 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        backgroundColor: '#fff',
+                        zIndex: 2000,
+                        width: '100%',
+                        border: '1px solid #ccc',
+                        borderTop: 'none',
+                        borderRadius: '0 0 6px 6px',
+                        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                        overflowY: 'auto',
+                      }}>
+                        {medicineOptions[index].map((medicine) => (
+                          <div
+                            key={medicine.id}
+                            className="d-flex justify-content-center align-items-center"
+                            style={{
+                              padding: '8px',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid #f1f1f1',
+                              transition: 'background 0.2s ease',
+                              textAlign: 'center',
+                              fontSize: '0.95rem',
+                              fontWeight: 500
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                            onClick={() => {
+                              handleRowChangee(index, 'description', medicine.id);
+                              handleMedicineChange(index, medicine.id);
+                              setMedicineSearch((prev) => ({ ...prev, [index]: medicine.drug_name }));
+                              setMedicineOptions((prev) => ({ ...prev, [index]: [] }));
+                              // Clear error when medicine is selected
+                              clearFieldError(index, 'description');
+                            }}
+                          >
+                            {medicine.drug_name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {rowErrors[index]?.description && <div className="text-danger small mt-1">{rowErrors[index].description}</div>}
+                  </CTableDataCell>
+
+                  {/* Strength */}
+                  <CTableDataCell className="px-2 py-3 position-relative">
+                    <CFormInput
+                      value={row.strength}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        handleRowChangee(index, 'strength', value);
                         toggleSuggestion(index, 'showStrength', false);
                       }}
+                      onFocus={() => {
+                        if (!row.strength) {
+                          toggleSuggestion(index, 'showStrength', true);
+                        }
+                      }}
+                      onBlur={() => validateField(index, 'strength')}
+                      placeholder="Strength"
+                      disabled={!row.description}
+                    />
+
+                    {suggestionFlags[index]?.showStrength &&
+                      row.drugDetails?.filter((d) => d.drug_id === parseInt(row.description, 10))?.slice(0, 5).map((drug, i) => (
+                        <div
+                          key={i}
+                          className="position-absolute w-100 bg-white border shadow-sm mt-1 px-2 py-1 rounded cursor-pointer"
+                          style={{ zIndex: 2000 }}
+                          onClick={() => {
+                            handleRowChangee(index, 'strength', drug.strength);
+                            toggleSuggestion(index, 'showStrength', false);
+                            clearFieldError(index, 'strength');
+                          }}
+                        >
+                          {drug.strength}
+                        </div>
+                      ))}
+                    {rowErrors[index]?.strength && <div className="text-danger small mt-1">{rowErrors[index].strength}</div>}
+                  </CTableDataCell>
+
+                  {/* Dosage */}
+                  {/* <CTableDataCell className="px-2 py-3">
+                    <CFormInput
+                      value={row.dosage}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/-/g, '').trim();
+                        const only01 = raw.replace(/[^01]/g, '');
+                        
+                        // Validate dosage format - must have exactly 3 digits
+                        if (only01.length > 3) {
+                          return; // Don't allow more than 3 digits
+                        }
+                        
+                        // Check for invalid patterns like "11", "00", etc.
+                        if (only01.length === 2 && (only01 === '11' || only01 === '00')) {
+                          setRowErrors(prev => ({
+                            ...prev,
+                            [index]: {
+                              ...prev[index],
+                              dosage: 'Invalid dosage format. Use format like 1-0-1'
+                            }
+                          }));
+                          return;
+                        }
+                        
+                        const formatted = only01.length === 3 ? `${only01[0]}-${only01[1]}-${only01[2]}` : only01;
+                        handleRowChangee(index, 'dosage', formatted);
+                        
+                        // Clear error if valid
+                        if (only01.length === 3) {
+                          clearFieldError(index, 'dosage');
+                        }
+                      }}
+                      onBlur={() => validateField(index, 'dosage')}
+                      placeholder="e.g. 1-0-1"
+                      maxLength={5}
+                    />
+                    {rowErrors[index]?.dosage && <div className="text-danger small mt-1">{rowErrors[index].dosage}</div>}
+                  </CTableDataCell> */}
+                  <CTableDataCell className="px-2 py-3">
+  <CFormInput
+    type="text"
+    value={row.dosage}
+    onChange={(e) => {
+      const raw = e.target.value.replace(/-/g, '').trim();
+      const only01 = raw.replace(/[^01]/g, '');
+
+      if (only01.length > 3) return;
+
+      // Auto-format to 1-0-1 style
+      const formatted = only01.length === 3
+        ? `${only01[0]}-${only01[1]}-${only01[2]}`
+        : only01;
+
+      handleRowChangee(index, 'dosage', formatted);
+
+      // Clear error if fully valid
+      if (/^[01]-[01]-[01]$/.test(formatted)) {
+        clearFieldError(index, 'dosage');
+      }
+    }}
+    onBlur={() => validateField(index, 'dosage')}
+    placeholder="e.g. 1-0-1"
+    maxLength={5}
+  />
+  {rowErrors[index]?.dosage && (
+    <div className="text-danger small mt-1">{rowErrors[index].dosage}</div>
+  )}
+</CTableDataCell>
+
+
+
+                  {/* Timing */}
+                  <CTableDataCell className="px-2 py-3">
+                    <CFormSelect 
+                      value={row.timing} 
+                      onChange={(e) => {
+                        handleRowChangee(index, 'timing', e.target.value);
+                        if (e.target.value) clearFieldError(index, 'timing');
+                      }}
+                      onBlur={() => validateField(index, 'timing')}
                     >
-                      {drug.strength}
+                      <option value="">Select</option>
+                      <option value="After Food">After Food</option>
+                      <option value="Before Food">Before Food</option>
+                    </CFormSelect>
+                    {rowErrors[index]?.timing && <div className="text-danger small mt-1">{rowErrors[index].timing}</div>}
+                  </CTableDataCell>
+
+                  {/* Frequency */}
+                  <CTableDataCell className="px-2 py-3">
+                    <CFormSelect 
+                      value={row.frequency} 
+                      onChange={(e) => {
+                        handleRowChangee(index, 'frequency', e.target.value);
+                        if (e.target.value) clearFieldError(index, 'frequency');
+                      }}
+                      onBlur={() => validateField(index, 'frequency')}
+                    >
+                      <option value="">Select</option>
+                      <option value="Daily">Daily</option>
+                      <option value="SOS">SOS</option>
+                    </CFormSelect>
+                    {rowErrors[index]?.frequency && <div className="text-danger small mt-1">{rowErrors[index].frequency}</div>}
+                  </CTableDataCell>
+
+                  {/* Duration */}
+                  <CTableDataCell className="px-2 py-3">
+                    {row.isCustom ? (
+                      <CFormInput
+                        value={row.duration}
+                        placeholder="Custom"
+                        onChange={(e) => {
+                          handleRowChangee(index, 'duration', e.target.value);
+                          if (e.target.value) clearFieldError(index, 'duration');
+                        }}
+                        onBlur={() => validateField(index, 'duration')}
+                      />
+                    ) : (
+                      <CFormSelect
+                        value={row.duration}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          handleRowChangee(index, 'isCustom', val === 'SOS');
+                          handleRowChangee(index, 'duration', val === 'SOS' ? '' : val);
+                          if (val) clearFieldError(index, 'duration');
+                        }}
+                        onBlur={() => validateField(index, 'duration')}
+                      >
+                        <option value="">Select</option>
+                        {['3 Days', '5 Days', '7 Days', '15 Days', '30 Days', 'SOS'].map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </CFormSelect>
+                    )}
+                    {rowErrors[index]?.duration && <div className="text-danger small mt-1">{rowErrors[index].duration}</div>}
+                  </CTableDataCell>
+
+                  {/* Price */}
+                  <CTableDataCell style={{ width: '16.66%' }}>
+                    <CFormInput
+                      type="number"
+                      min="0"
+                      className="text-center"
+                      value={
+                        activeEditableRowIndex === index
+                          ? row.price ?? ''
+                          : row.price || row.drugDetails?.[0]?.price || ''
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === '') {
+                          handleRowChangee(index, 'price', '');
+                          return;
+                        }
+                        const numberValue = Number(val);
+                        if (numberValue >= 0) {
+                          handleRowChangee(index, 'price', numberValue);
+                          clearFieldError(index, 'price');
+                        }
+                      }}
+                      onFocus={() => {
+                        setActiveEditableRowIndex(index);
+                        handleRowChangee(index, 'price', '');
+                      }}
+                      onBlur={() => {
+                        if (row.price === '' || row.price === null || row.price === undefined) {
+                          handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
+                        }
+                        setActiveEditableRowIndex(null);
+                        validateField(index, 'price');
+                      }}
+                    />
+                    {rowErrors[index]?.price && (
+                      <div className="text-danger small mt-1">{rowErrors[index].price}</div>
+                    )}
+                  </CTableDataCell>
+
+                  {/* Actions */}
+                  <CTableDataCell className="px-2 py-2">
+                    <div className="d-flex justify-content-center gap-3">
+                      <CButton color="danger" size="sm" onClick={() => handleRemoveRoww(index)} disabled={index === 0 && rowss.length === 1}>
+                        <CIcon icon={cilDelete} className="text-white" />
+                      </CButton>
+                      <CButton color="success" size="sm" onClick={handleAddRoww}>
+                        <CIcon icon={cilPlus} className="text-white" />
+                      </CButton>
                     </div>
-                  ))}
-                {rowErrors[index]?.strength && <div className="text-danger">{rowErrors[index].strength}</div>}
-              </CTableDataCell>
+                  </CTableDataCell>
+                </CTableRow>
+              ))}
+            </CTableBody>
 
-              {/* Dosage */}
-              <CTableDataCell className="px-2 py-3">
+            <div className="fw-bold text-end mt-3">
+              Total Price: ₹{totalPrice.toFixed(2)}
+            </div>
+          </CTable>
+        </div>
+
+        {/* Mobile View */}
+        <div className="d-lg-none mb-4">
+          {rowss.map((row, index) => (
+            <div key={index} className="border rounded p-3 mb-3">
+              {/* Medicine */}
+              <div className="mb-2 position-relative">
+                <strong>Medicine:</strong>
                 <CFormInput
-                  value={row.dosage}
-                 onChange={(e) => {
-              const raw = e.target.value.replace(/-/g, '').trim();
-              const only01 = raw.replace(/[^01]/g, '').slice(0, 3);
-              const formatted = only01.length === 3 ? `${only01[0]}-${only01[1]}-${only01[2]}` : only01;
-              handleRowChangee(index, 'dosage', formatted);
-            }}
-            placeholder="e.g. 1-0-1"
-            maxLength={5}
-                 
-                 
+                  type="text"
+                  value={medicineSearch[index] || ''}
+                  onChange={(e) => handleMedicineSearch(index, e.target.value)}
+                  onBlur={() => validateField(index, 'description')}
+                  placeholder="Search medicine..."
+                  autoComplete="off"
                 />
-                {rowErrors[index]?.dosage && <div className="text-danger">{rowErrors[index].dosage}</div>}
-              </CTableDataCell>
+                {medicineOptions[index]?.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: '#fff',
+                    zIndex: 2000,
+                    width: '100%',
+                    border: '1px solid #ccc',
+                    borderTop: 'none',
+                    borderRadius: '0 0 6px 6px',
+                    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                    overflowY: 'auto'
+                  }}>
+                    {medicineOptions[index].map((medicine) => (
+                      <div
+                        key={medicine.id}
+                        className="d-flex justify-content-center align-items-center"
+                        style={{
+                          padding: '8px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #f1f1f1',
+                          transition: 'background 0.2s ease',
+                          textAlign: 'center',
+                          fontSize: '0.95rem',
+                          fontWeight: 500
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                        onClick={() => {
+                          handleRowChangee(index, 'description', medicine.id);
+                          handleMedicineChange(index, medicine.id);
+                          setMedicineSearch((prev) => ({ ...prev, [index]: medicine.drug_name }));
+                          setMedicineOptions((prev) => ({ ...prev, [index]: [] }));
+                          clearFieldError(index, 'description');
+                        }}
+                      >
+                        {medicine.drug_name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {rowErrors[index]?.description && <div className="text-danger small mt-1">{rowErrors[index].description}</div>}
+              </div>
 
-              {/* Timing */}
-              <CTableDataCell className="px-2 py-3">
-                <CFormSelect value={row.timing} onChange={(e) => handleRowChangee(index, 'timing', e.target.value)}>
-                  <option value="">Select</option>
-                  <option value="After Food">After Food</option>
-                  <option value="Before Food">Before Food</option>
-                </CFormSelect>
-                {rowErrors[index]?.timing && <div className="text-danger">{rowErrors[index].timing}</div>}
-              </CTableDataCell>
-
-              {/* Frequency */}
-              <CTableDataCell className="px-2 py-3">
-                <CFormSelect value={row.frequency} onChange={(e) => handleRowChangee(index, 'frequency', e.target.value)}>
-                  <option value="">Select</option>
-                  <option value="Daily">Daily</option>
-                  <option value="SOS">SOS</option>
-                </CFormSelect>
-                {rowErrors[index]?.frequency && <div className="text-danger">{rowErrors[index].frequency}</div>}
-              </CTableDataCell>
-
-              {/* Duration */}
-              <CTableDataCell className="px-2 py-3">
-                {row.isCustom ? (
+              <div className="d-flex gap-2 mb-2">
+                <div className="w-50 position-relative">
+                  <strong>Strength:</strong>
                   <CFormInput
-                    value={row.duration}
-                    placeholder="Custom"
-                    onChange={(e) => handleRowChangee(index, 'duration', e.target.value)}
-                  />
-                ) : (
-                  <CFormSelect
-                    value={row.duration}
+                    value={row.strength}
                     onChange={(e) => {
-                      const val = e.target.value;
-                      handleRowChangee(index, 'isCustom', val === 'SOS');
-                      handleRowChangee(index, 'duration', val === 'SOS' ? '' : val);
+                      handleRowChangee(index, 'strength', e.target.value);
+                      toggleSuggestion(index, 'showStrength', true);
                     }}
+                    onFocus={() => toggleSuggestion(index, 'showStrength', true)}
+                    onBlur={() => validateField(index, 'strength')}
+                    disabled={!row.description}
+                  />
+                  {suggestionFlags[index]?.showStrength &&
+                    row.drugDetails?.filter((d) => d.drug_id === parseInt(row.description, 10))?.slice(0, 5).map((drug, i) => (
+                      <div
+                        key={i}
+                        className="position-absolute w-100 bg-white border shadow-sm mt-1 px-2 py-1 rounded cursor-pointer"
+                        style={{ zIndex: 2000 }}
+                        onClick={() => {
+                          handleRowChangee(index, 'strength', drug.strength);
+                          toggleSuggestion(index, 'showStrength', false);
+                          clearFieldError(index, 'strength');
+                        }}
+                      >
+                        {drug.strength}
+                      </div>
+                    ))}
+                  {rowErrors[index]?.strength && <div className="text-danger small mt-1">{rowErrors[index].strength}</div>}
+                </div>
+
+                <div className="w-50">
+                  <strong>Dosage:</strong>
+                  <CFormInput
+                    value={row.dosage}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/-/g, '').trim();
+                      const only01 = raw.replace(/[^01]/g, '');
+                      
+                      if (only01.length > 3) {
+                        return;
+                      }
+                      
+                      if (only01.length === 2 && (only01 === '11' || only01 === '00')) {
+                        setRowErrors(prev => ({
+                          ...prev,
+                          [index]: {
+                            ...prev[index],
+                            dosage: 'Invalid dosage format. Use format like 1-0-1'
+                          }
+                        }));
+                        return;
+                      }
+                      
+                      const formatted = only01.length === 3 ? `${only01[0]}-${only01[1]}-${only01[2]}` : only01;
+                      handleRowChangee(index, 'dosage', formatted);
+                      
+                      if (only01.length === 3) {
+                        clearFieldError(index, 'dosage');
+                      }
+                    }}
+                    onBlur={() => validateField(index, 'dosage')}
+                    placeholder="1-0-1"
+                    maxLength={5}
+                  />
+                  {rowErrors[index]?.dosage && <div className="text-danger small mt-1">{rowErrors[index].dosage}</div>}
+                </div>
+              </div>
+
+              <div className="d-flex gap-2 mb-2">
+                <div className="w-50">
+                  <strong>Timing:</strong>
+                  <CFormSelect 
+                    value={row.timing} 
+                    onChange={(e) => {
+                      handleRowChangee(index, 'timing', e.target.value);
+                      if (e.target.value) clearFieldError(index, 'timing');
+                    }}
+                    onBlur={() => validateField(index, 'timing')}
                   >
                     <option value="">Select</option>
-                    {['3 Days', '5 Days', '7 Days', '15 Days', '30 Days', 'SOS'].map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
+                    <option value="After Food">After Food</option>
+                    <option value="Before Food">Before Food</option>
                   </CFormSelect>
-                )}
-              </CTableDataCell>
-
-                          
-{/* Price */}
-{/* <CTableDataCell style={{ width: '16.66%' }}>
-  <CFormInput
-    type="number"
-    className="text-center"
-    value={row.drugDetails?.[0]?.price}
-   
-    onChange={(e) =>
-      handleRowChange(index, 'price', Number(e.target.value))
-    }
-    onFocus={() => handleRowChange(index, 'price', '')}
-  />
-  {rowErrors[index]?.price && (
-    <div className="text-danger small">{rowErrors[index].price}</div>
-  )}
-</CTableDataCell> */}
-{/* <CTableDataCell style={{ width: '16.66%' }}>
-  <CFormInput
-    type="number"
-    className="text-center"
-    value={row.price || row.drugDetails?.[0]?.price || ''} // Use row.price directly
-    onChange={(e) =>
-      handleRowChangee(index, 'price', Number(e.target.value))
-    }
-    onFocus={() => handleRowChangee(index, 'price', '')}
-  />
-  {rowErrors[index]?.price && (
-    <div className="text-danger small">{rowErrors[index].price}</div>
-  )}
-</CTableDataCell> */}
-{/* <CTableDataCell style={{ width: '16.66%' }}>
-  <CFormInput
-    type="number"
-    className="text-center"
-   
-    value={
-      activeEditableRowIndex === index
-        ? row.price ?? ''
-        : row.price || row.drugDetails?.[0]?.price || ''
-    }
-    onChange={(e) =>
-      handleRowChangee(index, 'price', e.target.value === '' ? '' : Number(e.target.value))
-    }
-    onFocus={() => {
-      setActiveEditableRowIndex(index);
-      handleRowChangee(index, 'price', ''); // Clear the field on focus
-    }}
-    onBlur={() => {
-  if (row.price === '' || row.price === null || row.price === undefined) {
-    handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
-  }
-  setActiveEditableRowIndex(null);
-}}
-
-  />
-  {rowErrors[index]?.price && (
-    <div className="text-danger small">{rowErrors[index].price}</div>
-  )}
-</CTableDataCell> */}
-<CTableDataCell style={{ width: '16.66%' }}>
-  <CFormInput
-    type="number"
-    min="0" // Prevents using arrow keys to go below 0
-    className="text-center"
-    value={
-      activeEditableRowIndex === index
-        ? row.price ?? ''
-        : row.price || row.drugDetails?.[0]?.price || ''
-    }
-    onChange={(e) => {
-      const val = e.target.value;
-
-      // Allow empty field to clear value
-      if (val === '') {
-        handleRowChangee(index, 'price', '');
-        return;
-      }
-
-      const numberValue = Number(val);
-
-      // Prevent setting negative values
-      if (numberValue >= 0) {
-        handleRowChangee(index, 'price', numberValue);
-      }
-    }}
-    onFocus={() => {
-      setActiveEditableRowIndex(index);
-      handleRowChangee(index, 'price', ''); // Clear field on focus
-    }}
-    onBlur={() => {
-      if (row.price === '' || row.price === null || row.price === undefined) {
-        handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
-      }
-      setActiveEditableRowIndex(null);
-    }}
-  />
-  {rowErrors[index]?.price && (
-    <div className="text-danger small">{rowErrors[index].price}</div>
-  )}
-</CTableDataCell>
-
-
-
-
-
-
-
-
-
-
-
-
-              {/* Actions */}
-              <CTableDataCell className="px-2 py-2">
-                <div className="d-flex justify-content-center gap-3">
-                  <CButton color="danger" size="sm" onClick={() => handleRemoveRoww(index)} disabled={index === 0 && rowss.length === 1}>
-                    <CIcon icon={cilDelete} className="text-white" />
-                  </CButton>
-                  <CButton color="success" size="sm" onClick={handleAddRoww}>
-                    <CIcon icon={cilPlus} className="text-white" />
-                  </CButton>
+                  {rowErrors[index]?.timing && <div className="text-danger small mt-1">{rowErrors[index].timing}</div>}
                 </div>
-              </CTableDataCell>
-            </CTableRow>
+
+                <div className="w-50">
+                  <strong>Frequency:</strong>
+                  <CFormSelect 
+                    value={row.frequency} 
+                    onChange={(e) => {
+                      handleRowChangee(index, 'frequency', e.target.value);
+                      if (e.target.value) clearFieldError(index, 'frequency');
+                    }}
+                    onBlur={() => validateField(index, 'frequency')}
+                  >
+                    <option value="">Select</option>
+                    <option value="Daily">Daily</option>
+                    <option value="SOS">SOS</option>
+                  </CFormSelect>
+                  {rowErrors[index]?.frequency && <div className="text-danger small mt-1">{rowErrors[index].frequency}</div>}
+                </div>
+              </div>
+
+              <div className="d-flex gap-2 mb-3 w-100">
+                <div className="w-75">
+                  <strong>Duration:</strong>
+                  {row.isCustom ? (
+                    <CFormInput
+                      value={row.duration}
+                      placeholder="Custom"
+                      onChange={(e) => {
+                        handleRowChangee(index, 'duration', e.target.value);
+                        if (e.target.value) clearFieldError(index, 'duration');
+                      }}
+                      onBlur={() => validateField(index, 'duration')}
+                    />
+                  ) : (
+                    <CFormSelect
+                      value={row.duration}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        handleRowChangee(index, 'isCustom', val === 'SOS');
+                        handleRowChangee(index, 'duration', val === 'SOS' ? '' : val);
+                        if (val) clearFieldError(index, 'duration');
+                      }}
+                      onBlur={() => validateField(index, 'duration')}
+                    >
+                      <option value="">Select</option>
+                      {['3 Days', '5 Days', '7 Days', '15 Days', '30 Days', 'SOS'].map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </CFormSelect>
+                  )}
+                  {rowErrors[index]?.duration && <div className="text-danger small mt-1">{rowErrors[index].duration}</div>}
+                </div>
+
+                <div className="w-75">
+                  <strong>Price:</strong>
+                  <CFormInput
+                    type="number"
+                    min="0"
+                    className="text-center"
+                    value={
+                      activeEditableRowIndex === index
+                        ? row.price ?? ''
+                        : row.price || row.drugDetails?.[0]?.price || ''
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        handleRowChangee(index, 'price', '');
+                        return;
+                      }
+                      const numberValue = Number(val);
+                      if (numberValue >= 0) {
+                        handleRowChangee(index, 'price', numberValue);
+                        clearFieldError(index, 'price');
+                      }
+                    }}
+                    onFocus={() => {
+                      setActiveEditableRowIndex(index);
+                      handleRowChangee(index, 'price', '');
+                    }}
+                    onBlur={() => {
+                      if (row.price === '' || row.price === null || row.price === undefined) {
+                        handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
+                      }
+                      setActiveEditableRowIndex(null);
+                      validateField(index, 'price');
+                    }}
+                  />
+                  {rowErrors[index]?.price && (
+                    <div className="text-danger small mt-1">{rowErrors[index].price}</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="d-flex align-items-end justify-content-center gap-2 w-50">
+                <CButton color="danger" size="sm" onClick={() => handleRemoveRoww(index)} disabled={index === 0}>
+                  <CIcon icon={cilDelete} />
+                </CButton>
+                <CButton color="success" size="sm" onClick={handleAddRoww}>
+                  <CIcon icon={cilPlus} />
+                </CButton>
+              </div>
+            </div>
           ))}
-        </CTableBody>
-
-       <div className="fw-bold text-end mt-3">
-  Total Price: ₹{totalPrice.toFixed(2)}
-</div>
-
-{/* <div className="fw-bold text-end mt-3">
-  Medicine Count: {rowss.length}
-</div> */}
-
-
-      </CTable>
-     </div>
-
-
-
-
-{/* Mobile View */}
-<div className="d-lg-none mb-4">
-  {rowss.map((row, index) => (
-    <div key={index} className="border rounded p-3 mb-3">
-      {/* Medicine */}
-      <div className="mb-2 position-relative">
-        <strong>Medicine:</strong>
-        <CFormInput
-          type="text"
-          value={medicineSearch[index] || ''}
-          onChange={(e) => handleMedicineSearch(index, e.target.value)}
-          placeholder="Search medicine..."
-          autoComplete="off"
-        />
-        {medicineOptions[index]?.length > 0 && (
-          <div style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            backgroundColor: '#fff',
-            zIndex: 2000,
-            width: '100%',
-            border: '1px solid #ccc',
-            borderTop: 'none',
-            borderRadius: '0 0 6px 6px',
-            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-            overflowY: 'auto'
-          }}>
-            {medicineOptions[index].map((medicine) => (
-              <div
-                key={medicine.id}
-                className="d-flex justify-content-center align-items-center"
-                style={{
-                  padding: '8px',
-                  cursor: 'pointer',
-                  borderBottom: '1px solid #f1f1f1',
-                  transition: 'background 0.2s ease',
-                  textAlign: 'center',
-                  fontSize: '0.95rem',
-                  fontWeight: 500
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
-                onClick={() => {
-                  handleRowChangee(index, 'description', medicine.id);
-                  handleMedicineChange(index, medicine.id);
-                  setMedicineSearch((prev) => ({ ...prev, [index]: medicine.drug_name }));
-                  setMedicineOptions((prev) => ({ ...prev, [index]: [] }));
-                }}
-              >
-                {medicine.drug_name}
-              </div>
-            ))}
-          </div>
-        )}
-        {rowErrors[index]?.description && <div className="text-danger">{rowErrors[index].description}</div>}
-      </div>
-
-      <div className="d-flex gap-2 mb-2">
-        <div className="w-50 position-relative">
-          <strong>Strength:</strong>
-          <CFormInput
-            value={row.strength}
-            onChange={(e) => {
-              handleRowChangee(index, 'strength', e.target.value);
-              toggleSuggestion(index, 'showStrength', true);
-            }}
-            onFocus={() => toggleSuggestion(index, 'showStrength', true)}
-            disabled={!row.description}
-          />
-          {suggestionFlags[index]?.showStrength &&
-            row.drugDetails?.filter((d) => d.drug_id === parseInt(row.description, 10))?.slice(0, 5).map((drug, i) => (
-              <div
-                key={i}
-                className="position-absolute w-100 bg-white border shadow-sm mt-1 px-2 py-1 rounded cursor-pointer"
-                style={{ zIndex: 2000 }}
-                onClick={() => {
-                  handleRowChangee(index, 'strength', drug.strength);
-                  toggleSuggestion(index, 'showStrength', false);
-                }}
-              >
-                {drug.strength}
-              </div>
-            ))}
-          {rowErrors[index]?.strength && <div className="text-danger">{rowErrors[index].strength}</div>}
         </div>
-
-        <div className="w-50">
-          <strong>Dosage:</strong>
-          <CFormInput
-            value={row.dosage}
-            onChange={(e) => {
-              const raw = e.target.value.replace(/-/g, '').trim();
-              const only01 = raw.replace(/[^01]/g, '').slice(0, 3);
-              const formatted = only01.length === 3 ? `${only01[0]}-${only01[1]}-${only01[2]}` : only01;
-              handleRowChangee(index, 'dosage', formatted);
-            }}
-            placeholder="1-0-1"
-            maxLength={5}
-          />
-          {rowErrors[index]?.dosage && <div className="text-danger">{rowErrors[index].dosage}</div>}
-        </div>
-      </div>
-
-      <div className="d-flex gap-2 mb-2">
-        <div className="w-50">
-          <strong>Timing:</strong>
-          <CFormSelect value={row.timing} onChange={(e) => handleRowChangee(index, 'timing', e.target.value)}>
-            <option value="">Select</option>
-            <option value="After Food">After Food</option>
-            <option value="Before Food">Before Food</option>
-          </CFormSelect>
-          {rowErrors[index]?.timing && <div className="text-danger">{rowErrors[index].timing}</div>}
-        </div>
-
-        <div className="w-50">
-          <strong>Frequency:</strong>
-          <CFormSelect value={row.frequency} onChange={(e) => handleRowChangee(index, 'frequency', e.target.value)}>
-            <option value="">Select</option>
-            <option value="Daily">Daily</option>
-            <option value="SOS">SOS</option>
-          </CFormSelect>
-          {rowErrors[index]?.frequency && <div className="text-danger">{rowErrors[index].frequency}</div>}
-        </div>
-      </div>
-
-      <div className="d-flex gap-2 mb-3 w-100">
-        <div className="w-75">
-          <strong>Duration:</strong>
-          {row.isCustom ? (
-            <CFormInput
-              value={row.duration}
-              placeholder="Custom"
-              onChange={(e) => handleRowChangee(index, 'duration', e.target.value)}
-            />
-          ) : (
-            <CFormSelect
-              value={row.duration}
-              onChange={(e) => {
-                const val = e.target.value;
-                handleRowChangee(index, 'isCustom', val === 'SOS');
-                handleRowChangee(index, 'duration', val === 'SOS' ? '' : val);
-              }}
-            >
-              <option value="">Select</option>
-              {['3 Days', '5 Days', '7 Days', '15 Days', '30 Days', 'SOS'].map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </CFormSelect>
-          )}
-        </div>
-
-        {/* Mobile View - Price Field */}
-        <div className="w-75">
-{/* <CTableDataCell
-  // style={{ width: '16.66%' }}
-  className="d-block d-md-table-cell w-100" // Stack on mobile, table style on desktop
->
-   <strong>Price:</strong>
-  <CFormInput
-    type="number"
-    className="text-center w-100"
-    value={row.price || row.drugDetails?.[0]?.price || ''}
-    onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
-    onFocus={() => handleRowChange(index, 'price', '')}
-  />
-  {rowErrors[index]?.price && (
-    <div className="text-danger small">{rowErrors[index].price}</div>
+      </CCardBody>
+    </>
   )}
-</CTableDataCell> */}
-<CTableDataCell style={{ width: '16.66%' }}>
-   <strong>Price:</strong>
-  <CFormInput
-    type="number"
-    className="text-center"
-    value={
-      activeEditableRowIndex === index
-        ? row.price ?? ''
-        : row.price || row.drugDetails?.[0]?.price || ''
-    }
-    onChange={(e) =>
-      handleRowChangee(index, 'price', e.target.value === '' ? '' : Number(e.target.value))
-    }
-    onFocus={() => {
-      setActiveEditableRowIndex(index);
-      handleRowChangee(index, 'price', ''); // Clear the field on focus
-    }}
-    onBlur={() => {
-  if (row.price === '' || row.price === null || row.price === undefined) {
-    handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
-  }
-  setActiveEditableRowIndex(null);
-}}
-
-  />
-  {rowErrors[index]?.price && (
-    <div className="text-danger small">{rowErrors[index].price}</div>
-  )}
-</CTableDataCell>
-
 </div>
-</div>
-
-        <div className="d-flex align-items-end justify-content-center gap-2 w-50">
-          <CButton color="danger" size="sm" onClick={() => handleRemoveRoww(index)} disabled={index === 0}>
-            <CIcon icon={cilDelete} />
-          </CButton>
-          <CButton color="success" size="sm" onClick={handleAddRoww}>
-            <CIcon icon={cilPlus} />
-          </CButton>
-        </div>
-      
-    </div>
-  ))}
-</div>
-
-
-
-
-
-
-  </CCardBody>
-  
-  </>
-)}
-
-</div>
-
 
 
 
@@ -2486,7 +3431,7 @@ const handleSearchChange = (e) => {
                 )}
               </CTableDataCell> */}
 
-              <CTableDataCell style={{ width: '16.66%' }}>
+              {/* <CTableDataCell style={{ width: '16.66%' }}>
   {row.description === 'Medicine' ? (
     <CFormInput
       type="number"
@@ -2511,6 +3456,70 @@ const handleSearchChange = (e) => {
       )}
     </>
   )}
+</CTableDataCell> */}
+<CTableDataCell style={{ width: '16.66%' }}>
+  {row.description === 'Medicine' ? (
+  <CFormInput
+    type="number"
+    className="text-center"
+    value={row.price === 0 ? '' : row.price} // Display empty string when price is 0
+    onChange={(e) => {
+      const value = Number(e.target.value);
+      if (value >= 0) {
+        handleRowChange(index, 'price', value);
+      }
+    }}
+    onFocus={(e) => {
+      if (row.price === 0) {
+        e.target.value = ''; // Clear the input on focus if the value is 0
+        handleRowChange(index, 'price', ''); // Also update the state to empty string
+      }
+    }}
+    onKeyDown={(e) => {
+      // Prevent minus key, 'e', 'E', '+' keys
+      if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+        e.preventDefault();
+      }
+    }}
+  />
+) : (
+  <>
+    <CFormInput
+      type="number"
+      className="text-center"
+      value={row.price === 0 ? '' : row.price} // Display empty string when price is 0
+      onChange={(e) => {
+        const value = Number(e.target.value);
+        if (value >= 0) {
+          handleRowChange(index, 'price', value);
+        }
+      }}
+      onFocus={(e) => {
+        if (row.price === 0) {
+          e.target.value = ''; // Clear the input on focus if the value is 0
+          handleRowChange(index, 'price', ''); // Also update the state to empty string
+        }
+      }}
+      onKeyDown={(e) => {
+        // Prevent minus key, 'e', 'E', '+' keys
+        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+          e.preventDefault();
+        }
+      }}
+      onBlur={(e) => {
+        // Double check on blur - if somehow negative value got through
+        const value = Number(e.target.value);
+        if (value < 0) {
+          handleRowChange(index, 'price', 0);
+        }
+      }}
+    />
+    {rowErrors[index]?.price && (
+      <div className="error">{rowErrors[index].price}</div>
+    )}
+  </>
+)}
+
 </CTableDataCell>
 
               
@@ -2536,7 +3545,7 @@ const handleSearchChange = (e) => {
   </CTableDataCell>
 )} */}
 
-{showGST && (
+{/* {showGST && (
   <CTableDataCell style={{ width: '16.66%' }}>
     <CFormInput
       type="text"
@@ -2547,7 +3556,33 @@ const handleSearchChange = (e) => {
       disabled={row.description === 'Medicine'} // Disable if description is Medicine
     />
   </CTableDataCell>
+)} */}
+{showGST && (
+  <CTableDataCell style={{ width: '16.66%' }}>
+    <CFormInput
+      type="text"
+      className="text-center"
+      value={(row.gst === 0 || row.gst === '') ? '' : row.gst} // Display empty string when gst is 0 or ''
+      onChange={(e) => handleRowChange(index, 'gst', e.target.value)} // Store as string
+      onFocus={(e) => {
+        if (row.gst === 0 || row.gst === '') {
+          e.target.value = ''; // Clear the input on focus if the value is 0 or ''
+          handleRowChange(index, 'gst', ''); // Update state to empty string
+        }
+      }}
+      onBlur={(e) => {
+        if (e.target.value === '') {
+          handleRowChange(index, 'gst', 0); // Set to 0 if input is empty
+        } else {
+          handleRowChange(index, 'gst', Number(e.target.value)); // Convert to number if not empty
+        }
+      }}
+      placeholder="0" // Add a placeholder
+      disabled={row.description === 'Medicine'} // Disable if description is Medicine
+    />
+  </CTableDataCell>
 )}
+
 
 
 
@@ -2627,41 +3662,97 @@ const handleSearchChange = (e) => {
         <CCol xs="12">
           <strong>Quantity</strong>
           <CFormInput
-            type="number"
-            value={row.description === 'Medicine' ? rowss.length : row.quantity}
-            onChange={(e) => handleRowChange(index, 'quantity', e.target.value)}
-            readOnly={row.description === 'Medicine'}
-          />
+  type="number"
+  className="text-center"
+  placeholder='Add Quantity Here'
+  value={
+    row.description === 'Medicine'
+      ? rowss.length
+      : row.quantity === 0
+      ? ''
+      : row.quantity
+  }
+  onChange={(e) => handleRowChange(index, 'quantity', Number(e.target.value))}
+  onFocus={(e) => {
+    if (row.description !== 'Medicine' && (row.quantity === 0 || row.quantity === null)) {
+      handleRowChange(index, 'quantity', '');
+    }
+  }}
+  readOnly={row.description === 'Medicine'}
+/>
           {rowErrors[index]?.quantity && (
             <div className="text-danger small">{rowErrors[index].quantity}</div>
           )}
         </CCol>
       </CRow>
 
+
+
       <CRow className="mb-2">
         <CCol xs="12">
           <strong>Fees</strong>
-          {row.description === 'Medicine' ? (
-            <CFormInput
-              type="number"
-              value={totalPrice || 0}
-              plaintext
-              onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
-              onFocus={() => handleRowChange(index, 'price', '')}
-            />
-          ) : (
-            <>
-              <CFormInput
-                type="number"
-                value={row.price}
-                onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
-                onFocus={() => handleRowChange(index, 'price', '')}
-              />
-              {rowErrors[index]?.price && (
-                <div className="text-danger small">{rowErrors[index].price}</div>
-              )}
-            </>
-          )}
+           {row.description === 'Medicine' ? (
+  <CFormInput
+    type="number"
+    className="text-center"
+    value={row.price === 0 ? '' : row.price} // Display empty string when price is 0
+    onChange={(e) => {
+      const value = Number(e.target.value);
+      if (value >= 0) {
+        handleRowChange(index, 'price', value);
+      }
+    }}
+    onFocus={(e) => {
+      if (row.price === 0) {
+        e.target.value = ''; // Clear the input on focus if the value is 0
+        handleRowChange(index, 'price', ''); // Also update the state to empty string
+      }
+    }}
+    onKeyDown={(e) => {
+      // Prevent minus key, 'e', 'E', '+' keys
+      if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+        e.preventDefault();
+      }
+    }}
+  />
+) : (
+  <>
+    <CFormInput
+      type="number"
+      className="text-center"
+      value={row.price === 0 ? '' : row.price} // Display empty string when price is 0
+      onChange={(e) => {
+        const value = Number(e.target.value);
+        if (value >= 0) {
+          handleRowChange(index, 'price', value);
+        }
+      }}
+      onFocus={(e) => {
+        if (row.price === 0) {
+          e.target.value = ''; // Clear the input on focus if the value is 0
+          handleRowChange(index, 'price', ''); // Also update the state to empty string
+        }
+      }}
+      onKeyDown={(e) => {
+        // Prevent minus key, 'e', 'E', '+' keys
+        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+          e.preventDefault();
+        }
+      }}
+      onBlur={(e) => {
+        // Double check on blur - if somehow negative value got through
+        const value = Number(e.target.value);
+        if (value < 0) {
+          handleRowChange(index, 'price', 0);
+        }
+      }}
+    />
+    {rowErrors[index]?.price && (
+      <div className="error">{rowErrors[index].price}</div>
+    )}
+  </>
+)}
+
         </CCol>
       </CRow>
 
@@ -2670,12 +3761,26 @@ const handleSearchChange = (e) => {
           <CCol xs="12">
             <strong>GST (%)</strong>
             <CFormInput
-              type="text"
-              value={row.gst}
-              onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
-              onFocus={() => handleRowChange(index, 'gst', '')}
-              disabled={row.description === 'Medicine'}
-            />
+      type="text"
+      className="text-center"
+      value={(row.gst === 0 || row.gst === '') ? '' : row.gst} // Display empty string when gst is 0 or ''
+      onChange={(e) => handleRowChange(index, 'gst', e.target.value)} // Store as string
+      onFocus={(e) => {
+        if (row.gst === 0 || row.gst === '') {
+          e.target.value = ''; // Clear the input on focus if the value is 0 or ''
+          handleRowChange(index, 'gst', ''); // Update state to empty string
+        }
+      }}
+      onBlur={(e) => {
+        if (e.target.value === '') {
+          handleRowChange(index, 'gst', 0); // Set to 0 if input is empty
+        } else {
+          handleRowChange(index, 'gst', Number(e.target.value)); // Convert to number if not empty
+        }
+      }}
+      placeholder="0" // Add a placeholder
+      disabled={row.description === 'Medicine'} // Disable if description is Medicine
+    />
           </CCol>
         </CRow>
       )}
@@ -2711,9 +3816,35 @@ const handleSearchChange = (e) => {
        
 
         <CCardBody>
-          <CButton color="primary" className="mt-0" onClick={handleSubmit}>
-            Submit
-          </CButton> &nbsp;&nbsp;
+
+ <div className="d-flex flex-wrap align-items-end gap-3">
+  {/* Followup Date Input */}
+  <CCol xs={12} md={6} lg={3}>
+    <div className="d-block d-md-flex align-items-center">
+    <CFormLabel htmlFor="visitDate" className="me-md-2 mb-2 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
+      Followup Date
+    </CFormLabel>
+      <div style={{ width: '90%', position: 'relative' }}>
+    <CFormInput
+      id="followupdate"
+      type="date"
+      value={followupdate}
+      onChange={(e) => setfollowupdate(e.target.value)}
+      required
+      className="w-100"
+    />
+    </div>
+    </div>
+  </CCol>
+
+  {/* Submit Button */}
+  <CCol xs="auto">
+    <CButton color="primary" onClick={handleSubmit}>
+      Submit
+    </CButton>
+  </CCol>
+</div>
+
 
           {/* <CButton color="primary" className="mt-0" onClick={handleCreatePrescription}>
            Create Prescription

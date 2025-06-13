@@ -278,34 +278,34 @@ const getNavigation = () => {
         icon: <CIcon icon={cilHospital} customClassName="nav-icon" />,
         
       },
-       {
-            component: CNavGroup,
-            name: 'Report',
-            icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
-            items: [
-              {
-                component: CNavItem,
-                name: 'Patients',
-                to: '/Patient',
-                // icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
-                className:"ms-4",
-              },
-              {
-                component: CNavItem,
-                name: 'Bills',
-                to: '/Billstable',
-                // icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
-                 className:"ms-4",
-              },
-               {
-            component: CNavItem,
-            name: 'Medicines',
-            to: '/MedicinesShow',
-            // icon: <CIcon icon={cilPlaylistAdd} customClassName="nav-icon" />,
-             className:"ms-4",
-          },
-            ],
-          },
+      //  {
+      //       component: CNavGroup,
+      //       name: 'Report',
+      //       icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+      //       items: [
+      //         {
+      //           component: CNavItem,
+      //           name: 'Patients',
+      //           to: '/Patient',
+      //           // icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+      //           className:"ms-4",
+      //         },
+      //         {
+      //           component: CNavItem,
+      //           name: 'Bills',
+      //           to: '/Billstable',
+      //           // icon: <CIcon icon={cilListRich} customClassName="nav-icon" />,
+      //            className:"ms-4",
+      //         },
+      //          {
+      //       component: CNavItem,
+      //       name: 'Medicines',
+      //       to: '/MedicinesShow',
+      //       // icon: <CIcon icon={cilPlaylistAdd} customClassName="nav-icon" />,
+      //        className:"ms-4",
+      //     },
+      //       ],
+      //     },
 
     ]
    }

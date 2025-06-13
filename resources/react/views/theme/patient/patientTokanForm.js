@@ -25,6 +25,8 @@ function PatientTokanForm() {
     address: '',
     email: '',
     dob: '',
+    occupation: '',
+    pincode: '',
     doctorId:'', 
     slot:''
   });
@@ -201,6 +203,8 @@ console.log("patientData.patient",patientData.patient);
         address: '',
         email: '',
         dob: '',
+        occupation:'',
+        pincode:'',
         doctorId: '', // Reset doctorId
       });
   
@@ -317,6 +321,8 @@ console.log("patientData.patient",patientData.patient);
             <p><strong>Address:</strong> {patient.address}</p>
             <p><strong>Email:</strong> {patient.email}</p>
             <p><strong>DOB:</strong> {patient.dob}</p>
+            <p><strong>Occupation:</strong> {patient.occupation}</p>
+            <p><strong>Pincode:</strong> {patient.pincode}</p>
 
             {/* Doctor Selection */}
             {user?.type === 1 ? (
@@ -391,6 +397,17 @@ console.log("patientData.patient",patientData.patient);
         />
         {errors.name && <div className="text-danger">{errors.name}</div>}
 
+         <CFormInput
+          className="mb-3"
+          label="Occupation"
+          value={newPatient.occupation}
+          onChange={(e) =>
+            setNewPatient({ ...newPatient, occupation: e.target.value })
+          }
+          placeholder="Enter address"
+        />
+        {/* {errors.address && <div className="text-danger">{errors.address}</div>} */}
+
         <CFormInput
           className="mb-3"
           label="Mobile Number"
@@ -418,6 +435,17 @@ console.log("patientData.patient",patientData.patient);
           placeholder="Enter address"
         />
         {errors.address && <div className="text-danger">{errors.address}</div>}
+
+         <CFormInput
+          className="mb-3"
+          label="Pincode"
+          value={newPatient.pincode}
+          onChange={(e) =>
+            setNewPatient({ ...newPatient, pincode: e.target.value })
+          }
+          placeholder="Enter address"
+        />
+        {/* {errors.pincode && <div className="text-danger">{errors.pincode}</div>} */}
 
         <CFormInput
           className="mb-3"

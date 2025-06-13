@@ -138,6 +138,8 @@ public function store(Request $request)
         'lab_investigation' => 'nullable|string',
         'personal_history' => 'nullable|string',
         'food_and_drug_allergy' => 'nullable|string',
+        'drug_allery' => 'nullable|string',
+       
         'lmp' => 'nullable|string',
         'edd' => 'nullable|string',
     ]);
@@ -178,9 +180,20 @@ public function store(Request $request)
         'lab_investigation',
         'personal_history',
         'food_and_drug_allergy',
+        'drug_allery',
+       
         'lmp',
         'edd',
     ]);
+
+     if (isset($ayurvedicData['personal_history'])) {
+        try {
+            json_decode($ayurvedicData['personal_history']); // Validate JSON
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Invalid personal_history format.'], 400);
+        }
+    }
+
 
     // Check if at least one field (excluding p_p_i_id and patient_id) is filled
     $ayurContent = collect($ayurvedicData)->except(['p_p_i_id', 'patient_id']);
@@ -309,36 +322,89 @@ public function getPatientExaminationsByBillId($p_p_i_id) {
 
 
 
-public function getAyurvedictExaminationsByBillId($p_p_i_id) {
-    try {
-        // Validate the input ID (ensure it's not empty and is numeric)
-        if (empty($p_p_i_id) || !is_numeric($p_p_i_id)) {
-            return response()->json(['message' => 'Invalid p_p_i_id provided'], 400);
-        }
+// public function getAyurvedictExaminationsByBillId($p_p_i_id) {
+//     try {
+//         // Validate the input ID (ensure it's not empty and is numeric)
+//         if (empty($p_p_i_id) || !is_numeric($p_p_i_id)) {
+//             return response()->json(['message' => 'Invalid p_p_i_id provided'], 400);
+//         }
 
         
-        // Fetch data from the 'ayurvedic_diagnoses' table
-$ayurvedicExamination = DB::table('ayurvedic_diagnoses')
-    ->where('p_p_i_id', $p_p_i_id)
-    ->get();    
+//         // Fetch data from the 'ayurvedic_diagnoses' table
+// $ayurvedicExamination = DB::table('ayurvedic_diagnoses')
+//     ->where('p_p_i_id', $p_p_i_id)
+//     ->get();    
 
-        // Check if any data exists for the given p_p_i_id
-        if ($ayurvedicExamination->isEmpty() ) {
-            return response()->json(['message' => 'Ayurvedic Observation not found  '], 404);
-        }
+//         // Check if any data exists for the given p_p_i_id
+//         if ($ayurvedicExamination->isEmpty() ) {
+//             return response()->json(['message' => 'Ayurvedic Observation not found  '], 404);
+//         }
 
 
 
          
 
-        // Return the fetched data as a JSON response
-        return response()->json($ayurvedicExamination, 200);
+//         // Return the fetched data as a JSON response
+//         return response()->json($ayurvedicExamination, 200);
+
+//     } catch (\Exception $e) {
+//         // Log the error for debugging purposes
+//         \Log::error('Error fetching Ayurvedic Observation: ' . $e->getMessage());
+
+//         // Return a generic error response
+//         return response()->json([
+//             'error' => 'An error occurred while fetching Ayurvedic Observation.',
+//             'message' => $e->getMessage(),
+//         ], 500);
+//     }
+// }
+
+public function getAyurvedictExaminationsByBillId($p_p_i_id)
+{
+    try {
+        if (empty($p_p_i_id) || !is_numeric($p_p_i_id)) {
+            return response()->json(['message' => 'Invalid p_p_i_id provided'], 400);
+        }
+
+        $results = DB::table('ayurvedic_diagnoses')
+            ->where('p_p_i_id', $p_p_i_id)
+            ->get();
+
+        if ($results->isEmpty()) {
+            return response()->json(['message' => 'Ayurvedic Observation not found'], 404);
+        }
+
+        // Clean up each result row
+        $cleanedResults = $results->map(function ($item) {
+            $item = (array) $item;
+
+            // Handle JSON fields: personal_history and prasavvedan_parikshayein
+            foreach (['personal_history', 'prasavvedan_parikshayein', 'habits'] as $field) {
+                if (!empty($item[$field])) {
+                    $decoded = json_decode($item[$field], true);
+
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        // Remove keys where value is null or empty string
+                        $filtered = array_filter($decoded, fn($v) => $v !== null && $v !== '');
+                        $item[$field] = !empty($filtered) ? $filtered : null;
+                    } else {
+                        // If invalid JSON, keep it null
+                        $item[$field] = null;
+                    }
+                } else {
+                    $item[$field] = null;
+                }
+            }
+
+            // Convert back to object if you want consistent response structure
+            return (object) $item;
+        });
+
+        return response()->json($cleanedResults, 200);
 
     } catch (\Exception $e) {
-        // Log the error for debugging purposes
         \Log::error('Error fetching Ayurvedic Observation: ' . $e->getMessage());
 
-        // Return a generic error response
         return response()->json([
             'error' => 'An error occurred while fetching Ayurvedic Observation.',
             'message' => $e->getMessage(),

@@ -18,6 +18,8 @@ class Patient extends Model
         'phone',
         'address',
         'dob',
+        'occupation',
+        'pincode'
         // 'gender',
     ];
     public function doctor()

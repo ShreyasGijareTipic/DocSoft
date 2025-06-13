@@ -196,6 +196,7 @@ console.log(formData);
                 <CFormLabel htmlFor="whatsapp_number">WhatsApp Number</CFormLabel>
                 <CFormInput
                   id="clinic_whatsapp_mobile"
+                  type='number'
                   name="clinic_whatsapp_mobile"
                   value={formData?.clinic_whatsapp_mobile}
                   onChange={handleChange}

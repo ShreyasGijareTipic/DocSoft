@@ -27,6 +27,8 @@ class BillController extends Controller
             'email' => 'nullable|email', // Make email optional
             'contact' => 'required|string|max:12',
             'dob' => 'date',
+            'occupation' => 'nullable|string',
+            'pinocde' => 'nullable|string',
             'doctor_name' => 'string',
             'registration_number' => 'string',
             'visit_date' => 'required|date',
@@ -47,6 +49,8 @@ class BillController extends Controller
             'patient_email' => $request->email ?? null, // Set to null if not provided
             'patient_contact' => $request->contact,
             'patient_dob' => $request->dob,
+            'occupation' => $request->occupation,
+            'pincode'=> $request->pincode,
             'doctor_name' => $request->doctor_name,
             'registration_number' => $request->registration_number,
             'visit_date' => $request->visit_date,

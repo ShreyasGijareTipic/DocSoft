@@ -21,6 +21,8 @@ class AyurvedicDiagnosis extends Model
         'lab_investigation',
         'personal_history',
         'food_and_drug_allergy',
+        'drug_allery',
+      
         'lmp',
         'edd',
     ];

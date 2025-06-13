@@ -259,6 +259,8 @@ public function store(Request $request)
             'dob' => 'required|date',
             'doctor_id' => 'required|integer', // Allow integer doctor_id
             'slot' => 'required|string|in:morning,afternoon,evening' ?? 'morning',
+            'pincode' => 'nullable|string',
+            'occupation' => 'nullable|string'
         ]);
 
         // Get the authenticated user's clinic_id   
@@ -291,6 +293,8 @@ public function store(Request $request)
             'phone' => $request->phone,
             'address' => $request->address,
             'dob' => $request->dob,
+            'occupation'=> $request->occupation,
+            'pincode'=> $request->pincode
         ]);
 
         // Determine today's date
@@ -340,7 +344,9 @@ public function manuallyAddPatient(Request $request)
         'email'   => 'required|email',
         'phone'   => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/'],
         'address' => 'required|string',
-        'dob'     => 'required|date'
+        'dob'     => 'required|date',
+        'occupation'  => 'nullable|string',
+        'pincode' => 'nullable|string',
     ]);
 
     try {
@@ -565,10 +571,37 @@ public function getPatientDetails($id)
                             ->get();
 
                               // Get latest 3 patient examinations 
-    $ayurvedicExaminations = AyurvedicDiagnosis::where('patient_id', $id)
-                            ->orderBy('created_at', 'desc')
-                            ->take(3)
-                            ->get();
+    // $ayurvedicExaminations = AyurvedicDiagnosis::where('patient_id', $id)
+    //                         ->orderBy('created_at', 'desc')
+    //                         ->take(3)
+    //                         ->get();
+     $ayurvedicExaminations = AyurvedicDiagnosis::where('patient_id', $id)
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get()
+        ->map(function ($item) {
+            foreach (['prasavvedan_parikshayein', 'habits', 'personal_history'] as $field) {
+                if (!empty($item[$field])) {
+                    $decoded = json_decode($item[$field], true);
+
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        // Remove empty arrays or empty strings
+                        $filtered = array_filter($decoded, function ($v) {
+                            return is_array($v) ? count(array_filter($v)) > 0 : !empty($v);
+                        });
+
+                        $item[$field] = count($filtered) > 0 ? $filtered : null;
+                    } else {
+                        $item[$field] = null;
+                    }
+                } else {
+                    $item[$field] = null;
+                }
+            }
+
+            return $item;
+        });
+
 
     return response()->json([
         'patient' => $patient,
@@ -676,25 +709,44 @@ public function getPatientDetails($id)
     // }
 
 
-    public function getDoctorsByLoggedInClinic()
+//     public function getDoctorsByLoggedInClinic()
+// {
+//     // Get the logged-in user
+//     $user = Auth::user();
+
+//     // Check if the logged-in user's type is 2
+//     if ($user->type == 2) {
+//         // Fetch users with type 1 (assuming type 1 is what you want to display)
+//         $users = User::where('clinic_id', $user->clinic_id)
+//                      ->where('type', 1) // Fetch users of type 1
+//                      ->get(['id', 'name', 'speciality', 'education']); // Fetch only necessary fields
+
+//         // Return the users as a JSON response
+//         return response()->json($users);
+//     }
+
+//     // If the logged-in user's type is not 2, return an empty response or error
+//     return response()->json(['message' => 'Unauthorized access'], 403);
+// }
+public function getDoctorsByLoggedInClinic()
 {
     // Get the logged-in user
     $user = Auth::user();
 
-    // Check if the logged-in user's type is 2
-    if ($user->type == 2) {
-        // Fetch users with type 1 (assuming type 1 is what you want to display)
+    // Only proceed if the user is of type 2
+    if ($user && $user->type == 2) {
+        // Fetch doctors with type 1 within the same clinic
         $users = User::where('clinic_id', $user->clinic_id)
-                     ->where('type', 1) // Fetch users of type 1
-                     ->get(['id', 'name', 'speciality', 'education']); // Fetch only necessary fields
+                     ->where('type', 1)
+                     ->get(['id', 'name', 'speciality', 'education']);
 
-        // Return the users as a JSON response
         return response()->json($users);
     }
 
-    // If the logged-in user's type is not 2, return an empty response or error
-    return response()->json(['message' => 'Unauthorized access'], 403);
+    // If the user is not type 2, return a silent no-content response
+    return response()->noContent(); // 204 No Content
 }
+
 
 
 

@@ -16,10 +16,14 @@ import CIcon from '@coreui/icons-react'
 import avatar8 from '../../assets/images/avatars/profile.jpg'
 import { getAPICall, post } from '../../../react/util/api'
 // import { deleteUserData } from '../../../util/session'
-import { deleteUserData } from '../../../react/util/session'
+import { deleteUserData, getUser } from '../../../react/util/session'
 
 
 const AppHeaderDropdown = () => {
+
+  const user = getUser();
+  // console.log(user);
+  
 
   const logout = async () => {
     try {
@@ -48,6 +52,7 @@ const AppHeaderDropdown = () => {
     }
   };
 
+   
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
@@ -59,6 +64,12 @@ const AppHeaderDropdown = () => {
           <CIcon icon={cilUser} className="me-2" />
           Profile
         </CDropdownItem> */}
+        {user && (
+        <CDropdownItem disabled>
+          <div className="fw-bold">{user.name}</div>
+          <div className="text-muted small">{user.email}</div>
+        </CDropdownItem>
+      )}
         <CDropdownDivider />
         <CDropdownItem onClick={logout} href="#">
           <CIcon icon={cilLockLocked} className="me-2" />

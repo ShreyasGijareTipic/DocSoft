@@ -195,6 +195,7 @@ const inv = () => {
       PatientExaminations || [],
       AyurvedicExaminations || [],
       billId,
+      billIds,
       formData.DeliveryDate ||{},
       totalAmount
     );
@@ -494,9 +495,22 @@ const handleFileInputClick = () => {
 
 
   // Utility function to check if a field has valid data
+// const hasData1 = (field) => {
+//   // return field && field.trim().toUpperCase() !== "NA";
+//   return typeof field === 'string' && field.trim() !== '';
+// };
 const hasData1 = (field) => {
-  return field && field.trim().toUpperCase() !== "NA";
+  if (typeof field === 'string') {
+    return field.trim() !== '';
+  }
+  if (typeof field === 'object' && field !== null) {
+    return Object.values(field).some(
+      (v) => typeof v === 'string' && v.trim() !== ''
+    );
+  }
+  return false;
 };
+
 
 // Get valid Ayurvedic observation fields
 const getAyurvedicObservationFields = () => {
@@ -509,13 +523,81 @@ const getAyurvedicObservationFields = () => {
   if (hasData1(observation?.pincode)) fields.push({ name: "Pincode", value: observation.pincode });
   if (hasData1(observation?.email)) fields.push({ name: "Email", value: observation.email });
   if (hasData1(observation?.ayurPastHistory)) fields.push({ name: "Past History", value: observation.ayurPastHistory });
-  if (hasData1(observation?.prasavvedan_parikshayein)) fields.push({ name: "Prasavvedan Parikshayein", value: observation.prasavvedan_parikshayein });
-  if (hasData1(observation?.habits)) fields.push({ name: "Habits", value: observation.habits });
+  // if (hasData1(observation?.prasavvedan_parikshayein)) fields.push({ name: "Prasavvedan Parikshayein", value: observation.prasavvedan_parikshayein });
+
+
+
+
+  //  if (hasData1(observation?.habits)) fields.push({ name: "Habits", value: observation.habits });
+
+
   if (hasData1(observation?.lab_investigation)) fields.push({ name: "Lab Investigation", value: observation.lab_investigation });
-  if (hasData1(observation?.personal_history)) fields.push({ name: "Personal History", value: observation.personal_history });
-  if (hasData1(observation?.food_and_drug_allergy)) fields.push({ name: "Food & Drug Allergy", value: observation.food_and_drug_allergy });
+  // if (hasData1(observation?.personal_history)) fields.push({ name: "Personal History", value: observation.personal_history });
+
+  if (hasData1(observation?.food_and_drug_allergy)) fields.push({ name: "Food Allergy", value: observation.food_and_drug_allergy });
+   if (hasData1(observation?.drug_allery)) fields.push({ name: "Drug Allergy", value: observation.drug_allery });
   if (hasData1(observation?.lmp)) fields.push({ name: "LMP", value: observation.lmp });
-  if (hasData1(observation?.edd)) fields.push({ name: "EDD", value: observation.edd });
+  if (hasData1(observation?.edd)) fields.push({ name: "EDD", value: observation.edd });  
+
+// --------------------------------- 
+  if (
+  observation?.prasavvedan_parikshayein &&
+  typeof observation.prasavvedan_parikshayein === 'object'
+) {
+  const prasavData = observation.prasavvedan_parikshayein;
+
+  const formatted = Object.entries(prasavData)
+    .filter(([_, value]) => Array.isArray(value) && value.length > 0)
+    .map(([key, value]) => (
+      <div key={key} style={{ display: 'flex', gap: '6px', marginBottom: '4px' }}>
+        <strong style={{ width: '120px' }}>
+          {key.charAt(0).toUpperCase() + key.slice(1)}:
+        </strong>
+        <span>{value.join(', ')}</span>
+      </div>
+    ));
+
+  if (formatted.length > 0) {
+    fields.push({
+      name: "Prasavvedan Parikshayein",
+      value: formatted,
+    });
+  }
+}
+
+// ------------------------- 
+if (hasData1(observation?.habits)) {
+  const personalData = observation.habits;
+  const entries = Object.entries(personalData)
+    .filter(([_, v]) => typeof v === 'string' && v.trim() !== '');
+
+  const formatted = entries.map(([key, value], index) => (
+    <div key={key} style={{ display: 'flex', gap: '6px' }}>
+      <strong style={{ width: '120px' }}>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>
+      <span>{value}{index < entries.length - 1 && ','}</span>
+    </div>
+  ));
+
+  fields.push({ name: "Habits", value: formatted });
+}
+  
+// --------------- 
+if (hasData1(observation?.personal_history)) {
+  const personalData = observation.personal_history;
+  const entries = Object.entries(personalData)
+    .filter(([_, v]) => typeof v === 'string' && v.trim() !== '');
+
+  const formatted = entries.map(([key, value], index) => (
+    <div key={key} style={{ display: 'flex', gap: '6px' }}>
+      <strong style={{ width: '120px' }}>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>
+      <span>{value}{index < entries.length - 1 && ','}</span>
+    </div>
+  ));
+
+  fields.push({ name: "Personal History", value: formatted });
+}
+
+
 
   return fields;
 };
@@ -609,7 +691,7 @@ const getAyurvedicObservationFields = () => {
           {/* Invoice Details */}
           <div className="row mt-3 text-center text-md-start">
             <div className="col-12 col-md-6">
-              <h6 className="fw-bold">Bill NO.: {billId}</h6>
+              <h6 className="fw-bold">Bill NO.: {billId || billIds}</h6>
               <p className="fw-bold"><strong>Date:</strong> {formData.visit_date}</p>
               {formData.InvoiceType === 2 && <p className="fw-bold"><strong>Delivery Date:</strong> {formData.DeliveryDate}</p>}
               <h6 className="fw-bold">Follow-Up Date: {formData.followup_date}</h6>

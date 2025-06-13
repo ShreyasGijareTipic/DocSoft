@@ -157,6 +157,9 @@ Object.keys(ayurvedicObservations).forEach(key => {
     }
   };
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] =  useState(false);
+
   return (
     <CContainer className="mt-2">
       <CRow className="mt-2">
@@ -260,26 +263,93 @@ Object.keys(ayurvedicObservations).forEach(key => {
                 />
                 {errors.email && <div className="text-danger">{errors.email}</div>}
 
-                <CFormInput
+                {/* <CFormInput
                   className="mb-3"
-                  type="password"
+                  
+                  // type="password"
+                   type={showPassword ? 'text' : 'password'}
                   label={<strong>Password</strong>}
                   placeholder="Password"
                   name="password_input"
                   autoComplete="new-password"
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
-                {errors.password && <div className="text-danger">{errors.password}</div>}
+                 <span
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          cursor: 'pointer',
+                          color: 'black',
+                          fontSize: '18px'
+                        }}
+                      >
+                        {showPassword ? '🔒' : '👁️'}
+                      </span> */}
+                      <div style={{ position: 'relative' }}>
+  <CFormInput
+    className="mb-3"
+    type={showPassword ? 'text' : 'password'}
+    label={<strong>Password</strong>}
+    placeholder="Password"
+    name="password_input"
+    autoComplete="new-password"
+    value={formData.password || ''}
+    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+  />
 
+  <span
+    onClick={() => setShowPassword((prev) => !prev)}
+    style={{
+      position: 'absolute',
+      right: '16px',
+      top: '71%',
+      transform: 'translateY(-50%)',
+      cursor: 'pointer',
+      color: '#000',
+      fontSize: '18px',
+      zIndex: 10,
+     
+    }}
+  >
+    {showPassword ? '👁️' : '🔒'}
+  </span>
+
+  {errors.password && <div className="text-danger mt-1">{errors.password}</div>}
+</div>
+
+                {/* {errors.password && <div className="text-danger">{errors.password}</div>} */}
+ <div style={{ position: 'relative' }}>
                 <CFormInput
                   className="mb-3"
-                  type="password"
+                  // type="password"
+                   type={showPasswordConfirm ? 'text' : 'password'}
                   label={<strong>Confirm Password</strong>}
                   placeholder="Confirm Password"
                   name="password_confirmation"
                   onChange={handleChange}
                 />
+                <span
+    onClick={() => setShowPasswordConfirm((prev) => !prev)}
+    style={{
+      position: 'absolute',
+      right: '16px',
+      top: '71%',
+      transform: 'translateY(-50%)',
+      cursor: 'pointer',
+      color: '#000',
+      fontSize: '18px',
+      zIndex: 10,
+     
+    }}
+  >
+    {showPasswordConfirm ? '👁️' : '🔒'}
+  </span>
                 {errors.password_confirmation && <div className="text-danger">{errors.password_confirmation}</div>}
+</div>
+
 
                 {/* Medical Observations Section */}
                 <CCard className="mb-4">

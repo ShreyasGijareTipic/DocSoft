@@ -467,26 +467,61 @@ const [editData, setEditData] = useState({
   
 
   // Block and Unblock
+  // const handleToggleActive = async (doctor) => {
+  //   const updatedDoctor = {
+  //     ...doctor,
+  //     blocked: doctor.blocked === 1 ? 0 : 1, // Toggle block status
+  //   };
+  
+  //   console.log('Updated Doctor Block Status:', updatedDoctor);
+  
+  //   try {
+  //     await put(`/api/blockedUser/${updatedDoctor.id}`, {
+  //       blocked: updatedDoctor.blocked,
+  //     });
+  
+  //     // Refresh data after update
+  //     fetchClinics();
+  //   } catch (error) {
+  //     console.error('Failed to update doctor status:', error);
+  //   }
+  // };
+  
   const handleToggleActive = async (doctor) => {
-    const updatedDoctor = {
-      ...doctor,
-      blocked: doctor.blocked === 1 ? 0 : 1, // Toggle block status
-    };
-  
-    console.log('Updated Doctor Block Status:', updatedDoctor);
-  
-    try {
-      await put(`/api/blockedUser/${updatedDoctor.id}`, {
-        blocked: updatedDoctor.blocked,
-      });
-  
-      // Refresh data after update
-      fetchClinics();
-    } catch (error) {
-      console.error('Failed to update doctor status:', error);
-    }
+  const updatedDoctor = {
+    ...doctor,
+    blocked: doctor.blocked === 1 ? 0 : 1, // Toggle block status
   };
-  
+
+  console.log('Updated Doctor Block Status:', updatedDoctor);
+
+  // ✅ Optimistically update the local state
+  setClinics((prevClinics) =>
+    prevClinics.map((item) =>
+      item.id === updatedDoctor.id ? updatedDoctor : item
+    )
+  );
+
+  try {
+    // ✅ Call API to persist the change
+    await put(`/api/blockedUser/${updatedDoctor.id}`, {
+      blocked: updatedDoctor.blocked,
+    });
+
+    // Optionally, refetch full data if needed
+    // fetchClinics(); // Optional if setClinics() is enough
+  } catch (error) {
+    console.error('Failed to update doctor status:', error);
+
+    // ❌ Rollback if the API call fails
+    setClinics((prevClinics) =>
+      prevClinics.map((item) =>
+        item.id === doctor.id ? doctor : item
+      )
+    );
+  }
+};
+
   
 
 

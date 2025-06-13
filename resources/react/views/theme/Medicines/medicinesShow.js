@@ -24,6 +24,7 @@ const [editData, setEditData] = useState({
  const columns = useMemo(
     () => [
       // { accessorKey: 'id', header: 'ID' },
+      
       { accessorKey: 'drug_name', header: 'Drug Name' },
       // { accessorKey: 'generic_name', header: 'Generic Name' },
       { accessorKey: 'category', header: 'Category' },
@@ -36,6 +37,7 @@ const [editData, setEditData] = useState({
                                   
                                     <CBadge className='bg-info'
                                     shape='rounded-pill' 
+                                     style={{ cursor: 'pointer' }} 
                                     // onClick={() => setVisible(!visible)} 
                                     onClick={() => handleEdit(row.original)}
                                    >
@@ -140,59 +142,69 @@ const handleUpdateMedicine = async () => {
            
              {!loading && !error && (
                <MantineReactTable
-                 columns={columns}
-                 data={data}
-                 initialState={{
-                   density: 'comfortable',
-                   pagination: { pageSize: 10 },
-                   showColumnFilters: true,
-                 }}
-                 enableFullScreenToggle={false}
-                 enableDensityToggle={true}
-                 enableColumnResizing
-                 enableColumnActions
-                 enableRowNumbers
-                 enableStickyHeader
-                 enableSorting
-                 enableGlobalFilter
-                 enableColumnFilters
-                 enableHiding
-                 enableRowSelection
-                 positionToolbarAlertBanner="bottom"
-                 muiTableBodyRowProps={{
-                   sx: {
-                     '&:hover': {
-                       backgroundColor: '#f9f9f9',
-                       cursor: 'pointer',
-                       transition: 'all 0.2s ease-in-out',
-                     },
-                   },
-                 }}
-                 muiTableHeadCellProps={{
-                   sx: {
-                     backgroundColor: '#f1f5f9',
-                     fontWeight: '600',
-                     color: '#1f2937',
-                   },
-                 }}
-                 muiTablePaperProps={{
-                   sx: {
-                     borderRadius: '10px',
-                     boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                     overflow: 'hidden',
-                   },
-                 }}
-                 muiTableContainerProps={{
-                   sx: {
-                     maxHeight: '600px',
-                   },
-                 }}
-               />
+  columns={[
+    {
+      header: 'Sr No',
+      accessorFn: (_, index) => index + 1,
+      size: 60,
+      enableSorting: false,
+      enableColumnFilter: false,
+    },
+    ...columns,
+  ]}
+  data={data}
+  initialState={{
+    density: 'comfortable',
+    pagination: { pageSize: 10 },
+    showColumnFilters: true,
+  }}
+  enableFullScreenToggle={false}
+  enableDensityToggle={true}
+  enableColumnResizing
+  enableColumnActions
+  enableStickyHeader
+  enableSorting
+  enableGlobalFilter
+  enableColumnFilters
+  enableHiding
+  // ❌ REMOVE: enableRowNumbers
+  positionToolbarAlertBanner="bottom"
+  muiTableBodyRowProps={{
+    sx: {
+      '&:hover': {
+        backgroundColor: '#f9f9f9',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease-in-out',
+      },
+    },
+  }}
+  muiTableHeadCellProps={{
+    sx: {
+      backgroundColor: '#f1f5f9',
+      fontWeight: '600',
+      color: '#1f2937',
+    },
+  }}
+  muiTablePaperProps={{
+    sx: {
+      borderRadius: '10px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+      overflow: 'hidden',
+    },
+  }}
+  muiTableContainerProps={{
+    sx: {
+      maxHeight: '600px',
+    },
+  }}
+/>
+
              )}
            </>
 
 
-      <CModal visible={visible} onClose={() => setVisible(false)}>
+      <CModal visible={visible} onClose={() => setVisible(false)}  backdrop="static"
+  keyboard={false}>
       <CModalHeader>
         <CModalTitle>Edit Medicine</CModalTitle>
       </CModalHeader>

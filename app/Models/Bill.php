@@ -18,6 +18,8 @@ class Bill extends Model
         'patient_email',
         'patient_contact',
         'patient_dob',
+        'occupation',
+        'pincode',
         'doctor_name',
         'registration_number',
         'visit_date',

@@ -839,6 +839,7 @@ function ClinicRegister() {
     e.preventDefault();
     if (!validateForm()) return;
     
+    
     try {
       // Start payment process directly with form data
       await handlePayment();
@@ -1148,7 +1149,7 @@ function ClinicRegister() {
                 {errors.clinic_address && <div className="text-danger">{errors.clinic_address}</div>}
 
                 {/* Logo Upload */}
-                <CFormLabel htmlFor="logo">Upload Clinic Logo (Optional)</CFormLabel>
+                <CFormLabel htmlFor="logo">Upload Clinic Logo </CFormLabel>
                 <CFormInput
                   type="file"
                   id="logo"

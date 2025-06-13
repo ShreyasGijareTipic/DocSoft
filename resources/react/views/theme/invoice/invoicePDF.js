@@ -1495,6 +1495,691 @@
 
 //-------------------------------------------------------------------------------------------------
 
+// import jsPDF from "jspdf";
+// import "jspdf-autotable";
+
+// export function generatePDF(
+//     grandTotal,
+//     invoiceNo,
+//     patient_name,
+//     formData,
+//     remainingAmount,
+//     totalAmountWords,
+//     descriptions,
+//     doctorData,
+//     clinicData,
+//     healthDirectives,
+//     patientExaminations,
+//     AyurvedicExaminations,
+//     billId,
+//     billDate,
+//     DeliveryDate,
+//     totalAmount,
+//     isWhatsAppShare = false
+// ) {
+//     try {
+//         const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+//         const marginLeft = 15;
+//         let y = 20;
+//         const lineHeight = 7;
+//         const pageWidth = pdf.internal.pageSize.getWidth();
+//         const contentWidth = pageWidth - 2 * marginLeft;
+//         const pageHeight = pdf.internal.pageSize.getHeight();
+
+//         pdf.setFont("times", "normal");
+
+//         function drawBorder() {
+//             pdf.setDrawColor(0);
+//             pdf.setLineWidth(0.5);
+//             pdf.rect(5, 5, pageWidth - 10, pageHeight - 10);
+//         }
+
+//         function drawHeader() {
+//             y = 10;
+//             const logoSize = 40;
+//             const leftMargin = marginLeft;
+//             const rightMargin = pageWidth - marginLeft;
+
+//             if (clinicData?.logo) {
+//                 try {
+//                     const img = new Image();
+//                     img.crossOrigin = "anonymous";
+//                     img.src = clinicData.logo;
+//                     pdf.addImage(img, "PNG", leftMargin, y, logoSize, logoSize);
+//                 } catch (imgError) {
+//                     console.warn('Logo could not be added:', imgError);
+//                 }
+//             }
+
+//             pdf.setFontSize(16);
+//             pdf.setFont("times", "bold");
+//             pdf.text(clinicData?.clinic_name || "N/A", pageWidth / 2, y + 7, { align: "center" });
+
+//             pdf.setFontSize(10);
+//             pdf.setFont("times", "normal");
+//             pdf.text(`Reg No: ${clinicData?.clinic_registration_no || "N/A"}`, rightMargin, y + 5, { align: "right" });
+
+//             const addressText = `Address: ${clinicData?.clinic_address || "N/A"}`;
+//             const addressLines = pdf.splitTextToSize(addressText, 50);
+//             addressLines.forEach((line, index) => {
+//                 pdf.text(line, rightMargin, y + 10 + index * 5, { align: "right" });
+//             });
+
+//             const addressHeight = addressLines.length * 5;
+//             pdf.text(`Contact: ${clinicData?.clinic_mobile || "N/A"}`, rightMargin, y + 10 + addressHeight, { align: "right" });
+
+//             y += logoSize + addressHeight;
+//             pdf.setDrawColor(0);
+//             pdf.setLineWidth(0.5);
+//             pdf.line(10, y-10, pageWidth - 10, y-10);
+//             y += 8;
+//         }
+
+//         function drawPatientAndDoctorDetails() {
+//             const boxWidth = (contentWidth / 2) - 5;
+//             const patientBoxX = marginLeft;
+//             const doctorBoxX = marginLeft + boxWidth + 10;
+//             const lineSpacing = 5;
+
+//             pdf.setDrawColor(0);
+//             pdf.setFontSize(13);
+//             pdf.text("Patient Details:", patientBoxX + 3, y + 6);
+//             pdf.setFontSize(11);
+//             pdf.text(`Name: ${formData?.patient_name || "N/A"}`, patientBoxX + 3, y + 12);
+//             pdf.text(`Address: ${formData?.patient_address || "N/A"}`, patientBoxX + 3, y + 18);
+//             pdf.text(`Mobile: ${formData?.patient_contact || "N/A"}`, patientBoxX + 3, y + 24);
+
+//             pdf.setFontSize(13);
+//             pdf.text("Doctor Details:", doctorBoxX + 3, y + 6);
+//             pdf.setFontSize(11);
+//             pdf.text(`Doctor Name: ${doctorData?.name || "N/A"}`, doctorBoxX + 3, y + 12);
+
+//             const educationLines = pdf.splitTextToSize(`Education: ${doctorData?.education || "N/A"}`, boxWidth - 6);
+//             educationLines.forEach((line, index) => {
+//                 pdf.text(line, doctorBoxX + 3, y + 18 + index * lineSpacing);
+//             });
+
+//             const eduOffset = educationLines.length * lineSpacing;
+//             let boxHeight = 12 + eduOffset + 15;
+
+//             pdf.text(`Reg No.: ${doctorData?.registration_number || "N/A"}`, doctorBoxX + 3, y + 18 + eduOffset);
+//             pdf.text(`Specialty: ${doctorData?.speciality || "N/A"}`, doctorBoxX + 3, y + 24 + eduOffset);
+
+//             pdf.rect(doctorBoxX, y, boxWidth, boxHeight);
+//             pdf.rect(patientBoxX, y, boxWidth, boxHeight);
+//             y += boxHeight + lineHeight;
+
+//             pdf.setFontSize(12);
+//             pdf.text(`Bill No: ${billId}`, marginLeft, y);
+//             const formattedDate = formData.visit_date ? formData.visit_date.split("-").reverse().join("-") : "Date Not Available";
+//             pdf.text(`Bill Date: ${formattedDate}`, marginLeft, y + lineHeight);
+//              y += lineHeight * 1;
+//              pdf.text(`Follow-Up Date: ${formData.followup_date}`, marginLeft, y + lineHeight);
+//             y += lineHeight * 3;
+//         }
+
+//         function drawBillingDetails() {
+//             pdf.setFontSize(13);
+//             pdf.text("Billing Details:", marginLeft, y);
+//             y += lineHeight;
+
+//             pdf.autoTable({
+//                 startY: y,
+//                 head: [["Sr No", "Description", "Quantity", "Price (Rs)", "GST", "Total (Rs)"]],
+//                 body: [
+//                     ...descriptions.map((product, index) => [
+//                         index + 1,
+//                         product.description || "N/A",
+//                         product.quantity?.toString() || "N/A",
+//                         `${parseFloat(product.price || 0).toFixed(2)} /-`,
+//                         product.gst?.toString() || "N/A",
+//                         `${parseFloat(product.total || 0).toFixed(2)} /-`
+//                     ]),
+//                     ["", "", "", "", "Grand Total", `${(parseFloat(DeliveryDate) || 0).toFixed(2)} /-`]
+//                 ],
+//                 theme: "grid",
+//                 styles: { halign: "center", fontSize: 10, font: "times" },
+//             });
+
+//             y = pdf.autoTable.previous.finalY + lineHeight * 2;
+//         }
+
+//         function drawSignature() {
+//             y = pdf.internal.pageSize.getHeight() - 30;
+//             pdf.text("Authorized Signature", pageWidth - 50, y);
+//         }
+
+//         function drawPatientExamination() {
+//             if (!Array.isArray(patientExaminations) || patientExaminations.length === 0) return;
+
+//             const patientData = patientExaminations[0] || {};
+//             const fields = [
+//                 { label: "BP", value: patientData?.bp },
+//                 { label: "Pulse", value: patientData?.pulse },
+//                 { label: "Height", value: patientData?.height },
+//                 { label: "Weight", value: patientData?.weight },
+//                 { label: "Past History", value: patientData?.past_history },
+//                 { label: "Complaints", value: patientData?.complaints },
+//                 { label: "Systemic Examination", value: patientData?.systemic_exam_general },
+//                 { label: "Diagnosis", value: patientData?.systemic_exam_pa }
+//             ];
+
+//             // Filter out empty or N/A values
+//             const validFields = fields.filter(f =>
+//                 f.value && typeof f.value === "string" &&
+//                 f.value.trim().toUpperCase() !== "NA" &&
+//                 f.value.trim().toUpperCase() !== "N/A" &&
+//                 f.value.trim() !== ""
+//             );
+
+//             if (validFields.length === 0) return;
+
+//             pdf.setFontSize(13);
+//             pdf.text("Medical Observation:", marginLeft, y);
+//             y += lineHeight;
+
+//             const bodyData = [];
+
+//             // Format into two columns per row (4 cells per row)
+//             for (let i = 0; i < validFields.length; i += 2) {
+//                 const row = [];
+
+//                 const field1 = validFields[i];
+//                 row.push({ content: field1.label, styles: { fontStyle: "bold" } });
+//                 row.push(field1.value);
+
+//                 if (i + 1 < validFields.length) {
+//                     const field2 = validFields[i + 1];
+//                     row.push({ content: field2.label, styles: { fontStyle: "bold" } });
+//                     row.push(field2.value);
+//                 } else {
+//                     row.push("", ""); // fill empty if only one field in last row
+//                 }
+
+//                 bodyData.push(row);
+//             }
+
+//             pdf.autoTable({
+//                 startY: y,
+//                 head: [["Field", "Value", "Field", "Value"]],
+//                 body: bodyData,
+//                 theme: "grid",
+//                 styles: { fontSize: 10, font: "times", halign: "left" },
+//                 headStyles: { fillColor: [173, 216, 230] } // Light blue
+//             });
+
+//             y = pdf.autoTable.previous.finalY + lineHeight;
+//         }
+
+//         function drawAyurvedicExamination() {
+//             if (!Array.isArray(AyurvedicExaminations) || AyurvedicExaminations.length === 0) return;
+
+//             const observation = AyurvedicExaminations[0] || {};
+//             const fields = [
+//                 { label: "Occupation", value: observation?.occupation },
+//                 { label: "Pincode", value: observation?.pincode },
+//                 { label: "Past History", value: observation?.ayurPastHistory },
+//                 { label: "Prasavvedan Parikshayein", value: observation?.prasavvedan_parikshayein },
+//                 { label: "Habits", value: observation?.habits },
+//                 { label: "Lab Investigation", value: observation?.lab_investigation },
+//                 { label: "Personal History", value: observation?.personal_history },
+//                 { label: "Food & Drug Allergy", value: observation?.food_and_drug_allergy },
+//                 { label: "LMP", value: observation?.lmp },
+//                 { label: "EDD", value: observation?.edd }
+//             ];
+
+//             // Filter out "NA", "N/A", or empty/null values
+//             const validFields = fields.filter(f =>
+//                 f.value && typeof f.value === "string" &&
+//                 f.value.trim().toUpperCase() !== "NA" &&
+//                 f.value.trim().toUpperCase() !== "N/A" &&
+//                 f.value.trim() !== ""
+//             );
+
+//             if (validFields.length === 0) return;
+
+//             pdf.setFontSize(13);
+//             pdf.text("Ayurvedic Observation:", marginLeft, y);
+//             y += lineHeight;
+
+//             const bodyData = [];
+
+//             // Combine fields into two columns per row (4 cells per row)
+//             for (let i = 0; i < validFields.length; i += 2) {
+//                 const row = [];
+
+//                 const field1 = validFields[i];
+//                 row.push({ content: field1.label, styles: { fontStyle: "bold" } });
+//                 row.push(field1.value);
+
+//                 if (i + 1 < validFields.length) {
+//                     const field2 = validFields[i + 1];
+//                     row.push({ content: field2.label, styles: { fontStyle: "bold" } });
+//                     row.push(field2.value);
+//                 } else {
+//                     // Fill empty cells if odd number of fields
+//                     row.push("", "");
+//                 }
+
+//                 bodyData.push(row);
+//             }
+
+//             pdf.autoTable({
+//                 startY: y,
+//                 head: [['Field', 'Value', 'Field', 'Value']],
+//                 body: bodyData,
+//                 theme: "grid",
+//                 styles: { fontSize: 10, font: "times", halign: "left" },
+//                 headStyles: { fillColor: [144, 238, 144] } // Light green for header
+//             });
+
+//             y = pdf.autoTable.previous.finalY + lineHeight;
+//         }
+
+//         // ====== Build First Page ======
+//         drawBorder();
+//         drawHeader();
+//         drawPatientAndDoctorDetails();
+//         drawBillingDetails();
+//         drawSignature();
+
+//         // ====== Conditionally Add Patient Examination Page ======
+//         const hasPatientExam = Array.isArray(patientExaminations) && patientExaminations.length > 0;
+
+//         if (hasPatientExam) {
+//             pdf.addPage();
+//             drawHeader();
+//             drawPatientAndDoctorDetails();
+//             drawPatientExamination();
+//             drawAyurvedicExamination();
+//             drawBorder();
+//             drawSignature();
+//         }
+
+//         // ====== Conditionally Add Prescription Page ======
+//         const hasPrescription = Array.isArray(healthDirectives) && healthDirectives.length > 0;
+
+//         if (hasPrescription) {
+//             pdf.addPage();
+//             drawHeader();
+//             drawPatientAndDoctorDetails();
+
+//             pdf.setFontSize(13);
+//             pdf.text("Prescription:", marginLeft, y);
+//             y += lineHeight;
+
+//             pdf.autoTable({
+//                 startY: y,
+//                 head: [["Sr No", "Medicine", "Strength", "Dosage", "Timing", "Frequency", "Duration"]],
+//                 body: healthDirectives.map((item, index) => [
+//                     index + 1,
+//                     item.medicine || "N/A",
+//                     item.strength || "N/A",
+//                     item.dosage || "N/A",
+//                     item.timing || "N/A",
+//                     item.frequency || "N/A",
+//                     item.duration || "N/A"
+//                 ]),
+//                 theme: "grid",
+//                 styles: { halign: "center", fontSize: 10, font: "times" },
+//             });
+
+//             drawBorder();
+//             drawSignature();
+//         }
+
+//         // ====== Footer on all pages ======
+//         const totalPages = pdf.internal.getNumberOfPages();
+//         for (let i = 1; i <= totalPages; i++) {
+//             pdf.setPage(i);
+//             pdf.setFontSize(9);
+//             pdf.text("This bill is computer generated.", pageWidth / 2, pageHeight - 10, { align: "center" });
+//         }
+
+//         // Return appropriate output based on usage
+//         if (isWhatsAppShare) {
+//             console.log('Generating PDF blob for WhatsApp sharing...');
+//             try {
+//                 const blob = pdf.output('blob');
+//                 console.log('PDF blob generated successfully, size:', blob.size);
+                
+//                 // Validate blob
+//                 if (!blob || blob.size === 0) {
+//                     throw new Error('Generated blob is empty or invalid');
+//                 }
+                
+//                 return blob;
+                
+//             } catch (blobError) {
+//                 console.error('Error generating PDF blob:', blobError);
+//                 throw new Error(`PDF blob generation failed: ${blobError.message}`);
+//             }
+//         } 
+//         else {
+//             // Regular download
+//             const filename = `${invoiceNo}-${patient_name}.pdf`;
+//             pdf.save(filename);
+//             return pdf;
+//         }
+
+//     } catch (error) {
+//         console.error('Error in generatePDF function:', error);
+//         throw new Error(`PDF generation failed: ${error.message}`);
+//     }
+// }
+
+// // FIXED: Enhanced helper function to get PDF blob specifically for WhatsApp
+// export function generatePDFBlob(
+//     grandTotal,
+//     invoiceNo,
+//     patient_name,
+//     formData,
+//     remainingAmount,
+//     totalAmountWords,
+//     descriptions,
+//     doctorData,
+//     clinicData,
+//     healthDirectives,
+//     patientExaminations,
+//     AyurvedicExaminations,
+//     billId,
+//     billDate,
+//     DeliveryDate,
+//     totalAmount
+// ) {
+//     try {
+//         console.log('Starting PDF blob generation...');
+        
+//         // Validate required parameters
+//         if (!invoiceNo || !patient_name) {
+//             throw new Error('Invoice number and patient name are required');
+//         }
+
+//         // FIXED: Properly call generatePDF with isWhatsAppShare = true
+//         const blob = generatePDF(
+//             grandTotal,
+//             invoiceNo,
+//             patient_name,
+//             formData,
+//             remainingAmount,
+//             totalAmountWords,
+//             descriptions,
+//             doctorData,
+//             clinicData,
+//             healthDirectives,
+//             patientExaminations,
+//             AyurvedicExaminations,
+//             billId,
+//             billDate,
+//             DeliveryDate,
+//             totalAmount,
+//             true // isWhatsAppShare = true
+//         );
+
+//         // Additional validation
+//         if (!blob) {
+//             throw new Error('PDF generation returned null or undefined');
+//         }
+
+//         if (!(blob instanceof Blob)) {
+//             throw new Error('PDF generation did not return a valid Blob object');
+//         }
+
+//         if (blob.size === 0) {
+//             throw new Error('Generated PDF blob is empty');
+//         }
+
+//         console.log('PDF blob generated successfully for WhatsApp sharing');
+//         return blob;
+
+//     } catch (error) {
+//         console.error('Error in generatePDFBlob:', error);
+//         throw new Error(`PDF blob generation failed: ${error.message}`);
+//     }
+// }
+
+// // Helper function to save PDF to device
+// export function savePDF(
+//     grandTotal,
+//     invoiceNo,
+//     patient_name,
+//     formData,
+//     remainingAmount,
+//     totalAmountWords,
+//     descriptions,
+//     doctorData,
+//     clinicData,
+//     healthDirectives,
+//     patientExaminations,
+//     AyurvedicExaminations,
+//     billId,
+//     billDate,
+//     DeliveryDate,
+//     totalAmount
+// ) {
+//     return generatePDF(
+//         grandTotal,
+//         invoiceNo,
+//         patient_name,
+//         formData,
+//         remainingAmount,
+//         totalAmountWords,
+//         descriptions,
+//         doctorData,
+//         clinicData,
+//         healthDirectives,
+//         patientExaminations,
+//         AyurvedicExaminations,
+//         billId,
+//         billDate,
+//         DeliveryDate,
+//         totalAmount,
+//         false // isWhatsAppShare = false
+//     );
+// }
+
+// // FIXED: Enhanced WhatsApp sharing utility function
+// export async function shareOnWhatsApp(
+//     phoneNumber, 
+//     pdfBlob, 
+//     message = "Please find attached medical bill/prescription"
+// ) {
+//     try {
+//         console.log('Starting WhatsApp sharing process...');
+        
+//         // Validate inputs
+//         if (!phoneNumber || phoneNumber.trim() === '') {
+//             throw new Error('Phone number is required for WhatsApp sharing');
+//         }
+
+//         if (!pdfBlob || !(pdfBlob instanceof Blob)) {
+//             throw new Error('Valid PDF blob is required for sharing');
+//         }
+
+//         if (pdfBlob.size === 0) {
+//             throw new Error('PDF blob is empty');
+//         }
+
+//         // Create a File object from the blob
+//         const filename = `medical-bill-${Date.now()}.pdf`;
+//         const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+        
+//         // Check if Web Share API is available and supports files
+//         if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+//             console.log('Using Web Share API...');
+//             await navigator.share({
+//                 title: 'Medical Bill/Prescription',
+//                 text: message,
+//                 files: [file]
+//             });
+//             return { success: true, method: 'web-share-api' };
+//         }
+        
+//         // Fallback: Create WhatsApp URL (without file attachment)
+//         console.log('Using fallback method...');
+        
+//         // Clean phone number (remove spaces, dashes, etc.)
+//         const cleanPhoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+//         const whatsappURL = `https://wa.me/${cleanPhoneNumber}?text=${encodeURIComponent(message)}`;
+        
+//         // Create download link for the PDF
+//         const url = URL.createObjectURL(pdfBlob);
+//         const downloadLink = document.createElement('a');
+//         downloadLink.href = url;
+//         downloadLink.download = filename;
+//         downloadLink.style.display = 'none';
+//         document.body.appendChild(downloadLink);
+//         downloadLink.click();
+//         document.body.removeChild(downloadLink);
+        
+//         // Clean up
+//         setTimeout(() => {
+//             URL.revokeObjectURL(url);
+//         }, 1000);
+        
+//         // Open WhatsApp
+//         window.open(whatsappURL, '_blank');
+        
+//         return { 
+//             success: true, 
+//             method: 'fallback',
+//             message: 'PDF downloaded and WhatsApp opened. Please attach the downloaded file manually.'
+//         };
+        
+//     } catch (error) {
+//         console.error('Error sharing on WhatsApp:', error);
+//         return { 
+//             success: false, 
+//             error: error.message,
+//             message: 'Failed to share on WhatsApp. Please try downloading the PDF manually.'
+//         };
+//     }
+// }
+
+// // FIXED: Enhanced utility function to share PDF with phone number validation
+// export async function sharePDFOnWhatsApp(
+//     phoneNumber,
+//     grandTotal,
+//     invoiceNo,
+//     patient_name,
+//     formData,
+//     remainingAmount,
+//     totalAmountWords,
+//     descriptions,
+//     doctorData,
+//     clinicData,
+//     healthDirectives,
+//     patientExaminations,
+//     AyurvedicExaminations,
+//     billId,
+//     billDate,
+//     DeliveryDate,
+//     totalAmount,
+//     customMessage = null
+// ) {
+//     try {
+//         console.log('Starting sharePDFOnWhatsApp process...');
+        
+//         // Validate phone number
+//         if (!phoneNumber || phoneNumber.trim() === '') {
+//             throw new Error('Phone number is required for WhatsApp sharing');
+//         }
+
+//         // Validate required data
+//         if (!invoiceNo || !patient_name) {
+//             throw new Error('Invoice number and patient name are required');
+//         }
+
+//         console.log('Generating PDF blob...');
+        
+//         // FIXED: Generate PDF blob (this is synchronous, not async)
+//         const pdfBlob = generatePDFBlob(
+//             grandTotal,
+//             invoiceNo,
+//             patient_name,
+//             formData,
+//             remainingAmount,
+//             totalAmountWords,
+//             descriptions,
+//             doctorData,
+//             clinicData,
+//             healthDirectives,
+//             patientExaminations,
+//             AyurvedicExaminations,
+//             billId,
+//             billDate,
+//             DeliveryDate,
+//             totalAmount
+//         );
+
+//         console.log('PDF blob generated, proceeding to share...');
+
+//         // Create custom message
+//         const message = customMessage || 
+//             `Hello ${patient_name || 'Patient'}, your medical bill/prescription (Bill No: ${billId || invoiceNo}) is ready. Please find the attached document.`;
+
+//         // Share on WhatsApp
+//         const result = await shareOnWhatsApp(phoneNumber, pdfBlob, message);
+//         return result;
+
+//     } catch (error) {
+//         console.error('Error in sharePDFOnWhatsApp:', error);
+//         return {
+//             success: false,
+//             error: error.message,
+//             message: `Failed to share PDF on WhatsApp: ${error.message}`
+//         };
+//     }
+// }
+
+// // BONUS: Simple download function for regular PDF download
+// export function downloadPDF(
+//     grandTotal,
+//     invoiceNo,
+//     patient_name,
+//     formData,
+//     remainingAmount,
+//     totalAmountWords,
+//     descriptions,
+//     doctorData,
+//     clinicData,
+//     healthDirectives,
+//     patientExaminations,
+//     AyurvedicExaminations,
+//     billId,
+//     billDate,
+//     DeliveryDate,
+//     totalAmount
+// ) {
+//     try {
+//         return generatePDF(
+//             grandTotal,
+//             invoiceNo,
+//             patient_name,
+//             formData,
+//             remainingAmount,
+//             totalAmountWords,
+//             descriptions,
+//             doctorData,
+//             clinicData,
+//             healthDirectives,
+//             patientExaminations,
+//             AyurvedicExaminations,
+//             billId,
+//             billDate,
+//             DeliveryDate,
+//             totalAmount,
+//             false // isWhatsAppShare = false
+//         );
+//     } catch (error) {
+//         console.error('Error downloading PDF:', error);
+//         throw new Error(`PDF download failed: ${error.message}`);
+//     }
+// }
+
+
+
+
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
@@ -1512,6 +2197,7 @@ export function generatePDF(
     patientExaminations,
     AyurvedicExaminations,
     billId,
+    billIds,
     billDate,
     DeliveryDate,
     totalAmount,
@@ -1570,11 +2256,28 @@ export function generatePDF(
 
             y += logoSize + addressHeight;
             pdf.setDrawColor(0);
+
+           // move slightly below the line
+
+// pdf.setFontSize(14);
+// pdf.setFont('times', 'bold');
+// pdf.text('Bill Receipt', pageWidth / 2, y, { align: 'center' }); // Centered
+
+
+
             pdf.setLineWidth(0.5);
             pdf.line(10, y-10, pageWidth - 10, y-10);
-            y += 8;
+            y += 3;
         }
 
+        
+
+
+//  y += 48
+//         pdf.setFontSize(14);
+// pdf.setFont('times', 'bold');
+// pdf.text('Bill Receipt', pageWidth / 2, y, { align: 'center' });
+    
         function drawPatientAndDoctorDetails() {
             const boxWidth = (contentWidth / 2) - 5;
             const patientBoxX = marginLeft;
@@ -1610,7 +2313,18 @@ export function generatePDF(
             y += boxHeight + lineHeight;
 
             pdf.setFontSize(12);
-            pdf.text(`Bill No: ${billId}`, marginLeft, y);
+            const billText =
+  billId && billIds
+    ? `Bill No: ${billId} || Previous: ${billIds}`
+    : billId
+    ? `Bill No: ${billId}`
+    : billIds
+    ? `Previous Bill No: ${billIds}`
+    : '';
+    if (billText) {
+  pdf.text(billText, marginLeft, y);
+}
+            // pdf.text( billText, marginLeft, y);
             const formattedDate = formData.visit_date ? formData.visit_date.split("-").reverse().join("-") : "Date Not Available";
             pdf.text(`Bill Date: ${formattedDate}`, marginLeft, y + lineHeight);
              y += lineHeight * 1;
@@ -1647,6 +2361,62 @@ export function generatePDF(
         function drawSignature() {
             y = pdf.internal.pageSize.getHeight() - 30;
             pdf.text("Authorized Signature", pageWidth - 50, y);
+        }
+
+
+
+        // UPDATED: Check if Medical Observation has valid data
+        function hasValidPatientExamination() {
+            if (!Array.isArray(patientExaminations) || patientExaminations.length === 0) return false;
+
+            const patientData = patientExaminations[0] || {};
+            const fields = [
+                patientData?.bp,
+                patientData?.pulse,
+                patientData?.height,
+                patientData?.weight,
+                patientData?.past_history,
+                patientData?.complaints,
+                patientData?.systemic_exam_general,
+                patientData?.systemic_exam_pa
+            ];
+
+            // Check if any field has valid data (not empty, not "NA", not "N/A")
+            return fields.some(value => 
+                value && 
+                typeof value === "string" &&
+                value.trim().toUpperCase() !== "NA" &&
+                value.trim().toUpperCase() !== "N/A" &&
+                value.trim() !== ""
+            );
+        }
+
+        // UPDATED: Check if Ayurvedic Observation has valid data
+        function hasValidAyurvedicExamination() {
+            if (!Array.isArray(AyurvedicExaminations) || AyurvedicExaminations.length === 0) return false;
+
+            const observation = AyurvedicExaminations[0] || {};
+            const fields = [
+                observation?.occupation,
+                observation?.pincode,
+                observation?.ayurPastHistory,
+                observation?.prasavvedan_parikshayein,
+                observation?.habits,
+                observation?.lab_investigation,
+                observation?.personal_history,
+                observation?.food_and_drug_allergy,
+                observation?.lmp,
+                observation?.edd
+            ];
+
+            // Check if any field has valid data (not empty, not "NA", not "N/A")
+            return fields.some(value => 
+                value && 
+                typeof value === "string" &&
+                value.trim().toUpperCase() !== "NA" &&
+                value.trim().toUpperCase() !== "N/A" &&
+                value.trim() !== ""
+            );
         }
 
         function drawPatientExamination() {
@@ -1715,11 +2485,20 @@ export function generatePDF(
             if (!Array.isArray(AyurvedicExaminations) || AyurvedicExaminations.length === 0) return;
 
             const observation = AyurvedicExaminations[0] || {};
+
+            // Helper function to check if data exists and is not empty
+    function hasValidData(data) {
+        if (!data) return false;
+        if (typeof data === 'string') return data.trim() !== '';
+        if (typeof data === 'object') return Object.keys(data).length > 0;
+        return true;
+    }
+
             const fields = [
                 { label: "Occupation", value: observation?.occupation },
                 { label: "Pincode", value: observation?.pincode },
                 { label: "Past History", value: observation?.ayurPastHistory },
-                { label: "Prasavvedan Parikshayein", value: observation?.prasavvedan_parikshayein },
+                // { label: "Prasavvedan Parikshayein", value: observation?.prasavvedan_parikshayein },
                 { label: "Habits", value: observation?.habits },
                 { label: "Lab Investigation", value: observation?.lab_investigation },
                 { label: "Personal History", value: observation?.personal_history },
@@ -1727,6 +2506,98 @@ export function generatePDF(
                 { label: "LMP", value: observation?.lmp },
                 { label: "EDD", value: observation?.edd }
             ];
+
+            // 2. Handle Prasavvedan Parikshayein (complex object with arrays)
+    if (hasValidData(observation?.prasavvedan_parikshayein)) {
+        const prasavvedanData = observation.prasavvedan_parikshayein;
+        
+        if (typeof prasavvedanData === 'object') {
+            const textEntries = Object.entries(prasavvedanData)
+                .filter(([key, value]) => Array.isArray(value) && value.length > 0)
+                .map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value.join(', ')}`)
+                .join(' | ');
+
+            if (textEntries) {
+                fields.push({ 
+                    label: "Prasavvedan Parikshayein", 
+                    value: textEntries 
+                });
+            }
+        }
+    }
+
+    // 3. Handle Habits (object)
+    if (hasValidData(observation?.habits)) {
+        let habitData = {};
+
+        try {
+            if (typeof observation.habits === 'string') {
+                habitData = JSON.parse(observation.habits);
+            } else if (typeof observation.habits === 'object') {
+                habitData = observation.habits;
+            }
+
+            const entries = Object.entries(habitData).filter(
+                ([key, value]) => {
+                    if (value === null || value === undefined) return false;
+                    if (typeof value === 'string' && value.trim() === '') return false;
+                    if (Array.isArray(value) && value.length === 0) return false;
+                    return true;
+                }
+            );
+
+            if (entries.length > 0) {
+                const habitsText = entries
+                    .map(([key, value]) => {
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                        const formattedValue = Array.isArray(value) ? value.join(', ') : String(value);
+                        return `${formattedKey}: ${formattedValue}`;
+                    })
+                    .join(' | ');
+
+                fields.push({ label: "Habits", value: habitsText });
+            }
+        } catch (e) {
+            console.error("Error parsing habits data:", e);
+        }
+    }
+
+        // 4. Handle Personal History (object)
+    if (hasValidData(observation?.personal_history)) {
+        let personalData = {};
+
+        try {
+            if (typeof observation.personal_history === 'string') {
+                personalData = JSON.parse(observation.personal_history);
+            } else if (typeof observation.personal_history === 'object') {
+                personalData = observation.personal_history;
+            }
+
+            const entries = Object.entries(personalData).filter(
+                ([key, value]) => {
+                    if (value === null || value === undefined) return false;
+                    if (typeof value === 'string' && value.trim() === '') return false;
+                    if (Array.isArray(value) && value.length === 0) return false;
+                    return true;
+                }
+            );
+
+            if (entries.length > 0) {
+                const personalText = entries
+                    .map(([key, value]) => {
+                        const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                        const formattedValue = Array.isArray(value) ? value.join(', ') : String(value);
+                        return `${formattedKey}: ${formattedValue}`;
+                    })
+                    .join(' | ');
+
+                fields.push({ label: "Personal History", value: personalText });
+            }
+        } catch (e) {
+            console.error("Error parsing personal history data:", e);
+        }
+    }
+
 
             // Filter out "NA", "N/A", or empty/null values
             const validFields = fields.filter(f =>
@@ -1780,18 +2651,30 @@ export function generatePDF(
         drawBorder();
         drawHeader();
         drawPatientAndDoctorDetails();
+        
         drawBillingDetails();
         drawSignature();
 
-        // ====== Conditionally Add Patient Examination Page ======
-        const hasPatientExam = Array.isArray(patientExaminations) && patientExaminations.length > 0;
+        // ====== UPDATED: Conditionally Add Observation Page Based on Available Data ======
+        const hasPatientExam = hasValidPatientExamination();
+        const hasAyurvedicExam = hasValidAyurvedicExamination();
 
-        if (hasPatientExam) {
+        // Only add observation page if at least one type of examination data exists
+        if (hasPatientExam || hasAyurvedicExam) {
             pdf.addPage();
             drawHeader();
             drawPatientAndDoctorDetails();
-            drawPatientExamination();
-            drawAyurvedicExamination();
+            
+            // Draw Medical Observation only if it has valid data
+            if (hasPatientExam) {
+                drawPatientExamination();
+            }
+            
+            // Draw Ayurvedic Observation only if it has valid data
+            if (hasAyurvedicExam) {
+                drawAyurvedicExamination();
+            }
+            
             drawBorder();
             drawSignature();
         }

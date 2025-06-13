@@ -33,6 +33,7 @@ const BasicMantineTable = () => {
                                <CBadge className='bg-info' 
                                shape='rounded-pill'
                                // onClick={() => setVisible(!visible)} 
+                                style={{ cursor: 'pointer' }} 
                                onClick={() => handleEdit(row.original.id)}
                               >
                                Previous Bill

@@ -97,7 +97,7 @@ const routes = [
   { path: '/register/ClinicRegister', name: 'Clinic Register', element: ClinicRegister },
   { path: '/register/WhatsappClinicRegister', name: 'Clinics', element: WhatsappClinicRegister },
   { path: '/register/EditwhatsappClinicRegister/:id', name: 'EditwhatsappClinicRegister', element: EditwhatsappClinicRegister },
-  { path: '/register/EditwhatsappClinicRegister', name: 'Clinic Details', element: EditwhatsappClinicRegister },
+  { path: '/register/EditwhatsappClinicRegister', name: '', element: EditwhatsappClinicRegister },
   { path: '/register/EditWhatsappClinicInfo/:storeid', name: 'EditWhatsappClinicInfo', element: EditWhatsappClinicInfo },
 
   { path:'plans', name: 'Plans', element: Plans },

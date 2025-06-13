@@ -40,6 +40,7 @@ console.log("editData",editData);
                        
                          <CBadge className='bg-warning' 
                          shape='rounded-pill'
+                          style={{ cursor: 'pointer' }} 
                          // onClick={() => setVisible(!visible)} 
                          onClick={() => handleEdit(row.original)}
                         >
@@ -68,6 +69,75 @@ const handleEdit = (patient) => {
   setVisible(true);
 };
 
+// const handleUpdatePatient = async () => {
+//   try {
+//     const response = await put(`/api/patients/${editData.id}`, {
+//       name: editData.name,
+//       address: editData.address,
+//       phone: editData.phone,
+//       dob: editData.dob,
+//       email: editData.email,
+//     });
+
+//     console.log('Patient updated:', response.data);
+//     setVisible(false);
+//     fetchPatients();
+//     // Optionally refresh table or show success toast
+//   } catch (error) {
+//     console.error('Update failed:', error);
+//     // Optionally show error toast
+//   }
+// };
+
+
+
+
+
+  // Fetch data when the component mounts
+  // useEffect(() => {
+  //   const fetchPatients = async () => {
+  //     const token = localStorage.getItem('token'); // Retrieve the token
+  //     const doctorId = localStorage.getItem('doctorId'); // Get doctor ID from local storage
+
+  //     console.log('Doctor ID:', doctorId); // Debug log to check if doctorId is fetched
+  //     console.log('tokan:', token); // Debug log to check if doctorId is fetched
+
+  //     if (!token || !doctorId) {
+  //       setError('Token or Doctor ID not found. Please log in again.');
+  //       setLoading(false); // Stop loading
+  //       return; // Exit if token or doctor ID is not available
+  //     }
+
+  //     try {
+  //       // const response = await getAPICall(`/api/bills/doctor`)
+  //       // const response = await getAPICall(`/api/patientDisplyed`) loggedDrsPatient
+  //       const response = await getAPICall(`/api/loggedDrsPatient`) 
+  //       // Log the response for debugging
+  //       console.log("Fetched Patients Data:", response);
+
+  //       setData(response); // Set the fetched data
+
+  //     } catch (error) {
+  //       if (error.response) {
+  //         if (error.response.status === 401) {
+  //           setError('Unauthorized: Invalid token or session expired.');
+  //         } else {
+  //           setError(`Error fetching data: ${error.response.statusText}`);
+  //         }
+  //       } else if (error.request) {
+  //         setError('No response received from the server.');
+  //       } else {
+  //         setError('Error fetching patient data: ' + error.message);
+  //       }
+  //       console.error("Error fetching patients:", error); // Log the error for debugging
+  //     } finally {
+  //       setLoading(false); // Stop loading in both success and error cases
+  //     }
+  //   };
+
+  //   fetchPatients(); // Call the fetch function
+  // }, []); // Run once on mount
+
 const handleUpdatePatient = async () => {
   try {
     const response = await put(`/api/patients/${editData.id}`, {
@@ -79,73 +149,80 @@ const handleUpdatePatient = async () => {
     });
 
     console.log('Patient updated:', response.data);
-    setVisible(false);
-    fetchPatients();
-    // Optionally refresh table or show success toast
+
+    // Update local state without refetching everything
+    setData(prevData =>
+      prevData.map((item) =>
+        item.id === editData.id ? { ...item, ...editData } : item
+      )
+    );
+
+    setVisible(false); // Close modal
+
   } catch (error) {
     console.error('Update failed:', error);
-    // Optionally show error toast
   }
 };
 
 
 
+  const fetchPatients = async () => {
+  const token = localStorage.getItem('token');
+  const doctorId = localStorage.getItem('doctorId');
 
+  if (!token || !doctorId) {
+    setError('Token or Doctor ID not found. Please log in again.');
+    setLoading(false);
+    return;
+  }
 
-  // Fetch data when the component mounts
-  useEffect(() => {
-    const fetchPatients = async () => {
-      const token = localStorage.getItem('token'); // Retrieve the token
-      const doctorId = localStorage.getItem('doctorId'); // Get doctor ID from local storage
-
-      console.log('Doctor ID:', doctorId); // Debug log to check if doctorId is fetched
-      console.log('tokan:', token); // Debug log to check if doctorId is fetched
-
-      if (!token || !doctorId) {
-        setError('Token or Doctor ID not found. Please log in again.');
-        setLoading(false); // Stop loading
-        return; // Exit if token or doctor ID is not available
+  try {
+    const response = await getAPICall(`/api/loggedDrsPatient`);
+    setData(response);
+  } catch (error) {
+    if (error.response) {
+      if (error.response.status === 401) {
+        setError('Unauthorized: Invalid token or session expired.');
+      } else {
+        setError(`Error fetching data: ${error.response.statusText}`);
       }
+    } else if (error.request) {
+      setError('No response received from the server.');
+    } else {
+      setError('Error fetching patient data: ' + error.message);
+    }
+    console.error("Error fetching patients:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
-      try {
-        // const response = await getAPICall(`/api/bills/doctor`)
-        // const response = await getAPICall(`/api/patientDisplyed`) loggedDrsPatient
-        const response = await getAPICall(`/api/loggedDrsPatient`) 
-        // Log the response for debugging
-        console.log("Fetched Patients Data:", response);
+useEffect(() => {
+  fetchPatients(); // Reused here
+}, []);
 
-        setData(response); // Set the fetched data
 
-      } catch (error) {
-        if (error.response) {
-          if (error.response.status === 401) {
-            setError('Unauthorized: Invalid token or session expired.');
-          } else {
-            setError(`Error fetching data: ${error.response.statusText}`);
-          }
-        } else if (error.request) {
-          setError('No response received from the server.');
-        } else {
-          setError('Error fetching patient data: ' + error.message);
-        }
-        console.error("Error fetching patients:", error); // Log the error for debugging
-      } finally {
-        setLoading(false); // Stop loading in both success and error cases
-      }
-    };
+const [phoneError, setPhoneError] = useState('');
 
-    fetchPatients(); // Call the fetch function
-  }, []); // Run once on mount
 
   return (
     <>
-    <>
+  <>
   {loading && <Loader />} {/* Loading Spinner */}
   {error && <Alert color="red">{error}</Alert>} {/* Error Message */}
 
   {!loading && !error && (
     <MantineReactTable
-      columns={columns}
+      columns={[
+        {
+          header: 'Sr No',
+          accessorFn: (_, index) => index + 1,
+          size: 60,
+          enableSorting: false,
+          enableColumnFilter: false,
+        },
+        ...columns, // your existing columns
+      ]}
       data={data}
       initialState={{
         density: 'comfortable',
@@ -156,13 +233,11 @@ const handleUpdatePatient = async () => {
       enableDensityToggle={true}
       enableColumnResizing
       enableColumnActions
-      enableRowNumbers
       enableStickyHeader
       enableSorting
       enableGlobalFilter
       enableColumnFilters
       enableHiding
-      enableRowSelection
       positionToolbarAlertBanner="bottom"
       muiTableBodyRowProps={{
         sx: {
@@ -192,14 +267,17 @@ const handleUpdatePatient = async () => {
           maxHeight: '600px',
         },
       }}
+      enableRowNumbers={false} // Disable default row number
+      enableRowSelection={false} // ✅ REMOVE checkboxes
     />
   )}
 </>
 
 
 
+
       {/* Patient Update Modal */}
-      <CModal visible={visible} onClose={() => setVisible(false)}>
+      {/* <CModal visible={visible} onClose={() => setVisible(false)}>
   <CModalHeader>
     <CModalTitle>Edit Patient</CModalTitle>
   </CModalHeader>
@@ -242,7 +320,118 @@ const handleUpdatePatient = async () => {
     <CButton color="secondary" onClick={() => setVisible(false)}>Cancel</CButton>
     <CButton color="primary" onClick={handleUpdatePatient}>Update</CButton>
   </CModalFooter>
+</CModal> */}
+
+
+<CModal visible={visible} onClose={() => setVisible(false)}  backdrop="static"
+  keyboard={false}>
+  <CModalHeader>
+    <CModalTitle>Edit Patient</CModalTitle>
+  </CModalHeader>
+  <CModalBody>
+    <CForm>
+      {/* Name (Only letters and spaces) */}
+      <CFormInput
+        label="Name"
+        value={editData.name}
+        onChange={(e) => {
+          const name = e.target.value;
+          if (/^[A-Za-z\s]*$/.test(name)) {
+            setEditData({ ...editData, name });
+          }
+        }}
+        className="mb-3"
+        placeholder="Enter Name"
+      />
+
+      {/* Address */}
+      <CFormInput
+        label="Address"
+        value={editData.address}
+        onChange={(e) => setEditData({ ...editData, address: e.target.value })}
+        className="mb-3"
+      />
+
+      {/* Contact Number (Only numeric, exactly 10 digits) */}
+      {/* <CFormInput
+        label="Contact Number"
+        value={editData.phone}
+        onChange={(e) => {
+          const input = e.target.value;
+          if (/^\d{0,10}$/.test(input)) {
+            setEditData({ ...editData, phone: input });
+          }
+        }}
+        className="mb-3"
+        placeholder="10-digit mobile number"
+      /> */}
+      <CFormInput
+  label="Contact Number"
+  value={editData.phone}
+  onChange={(e) => {
+    const input = e.target.value;
+    if (/^\d{0,10}$/.test(input)) {
+      setEditData({ ...editData, phone: input });
+
+      // Clear error if 10 digits
+      if (input.length === 10) {
+        setPhoneError('');
+      }
+    }
+  }}
+  onBlur={() => {
+    if (editData.phone.length !== 10) {
+      setPhoneError('Mobile number must be exactly 10 digits');
+    } else {
+      setPhoneError('');
+    }
+  }}
+  className="mb-1"
+  placeholder="10-digit mobile number"
+/>
+{phoneError && (
+  <div style={{ color: 'red', fontSize: '0.85rem', marginBottom: '1rem' }}>
+    {phoneError}
+  </div>
+)}
+
+      {/* DOB */}
+      <CFormInput
+        label="DOB"
+        type="date"
+        value={editData.dob}
+        onChange={(e) => setEditData({ ...editData, dob: e.target.value })}
+        className="mb-3"
+      />
+
+      {/* Email */}
+      <CFormInput
+        label="Email"
+        value={editData.email}
+        onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+        className="mb-3"
+      />
+    </CForm>
+  </CModalBody>
+  <CModalFooter>
+    <CButton color="secondary" onClick={() => setVisible(false)}>Cancel</CButton>
+    <CButton
+      color="primary"
+      onClick={handleUpdatePatient}
+      disabled={
+        editData.name.trim() === '' ||
+        editData.phone.length !== 10
+      }
+    >
+      Update
+    </CButton>
+  </CModalFooter>
 </CModal>
+
+
+
+
+
 
 
     </>
