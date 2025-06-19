@@ -330,7 +330,14 @@ return (
         id="drug_name"
         name="drug_name"
         value={drugData.drug_name}
-        onChange={handleChange}
+        // onChange={handleChange}
+         onChange={(e) => {
+    const input = e.target.value;
+    // Allow only letters, numbers, and spaces
+    if (/^[a-zA-Z0-9\s]*$/.test(input)) {
+      setDrugData({ ...drugData, drug_name: input });
+    }
+  }}
         placeholder="Enter drug name"
       />
     </div>
@@ -351,7 +358,14 @@ return (
         id="category"
         name="category"
         value={drugData.category}
-        onChange={handleChange}
+        // onChange={handleChange}
+         onChange={(e) => {
+    const input = e.target.value;
+    // Allow only letters, numbers, and spaces
+    if (/^[a-zA-Z0-9\s]*$/.test(input)) {
+      setDrugData({ ...drugData, category: input });
+    }
+  }}
         placeholder="Enter category"
       />
     </div>
@@ -372,7 +386,14 @@ return (
         id="manufacturer"
         name="manufacturer"
         value={drugData.manufacturer}
-        onChange={handleChange}
+        // onChange={handleChange}
+        onChange={(e) => {
+    const input = e.target.value;
+    // Allow only letters, numbers, and spaces
+    if (/^[a-zA-Z0-9\s]*$/.test(input)) {
+      setDrugData({ ...drugData, manufacturer: input });
+    }
+  }}
         placeholder="Enter manufacturer"
       />
     </div>
@@ -390,7 +411,7 @@ return (
       <CTableHead>
         <CTableRow>
           <CTableHeaderCell className="text-center" style={{ width: '20%' }}>Strength</CTableHeaderCell>
-          <CTableHeaderCell className="text-center" style={{ width: '20%' }}>Price</CTableHeaderCell>
+          <CTableHeaderCell className="text-center" style={{ width: '20%' }}>Price (₹)</CTableHeaderCell>
           <CTableHeaderCell className="text-center" style={{ width: '20%' }}>Stock Quantity</CTableHeaderCell>
           <CTableHeaderCell className="text-center" style={{ width: '20%' }}>Expiration Date</CTableHeaderCell>
           <CTableHeaderCell className="text-center" style={{ width: '20%' }}>Actions</CTableHeaderCell>

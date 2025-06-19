@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { useLocation } from 'react-router-dom';
+import Select from 'react-select'
 import {
   CCard,
   CCardHeader,
@@ -1413,7 +1414,14 @@ const validateAllFields = () => {
 
 
 
-
+const investigationOptions = [
+  "Complete Haemogram", "CBC", "Hb", "WBC", "Platelet count", "Rh Type", "BT CT", "Mantour Test",
+  "D Dimer", "ESR", "UPT", "Urine Routine", "PAP smear", "Sputum", "LFT", "KFT", "Urea", "Uric Acid",
+  "Creatinine", "Total Cholesterol", "SGPT", "SGOT", "Blood Cuture", "Urine Culture", "Stool Culture",
+  "HIV", "T3", "T4", "TSH", "Blood Glucose", "BSL Random", "BSL Fasting & PP", "HBA1C", "LH", "FSH",
+  "Progesterone", "Estrogen", "Testosterone", "HSG", "HCG", "CRP", "HBSAG", "VDRL", "ASO", "RA",
+  "ECG", "Urine Sugar", "Cancer Marker Test", "Blood Sugar"
+].map(item => ({ label: item, value: item }));
 
 
 
@@ -1513,258 +1521,171 @@ const validateAllFields = () => {
 
 
 
-
-<CRow className="p-2 p-md-2 mb-2">
-  {/* Patient Name & Address - Always stacked on mobile, side by side on desktop */}
-  <CCol xs={12} md={6} className="mb-2 ">
-    {/* Mobile: Block layout, Desktop: Flex layout */}
-    <div className="d-block d-md-flex align-items-start" style={{ position: 'relative' }}>
-      <CFormLabel className="me-md-1 mb-1 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
-        Patient Name
-      </CFormLabel>
-      
-      {/* Wrapper around input + suggestion */}
-      <div style={{ width: '90%', position: 'relative' }} >
+{/* <CCard className="mb-3  shadow-md rounded-2xl border border-gray-200"> */}
+<CRow className="p-3 space-y-3 md:space-y-0">
+  {/* Patient Name */}
+  <CCol xs={12} md={6}>
+    <div className="flex flex-col md:flex-row items-start gap-2 relative">
+      <CFormLabel className="fw-bold min-w-[120px]">Patient Name</CFormLabel>
+      <div className="w-full relative">
         <CFormInput
           value={patientName || data?.patient?.name || ''}
           onChange={(e) => setPatientName(e.target.value)}
           placeholder="Enter patient name"
           required
-          className="w-100"
         />
-
-        {/* Suggestions dropdown */}
+        {/* Suggestions */}
         {Array.isArray(suggestions) && suggestions.length > 0 && !selectedPatient && (
-          <CListGroup
-            className="shadow"
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              zIndex: 9999,
-              maxHeight: '200px',
-              overflowY: 'auto',
-              backgroundColor: '#fff',
-              borderRadius: '0.375rem',
-              marginTop: '2px'
-            }}
-          >
+          <CListGroup className="absolute top-full left-0 right-0 z-50 shadow bg-white rounded mt-1 max-h-48 overflow-y-auto">
             {suggestions.map((patient) => (
               <CListGroupItem
                 key={patient.id}
                 onClick={() => handleSuggestionClick(patient)}
-                style={{ 
-                  cursor: 'pointer',
-                  padding: '0.75rem 1rem',
-                  fontSize: '0.875rem'
-                }}
-                className="border-0 border-bottom"
+                className="cursor-pointer text-sm py-2 border-0 border-b hover:bg-gray-100"
               >
                 {patient.name}
               </CListGroupItem>
             ))}
           </CListGroup>
         )}
-
-        {/* Validation Error */}
         {errors.patientName && (
-          <div className="text-danger mt-1 small">{errors.patientName}</div>
+          <div className="text-danger mt-1 text-sm">{errors.patientName}</div>
         )}
       </div>
     </div>
   </CCol>
 
-  <CCol xs={12} md={6} className="mb-2">
-    {/* Mobile: Block layout, Desktop: Flex layout */}
-    <div className="d-block d-md-flex align-items-center">
-      <CFormLabel className="me-md-2 mb-2 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
-        Occupation
-      </CFormLabel>
-      <div style={{ width: '90%', position: 'relative' }}>
+  {/* Occupation */}
+  <CCol xs={12} md={6}>
+    <div className="flex flex-col md:flex-row items-start gap-2">
+      <CFormLabel className="fw-bold min-w-[120px]">Occupation</CFormLabel>
+      <div className="w-full">
         <CFormInput
           value={Occupation || data?.patient?.occupation || ''}
           onChange={(e) => setoccupation(e.target.value)}
           placeholder="Occupation"
           required
-          className="w-100"
         />
-        {errors.patientAddress && (
-          <div className="text-danger mt-1 small">{errors.patientAddress}</div>
+        {errors.occupation && (
+          <div className="text-danger mt-1 text-sm">{errors.occupation}</div>
         )}
       </div>
     </div>
   </CCol>
 
-  {/* Contact Details Row - Responsive layout */}
-  <CRow className="mb-2">
-    <CCol xs={12} md={6} lg={3}>
-      <CFormLabel htmlFor="phone" className="fw-bold mb-2 d-block">
-        Mobile Number
-      </CFormLabel>
-      <CFormInput
-        id="phone"
-        type="tel"
-        value={phone || data?.patient?.phone || ''}
-        onChange={(e) => setContactNumber(e.target.value)}
-        onInput={(e) => {
-          if (e.target.value.length > 10) {
-            e.target.value = e.target.value.slice(0, 10);
-          }
-        }}
-        placeholder="Enter contact number"
-        required
-        className="w-100"
-      />
-      {errors.phone && (
-        <div className="text-danger mt-1 small">{errors.phone}</div>
-      )}
-    </CCol>
-
-    <CCol xs={12} md={6} lg={3}>
-      <CFormLabel htmlFor="email" className="fw-bold mb-2 d-block">
-        Email
-      </CFormLabel>
-      <CFormInput
-        id="email"
-        type="email"
-        value={email || data?.patient?.email || ''}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Enter email address"
-        required
-        className="w-100"
-      />
-      {errors.email && (
-        <div className="text-danger mt-1 small">{errors.email}</div>
-      )}
-    </CCol>
-
-    <CCol xs={12} md={6} lg={3}>
-      <CFormLabel htmlFor="dob" className="fw-bold mb-2 d-block">
-        Patient DOB
-      </CFormLabel>
-      <CFormInput
-        id="dob"
-        type="date"
-        value={
-          data?.patient?.dob
-            ? new Date(data.patient.dob).toISOString().split("T")[0]
-            : dob || ""
+  {/* Contact Details */}
+  <CCol xs={12} md={6} lg={3}>
+    <CFormLabel className="fw-bold">Mobile Number</CFormLabel>
+    <CFormInput
+      type="tel"
+      value={phone || data?.patient?.phone || ''}
+      onChange={(e) => setContactNumber(e.target.value)}
+      onInput={(e) => {
+        if (e.target.value.length > 10) {
+          e.target.value = e.target.value.slice(0, 10);
         }
-        onChange={(e) => {
-          const input = e.target.value;
-          const selectedDate = new Date(input);
-          const currentDate = new Date();
-          const year = selectedDate.getFullYear();
+      }}
+      placeholder="Enter contact number"
+      required
+    />
+    {errors.phone && <div className="text-danger mt-1 text-sm">{errors.phone}</div>}
+  </CCol>
 
-          if (year >= 1900 && selectedDate <= currentDate) {
-            setDob(input);
-            if (errors.dob) {
-              setErrors((prev) => ({ ...prev, dob: "" }));
-            }
-          } else {
-            setDob("");
-            setErrors((prev) => ({
-              ...prev,
-              dob: "Please enter a valid DOB (not in the future & after 1900).",
-            }));
+  <CCol xs={12} md={6} lg={3}>
+    <CFormLabel className="fw-bold">Email</CFormLabel>
+    <CFormInput
+      type="email"
+      value={email || data?.patient?.email || ''}
+      onChange={(e) => setEmail(e.target.value)}
+      placeholder="Enter email address"
+      required
+    />
+    {errors.email && <div className="text-danger mt-1 text-sm">{errors.email}</div>}
+  </CCol>
+
+  <CCol xs={12} md={6} lg={3}>
+    <CFormLabel className="fw-bold">Patient DOB</CFormLabel>
+    <CFormInput
+      type="date"
+      value={
+        data?.patient?.dob
+          ? new Date(data.patient.dob).toISOString().split('T')[0]
+          : dob || ''
+      }
+      onChange={(e) => {
+        const input = e.target.value;
+        const selectedDate = new Date(input);
+        const currentDate = new Date();
+        const year = selectedDate.getFullYear();
+
+        if (year >= 1900 && selectedDate <= currentDate) {
+          setDob(input);
+          if (errors.dob) {
+            setErrors((prev) => ({ ...prev, dob: '' }));
           }
-        }}
-        max={new Date().toISOString().split("T")[0]}
-        placeholder="Enter patient DOB"
-        required
-        className="w-100"
-      />
-      {errors.dob && (
-        <div className="text-danger mt-1 small">{errors.dob}</div>
-      )}
-    </CCol>
+        } else {
+          setDob('');
+          setErrors((prev) => ({
+            ...prev,
+            dob: 'Please enter a valid DOB (not in the future & after 1900).',
+          }));
+        }
+      }}
+      max={new Date().toISOString().split('T')[0]}
+      required
+    />
+    {errors.dob && <div className="text-danger mt-1 text-sm">{errors.dob}</div>}
+  </CCol>
 
-    <CCol xs={12} md={6} lg={3}>
-      <CFormLabel htmlFor="visitDate" className="fw-bold mb-2 d-block">
-        Visit Date
-      </CFormLabel>
-      <CFormInput
-        id="visitDate"
-        type="date"
-        value={visitDate}
-        onChange={(e) => setVisitDate(e.target.value)}
-        max={new Date().toISOString().split("T")[0]}
-        required
-        className="w-100"
-      />
-      {errors.visitDate && (
-        <div className="text-danger mt-1 small">{errors.visitDate}</div>
-      )}
-    </CCol>
+  <CCol xs={12} md={6} lg={3}>
+    <CFormLabel className="fw-bold">Visit Date</CFormLabel>
+    <CFormInput
+      type="date"
+      value={visitDate}
+      onChange={(e) => setVisitDate(e.target.value)}
+      max={new Date().toISOString().split('T')[0]}
+      required
+    />
+    {errors.visitDate && <div className="text-danger mt-1 text-sm">{errors.visitDate}</div>}
+  </CCol>
 
-    {/* <CCol xs={12} md={6} lg={3}>
-      <CFormLabel htmlFor="visitDate" className="fw-bold mb-2 d-block">
-       Followup Date
-      </CFormLabel>
-      <CFormInput
-        id="followupdate"
-        type="date"
-        value={followupdate}
-        onChange={(e) => setfollowupdate(e.target.value)}
-        // max={new Date().toISOString().split("T")[0]}
-        required
-        className="w-100"
-      />
-      {/* {errors.visitDate && (
-        <div className="text-danger mt-1 small">{errors.visitDate}</div>
-      )} 
-    </CCol> */}
-
-  </CRow>
-
-
-       <CCol xs={12} md={6} className="mb-2">
-    {/* Mobile: Block layout, Desktop: Flex layout */}
-    <div className="d-block d-md-flex align-items-center">
-      <CFormLabel className="me-md-2 mb-2 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
-        Patient Address
-      </CFormLabel>
-      <div style={{ width: '90%', position: 'relative' }}>
+  {/* Patient Address */}
+  <CCol xs={12} md={6}>
+    <div className="flex flex-col md:flex-row items-start gap-2">
+      <CFormLabel className="fw-bold min-w-[120px]">Patient Address</CFormLabel>
+      <div className="w-full">
         <CFormInput
           value={patientAddress || data?.patient?.address || ''}
           onChange={(e) => setPatientAddress(e.target.value)}
           placeholder="Full Address / Pincode"
           required
-          className="w-100"
         />
         {errors.patientAddress && (
-          <div className="text-danger mt-1 small">{errors.patientAddress}</div>
+          <div className="text-danger mt-1 text-sm">{errors.patientAddress}</div>
         )}
       </div>
     </div>
   </CCol>
 
-
-         <CCol xs={12} md={6} className="mb-2">
-    {/* Mobile: Block layout, Desktop: Flex layout */}
-    <div className="d-block d-md-flex align-items-center">
-      <CFormLabel className="me-md-2 mb-2 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
-        Pin Code
-      </CFormLabel>
-      <div style={{ width: '90%', position: 'relative' }}>
+  {/* Pincode */}
+  <CCol xs={12} md={6}>
+    <div className="flex flex-col md:flex-row items-start gap-2">
+      <CFormLabel className="fw-bold min-w-[120px]">Pincode</CFormLabel>
+      <div className="w-full">
         <CFormInput
           value={Pincode || data?.patient?.pincode || ''}
           onChange={(e) => setpincode(e.target.value)}
           placeholder="Pincode"
           required
-          className="w-100"
         />
-        {errors.patientAddress && (
-          <div className="text-danger mt-1 small">{errors.patientAddress}</div>
+        {errors.pincode && (
+          <div className="text-danger mt-1 text-sm">{errors.pincode}</div>
         )}
       </div>
     </div>
   </CCol>
-
-
-
 </CRow>
+
 {/* </CCard> */}
 
 
@@ -1948,20 +1869,41 @@ const validateAllFields = () => {
       {doctorObservationSettings.bp && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">BP</CFormLabel>
-          <CFormInput value={bp} type='number' onChange={(e) => setBp(e.target.value)} />
+          <CFormInput value={bp} type='number' onChange={(e) => setBp(e.target.value)}
+            onKeyDown={(e) => {
+    if (e.key === "-" || e.key === "e" || e.key === "+" || e.key === "E") {
+      e.preventDefault();
+    }
+  }}
+  min="0"
+          />
         </CCol>
       )}
 
       {doctorObservationSettings.weight && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">Weight (Kg)</CFormLabel>
-          <CFormInput value={weight} type='number' onChange={(e) => setWeight(e.target.value)} />
+          <CFormInput value={weight} type='number' onChange={(e) => setWeight(e.target.value)} 
+                onKeyDown={(e) => {
+    if (e.key === "-" || e.key === "e" || e.key === "+" || e.key === "E") {
+      e.preventDefault();
+    }
+  }}
+  min="0"
+          />
         </CCol>
       )}
       {doctorObservationSettings.height && (
         <CCol xs={12} sm={6}>
           <CFormLabel className="fw-bold">Height (CM)</CFormLabel>
-          <CFormInput value={height} type='number' onChange={(e) => setHeight(e.target.value)} />
+          <CFormInput value={height} type='number' onChange={(e) => setHeight(e.target.value)}
+                onKeyDown={(e) => {
+    if (e.key === "-" || e.key === "e" || e.key === "+" || e.key === "E") {
+      e.preventDefault();
+    }
+  }}
+  min="0"
+          />
         </CCol>
       )}
       {doctorObservationSettings.pulse && (
@@ -2021,10 +1963,20 @@ const validateAllFields = () => {
       )}
 
        {doctorAyurvedicObservationSettings.lab_investigation && (
+        // <CCol xs={12} sm={6}>
+        //   <CFormLabel className="fw-bold">Investigation</CFormLabel>
+        //   <CFormInput value={labInvestigation} onChange={(e) => setLabInvestigation(e.target.value)} />
+        // </CCol>
         <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">Investigation</CFormLabel>
-          <CFormInput value={labInvestigation} onChange={(e) => setLabInvestigation(e.target.value)} />
-        </CCol>
+  <CFormLabel className="fw-bold">Investigation</CFormLabel>
+  <Select
+    options={investigationOptions}
+    isSearchable
+    value={investigationOptions.find(opt => opt.value === labInvestigation) || null}
+    onChange={(selectedOption) => setLabInvestigation(selectedOption?.value || "")}
+    placeholder="Select or search investigation..."
+  />
+</CCol>
       )}
 
     </CRow>
@@ -2734,7 +2686,7 @@ const validateAllFields = () => {
           >
             <CTableHead className="bg-light text-center text-nowrap text-dark fw-semibold">
               <CTableRow>
-                {['Medicine', 'Strength', 'Dosage', 'Timing', 'Frequency', 'Duration','Price', 'Actions'].map((header) => (
+                {['Medicine', 'Strength', 'Dosage', 'Timing', 'Frequency', 'Duration','Price (₹)', 'Actions'].map((header) => (
                   <CTableHeaderCell key={header} className="" style={{ width: `${100 / 8}%` }}>
                     {header}
                   </CTableHeaderCell>
@@ -3239,7 +3191,7 @@ const validateAllFields = () => {
                 </div>
 
                 <div className="w-75">
-                  <strong>Price:</strong>
+                  <strong>Price (₹):</strong>
                   <CFormInput
                     type="number"
                     min="0"
@@ -3817,33 +3769,33 @@ const validateAllFields = () => {
 
         <CCardBody>
 
- <div className="d-flex flex-wrap align-items-end gap-3">
-  {/* Followup Date Input */}
-  <CCol xs={12} md={6} lg={3}>
-    <div className="d-block d-md-flex align-items-center">
-    <CFormLabel htmlFor="visitDate" className="me-md-2 mb-2 mb-md-0 fw-bold d-block d-md-inline" style={{ minWidth: '120px' }}>
-      Followup Date
-    </CFormLabel>
-      <div style={{ width: '90%', position: 'relative' }}>
-    <CFormInput
-      id="followupdate"
-      type="date"
-      value={followupdate}
-      onChange={(e) => setfollowupdate(e.target.value)}
-      required
-      className="w-100"
-    />
-    </div>
+<CRow className="g-3 align-items-center">
+  {/* Label + Input + Button Grouped */}
+  <CCol xs={12} md={8} lg={6}>
+    <div className="d-flex flex-column flex-md-row align-items-md-center">
+      <CFormLabel
+        htmlFor="followupdate"
+        className="fw-bold mb-2 mb-md-0 me-md-2"
+        style={{ minWidth: '120px' }}
+      >
+        Followup Date
+      </CFormLabel>
+      <CFormInput
+        type="date"
+        id="followupdate"
+        value={followupdate}
+        onChange={(e) => setfollowupdate(e.target.value)}
+        required
+        className="me-md-2"
+      />
+      <CButton color="primary" onClick={handleSubmit} className="mt-2 mt-md-0">
+        Submit
+      </CButton>
     </div>
   </CCol>
+</CRow>
 
-  {/* Submit Button */}
-  <CCol xs="auto">
-    <CButton color="primary" onClick={handleSubmit}>
-      Submit
-    </CButton>
-  </CCol>
-</div>
+
 
 
           {/* <CButton color="primary" className="mt-0" onClick={handleCreatePrescription}>

@@ -297,7 +297,7 @@ public function getPatientExaminationsByBillId($p_p_i_id) {
 
         // Check if any data exists for the given p_p_i_id
         if ($patientExaminations->isEmpty() ) {
-            return response()->json(['message' => 'PatientExaminations not found or Ayurvedic Observation'], 404);
+            return response()->json(['message' => 'PatientExaminations not found '], 404);
         }
 
 
@@ -318,6 +318,46 @@ public function getPatientExaminationsByBillId($p_p_i_id) {
         ], 500);
     }
 }
+// public function getPatientExaminationsByBillId($p_p_i_id)
+// {
+//     try {
+//         // Optional: Validate ID (You may skip this if always passing valid IDs)
+//         if (empty($p_p_i_id) || !is_numeric($p_p_i_id)) {
+//             return response()->json([
+//                 'success' => false,
+//                 'message' => 'Invalid p_p_i_id provided.'
+//             ], 200); // 200 to keep it frontend-friendly
+//         }
+
+//         // Fetch from patient_examinations table
+//         $patientExaminations = DB::table('patient_examinations')
+//             ->where('p_p_i_id', $p_p_i_id)
+//             ->get();
+
+//         // If no data found
+//         if ($patientExaminations->isEmpty()) {
+//             return response()->json([
+//                 'success' => false,
+//                 'message' => 'Patient Examination data not found.'
+//             ], 200);
+//         }
+
+//         // If data exists, return it
+//         return response()->json([
+//             'success' => true,
+//             'data' => $patientExaminations
+//         ], 200);
+
+//     } catch (\Exception $e) {
+//         \Log::error('Error fetching PatientExaminations: ' . $e->getMessage());
+
+//         return response()->json([
+//             'success' => false,
+//             'message' => 'Something went wrong while fetching data.',
+//             'error' => $e->getMessage()
+//         ], 500);
+//     }
+// }
 
 
 

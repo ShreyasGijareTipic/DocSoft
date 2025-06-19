@@ -121,9 +121,9 @@ public function getPrescriptionsByBillId($p_p_i_id) {
             ->get();
 
         
-        if ($healthDirectives->isEmpty()) {
-            return response()->json(['message' => 'Prescription not found'], 404);
-        }
+        // if ($healthDirectives->isEmpty()) {
+        //     return response()->json(['message' => 'Prescription not found'], 400);
+        // }
 
       
         return response()->json($healthDirectives, 200);
@@ -135,5 +135,31 @@ public function getPrescriptionsByBillId($p_p_i_id) {
         ], 500);
     }
 }
+// public function getPrescriptionsByBillId($p_p_i_id) {
+//     try {
+//         $healthDirectives = DB::table('health_directives')
+//             ->where('p_p_i_id', $p_p_i_id)
+//             ->get();
+
+//         if ($healthDirectives->isEmpty()) {
+//             return response()->json([
+//                 'success' => false,
+//                 'message' => 'Prescription not found.'
+//             ], 200); // Changed from 404 to 200
+//         }
+
+//         return response()->json([
+//             'success' => true,
+//             'data' => $healthDirectives
+//         ], 200);
+
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'success' => false,
+//             'error' => 'An error occurred while fetching prescriptions.',
+//             'message' => $e->getMessage(),
+//         ], 500);
+//     }
+// }
 
 }

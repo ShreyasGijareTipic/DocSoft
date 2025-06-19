@@ -575,32 +575,33 @@ public function getPatientDetails($id)
     //                         ->orderBy('created_at', 'desc')
     //                         ->take(3)
     //                         ->get();
-     $ayurvedicExaminations = AyurvedicDiagnosis::where('patient_id', $id)
-        ->orderBy('created_at', 'desc')
-        ->take(3)
-        ->get()
-        ->map(function ($item) {
-            foreach (['prasavvedan_parikshayein', 'habits', 'personal_history'] as $field) {
-                if (!empty($item[$field])) {
-                    $decoded = json_decode($item[$field], true);
+    $ayurvedicExaminations = AyurvedicDiagnosis::where('patient_id', $id)
+    ->orderBy('created_at', 'desc')
+    ->take(3)
+    ->get()
+    ->map(function ($item) {
+        foreach (['prasavvedan_parikshayein', 'habits', 'personal_history'] as $field) {
+            if (!empty($item[$field])) {
+                $decoded = json_decode($item[$field], true); // true => associative array
 
-                    if (json_last_error() === JSON_ERROR_NONE) {
-                        // Remove empty arrays or empty strings
-                        $filtered = array_filter($decoded, function ($v) {
-                            return is_array($v) ? count(array_filter($v)) > 0 : !empty($v);
-                        });
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    // Safely filter non-empty entries
+                    $filtered = array_filter($decoded, function ($v) {
+                        return is_array($v) ? count(array_filter($v)) > 0 : !empty($v);
+                    });
 
-                        $item[$field] = count($filtered) > 0 ? $filtered : null;
-                    } else {
-                        $item[$field] = null;
-                    }
+                    $item[$field] = count($filtered) > 0 ? $filtered : null;
                 } else {
                     $item[$field] = null;
                 }
+            } else {
+                $item[$field] = null;
             }
+        }
 
-            return $item;
-        });
+        return $item;
+    });
+
 
 
     return response()->json([
