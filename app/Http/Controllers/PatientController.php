@@ -342,7 +342,7 @@ public function manuallyAddPatient(Request $request)
     $validatedData = $request->validate([
         'name'    => 'required|string|min:1',
         'email'   => 'required|email',
-        'phone'   => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/'],
+        'phone'   => ['required', 'string','regex:/^\d{10}$|^\d{12}$/'],
         'address' => 'required|string',
         'dob'     => 'required|date',
         'occupation'  => 'nullable|string',
@@ -614,6 +614,69 @@ public function getPatientDetails($id)
 }
 
 
+public function findByPhone($phone)
+{
+    $clinicId = Auth::user()->clinic_id;
+
+    // Match last 10 digits only
+    $phone = substr(preg_replace('/\D/', '', $phone), -10); // Keep last 10 digits only
+
+    $patient = Patient::where('clinic_id', $clinicId)
+        ->where('phone', 'LIKE', "%$phone")
+        ->first();
+
+    if (!$patient) {
+        return response()->json(['message' => 'Patient not found'], 404);
+    }
+
+    $patientId = $patient->id;
+
+    $lastBill = Bill::where('patient_id', $patientId)
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+
+    $healthDirectives = HealthDirective::where('patient_id', $patientId)
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+
+    $patientExaminations = PatientExamination::where('patient_id', $patientId)
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+
+    $ayurvedicExaminations = AyurvedicDiagnosis::where('patient_id', $patientId)
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get()
+        ->map(function ($item) {
+            foreach (['prasavvedan_parikshayein', 'habits', 'personal_history'] as $field) {
+                if (!empty($item[$field])) {
+                    $decoded = json_decode($item[$field], true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $filtered = array_filter($decoded, function ($v) {
+                            return is_array($v) ? count(array_filter($v)) > 0 : !empty($v);
+                        });
+                        $item[$field] = count($filtered) > 0 ? $filtered : null;
+                    } else {
+                        $item[$field] = null;
+                    }
+                } else {
+                    $item[$field] = null;
+                }
+            }
+            return $item;
+        });
+
+    return response()->json([
+        'patient' => $patient,
+        'last_bill' => $lastBill,
+        'health_directives' => $healthDirectives,
+        'patient_examinations' => $patientExaminations,
+        'ayurvedic_examintion' => $ayurvedicExaminations,
+    ]);
+}
 
 
 

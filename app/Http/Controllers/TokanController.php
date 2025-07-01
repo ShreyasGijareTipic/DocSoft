@@ -8,6 +8,7 @@ use App\Models\Patient;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Online_Appointments;
 
 class TokanController extends Controller
 {
@@ -251,24 +252,83 @@ public function getTodaysTokans()
 // }
 
 
-public function checkToken(Request $request) {
-    // $patientId = $request->input('patient_id');
-    // $exists = DB::table('tokan')->where('patient_id', $patientId)->exists();
+// public function checkToken(Request $request) {
+//     // $patientId = $request->input('patient_id');
+//     // $exists = DB::table('tokan')->where('patient_id', $patientId)->exists();
 
-    // return response()->json(['exists' => $exists], 200);
+//     // return response()->json(['exists' => $exists], 200);
+//     $patientId = $request->input('patient_id');
+
+//     try {
+//         // Check in 'tokan' table
+//         $tokenExists = DB::table('tokan')->where('patient_id', $patientId)->exists();
+
+//         // Check in 'patients' table
+//         $patientExists = Patient::where('id', $patientId)->exists();
+
+//         // Return true if found in either table
+//         $exists = $tokenExists || $patientExists;
+
+//         return response()->json(['exists' => $exists], 200);
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'success' => false,
+//             'error' => 'Failed to check token/patient',
+//             'details' => $e->getMessage()
+//         ], 500);
+//     }
+// }
+
+public function checkToken(Request $request)
+{
+    $clinicId = Auth::user()->clinic_id;
     $patientId = $request->input('patient_id');
 
     try {
-        // Check in 'tokan' table
+        // ✅ If tokan number is provided (appointment-based check)
+        if ($request->has('tokan')) {
+            $tokenNumber = $request->input('tokan');
+
+            // 🛑 Only extract phone from 'online_appointments', but DO NOT validate appointment existence
+            $appointment = Online_Appointments::where('tokan', $tokenNumber)->first();
+
+            if (!$appointment) {
+                return response()->json([
+                    'exists' => false,
+                    'message' => 'No phone found for this token'
+                ]);
+            }
+
+            // Extract phone and check in patients only
+            $phone = $appointment->phone;
+            $cleanPhone = substr(preg_replace('/\D/', '', $phone), -10);
+
+            $patient = Patient::where('clinic_id', $clinicId)
+                ->where('phone', 'LIKE', "%$cleanPhone")
+                ->first();
+
+            if ($patient) {
+                return response()->json([
+                    'exists' => true,
+                    'message' => 'Patient already exists with matching phone number',
+                    'patient_id' => $patient->id,
+                    'patient' => $patient 
+                ]);
+            } else {
+                return response()->json([
+                    'exists' => false,
+                    'message' => 'No patient found via phone number in patients table'
+                ]);
+            }
+        }
+
+        // ✅ Fallback: Check using patient_id (existing logic unchanged)
         $tokenExists = DB::table('tokan')->where('patient_id', $patientId)->exists();
-
-        // Check in 'patients' table
         $patientExists = Patient::where('id', $patientId)->exists();
-
-        // Return true if found in either table
         $exists = $tokenExists || $patientExists;
 
         return response()->json(['exists' => $exists], 200);
+
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
@@ -277,6 +337,69 @@ public function checkToken(Request $request) {
         ], 500);
     }
 }
+
+// public function checkToken(Request $request)
+// {
+//     $clinicId = Auth::user()->clinic_id;
+//     $patientId = $request->input('patient_id');
+
+//     try {
+//         // ✅ If token number is provided (appointment-based check)
+//         if ($request->has('tokan')) {
+//             $tokenNumber = $request->input('tokan');
+
+//             // Get appointment by token (no date check)
+//             $appointment = Online_Appointments::where('tokan', $tokenNumber)->first();
+
+//             if (!$appointment || !$appointment->phone) {
+//                 return response()->json([
+//                     'exists' => false,
+//                     'message' => 'No phone found for this token',
+//                     'patient_id' => null,
+//                 ]);
+//             }
+
+//             // Clean phone: extract last 10 digits
+//             $phone = $appointment->phone;
+//             $cleanPhone = substr(preg_replace('/\D/', '', $phone), -10);
+
+//             // Match patients table by exact last 10 digits only
+//             $patient = Patient::where('clinic_id', $clinicId)
+//                 ->whereRaw("RIGHT(REGEXP_REPLACE(phone, '[^0-9]', ''), 10) = ?", [$cleanPhone])
+//                 ->first();
+
+//             if ($patient) {
+//                 return response()->json([
+//                     'exists' => true,
+//                     'message' => 'Patient already exists with matching phone number',
+//                     'patient_id' => $patient->id,
+//                     'patient' => $patient,
+//                 ]);
+//             } else {
+//                 return response()->json([
+//                     'exists' => false,
+//                     'message' => 'No patient found via phone number in patients table',
+//                     'patient_id' => null,
+//                 ]);
+//             }
+//         }
+
+//         // ✅ Fallback: Check using patient_id
+//         $tokenExists = DB::table('tokan')->where('patient_id', $patientId)->exists();
+//         $patientExists = Patient::where('id', $patientId)->exists();
+//         $exists = $tokenExists || $patientExists;
+
+//         return response()->json(['exists' => $exists], 200);
+
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'success' => false,
+//             'error' => 'Failed to check token/patient',
+//             'details' => $e->getMessage()
+//         ], 500);
+//     }
+// }
+
 
 
 }

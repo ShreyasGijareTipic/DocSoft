@@ -27,6 +27,10 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\WhatsAppController;
 
+//Whatsapp controller 
+use App\Http\Controllers\OnlineAppointmentsController;
+use App\Http\Controllers\WhatsAppWebhookController;
+
 use App\Http\Controllers\DrugController;
 use App\Http\Controllers\DrugDetailController;
 
@@ -58,7 +62,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/saveMultiEnquiry', [InquiryController::class, 'saveMultiEnquiry']);
 
-Route::post('/registerAppointment/{doctor_id}', [AppointmentController::class, 'xyz']);
+// Route::post('/registerAppointment/{doctor_id}', [AppointmentController::class, 'xyz']);
 Route::get('/allSlots/{doctor_id}', [TimeslotController::class, 'show']);
 
 
@@ -72,8 +76,15 @@ Route::get('/clinic/{id}', [ClinicController::class, 'showdatabyid']);
 Route::get('/showdoctordatabyclinicid/{id}', [AuthController::class, 'showdoctordatabyclinicid']);
 
 
-
-
+//whatsApp Business API
+Route::get('/webhook', [WhatsAppWebhookController::class, 'verifyToken']);
+// Route::post('/webhook', [WhatsappWebhookController::class, 'receiveMessage']);
+Route::post('/webhook', [WhatsAppWebhookController::class, 'webhook']);
+Route::post('/appointments', [OnlineAppointmentsController::class, 'store']);
+Route::get('/getAppointments', [OnlineAppointmentsController::class, 'getAppointments']);
+Route::get('/export', [OnlineAppointmentsController::class, 'export']);
+Route::get('/getAppointmentByToken/{id}', [OnlineAppointmentsController::class, 'getAppointmentByToken']);
+Route::post('/cancel-appointment', [WhatsAppWebhookController::class, 'cancelAppointment']);
 
 
 
@@ -185,12 +196,12 @@ Route::get('/patientDisplyed', [TokanController::class, 'displyed']);
 Route::post('/checkToken', [TokanController::class, 'checkToken']);   // new
 Route::get('/suggestionPatient', [PatientController::class, 'suggestionPatient']); // new
 // routes/api.php
-Route::get('/patient-details/{id}', [PatientController::class, 'getPatientDetails']);
+Route::get('/patient-details/{id}', [PatientController::class, 'getPatientDetails']); 
+Route::get('/findByPhone/{phone}', [PatientController::class, 'findByPhone']);
 
 
-
-Route::put('/appointments/{id}/{status}', [AppointmentController::class, 'updateAppointment']);
-Route::get('/test', [AppointmentController::class, 'index']);
+// Route::put('/appointments/{id}/{status}', [AppointmentController::class, 'updateAppointment']);
+// Route::get('/test', [AppointmentController::class, 'index']);
 
 
 Route::post('/timeslotadd', [TimeslotController::class, 'store']);
@@ -245,24 +256,24 @@ Route::middleware('auth:sanctum')->get('/bills/doctor', [BillController::class, 
 Route::middleware('auth:sanctum')->get('/drugs/doctor', [DrugController::class, 'getDrugsByDoctorId']);
 
 
-Route::post('/whatsapp/receiveMessage', [WhatsAppController::class, 'receiveMessage']);
-Route::post('/whatsapp/incomingMessage', [WhatsAppController::class, 'incomingMessage']);
+// Route::post('/whatsapp/receiveMessage', [WhatsAppController::class, 'receiveMessage']);
+// Route::post('/whatsapp/incomingMessage', [WhatsAppController::class, 'incomingMessage']);
 
 
-Route::post('/reschedule-appointment', [AppointmetWhatsappController::class, 'rescheduleAppointment']);
-Route::post('/accept-appointment', [AppointmetWhatsappController::class, 'acceptAppointment']);
-Route::post('/handleCustomDate', [AppointmetWhatsappController::class, 'handleCustomDate']);
-Route::get('/slotsAvailable/{doctor_id}/{selectedDate}', [AppointmentController::class, 'getAvailableTimeSlots']);
+// Route::post('/reschedule-appointment', [AppointmetWhatsappController::class, 'rescheduleAppointment']);
+// Route::post('/accept-appointment', [AppointmetWhatsappController::class, 'acceptAppointment']);
+// Route::post('/handleCustomDate', [AppointmetWhatsappController::class, 'handleCustomDate']);
+// Route::get('/slotsAvailable/{doctor_id}/{selectedDate}', [AppointmentController::class, 'getAvailableTimeSlots']);
 
 // ------------------------ 
 
 
-Route::post('/whatsapp/receiveMessage', [AppointmetWhatsappController::class, 'receiveMessage']);
-Route::post('/whatsapp/incomingMessage', [AppointmetWhatsappController::class, 'incomingMessage']);
-Route::post('/webhook', [AppointmetWhatsappController::class, 'webhook']);
-// Route::get('/webhook', [WhatsAppController::class, 'webhook']);
-Route::get('/webhook', [AppointmetWhatsappController::class, 'verifyToken']);
-Route::get('/sendurlbuttons/{phone}', [AppointmetWhatsappController::class, 'xyz']);
+// Route::post('/whatsapp/receiveMessage', [AppointmetWhatsappController::class, 'receiveMessage']);
+// Route::post('/whatsapp/incomingMessage', [AppointmetWhatsappController::class, 'incomingMessage']);
+// Route::post('/webhook', [AppointmetWhatsappController::class, 'webhook']);
+// // Route::get('/webhook', [WhatsAppController::class, 'webhook']);
+// Route::get('/webhook', [AppointmetWhatsappController::class, 'verifyToken']);
+// Route::get('/sendurlbuttons/{phone}', [AppointmetWhatsappController::class, 'xyz']);
 
 
 

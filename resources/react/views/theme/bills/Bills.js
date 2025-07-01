@@ -29,13 +29,14 @@ import {
   CCardText,
   CFormLabel,
   CAlert,
-  CFormCheck
+  CFormCheck,
+  CInputGroupText
 } from '@coreui/react';
 // import axios from 'axios'; // Make sure to import axios
 import { getAPICall, post, postFormData } from '../../../util/api';
 import { getUser } from '../../../util/session';
 import { showToast } from '../toastContainer/toastContainer'; 
-import { cilFile, cilMedicalCross, cilDelete, cilPlus, cilMinus } from '@coreui/icons';
+import { cilFile, cilMedicalCross, cilDelete, cilPlus, cilMinus, cilClock, cilCalendar, cilSettings, cilInfo, cilSearch, cilUser } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 
@@ -394,7 +395,7 @@ const handleMedicineSelect = (medicine, index) => {
     let isValid = true;
   
     // Validate Patient Name (Mandatory)
-    if (!data?.patient?.name && !patientName.trim()) {
+    if (!data?.patient?.name && !data?.appointment?.name && !patientName.trim()) {
       formErrors["patientName"] = "Patient name is required";
       isValid = false;
     }
@@ -547,6 +548,8 @@ const handleSubmit = async () => {
 
   try {
     const patientId = data?.patient?.id;
+      const tokenNumber = data?.tokan; // this is only present when selectedOption === 'Appointment'
+
 
     console.log("patientId",patientId);
     let skipAddPatient = false;
@@ -566,7 +569,21 @@ const handleSubmit = async () => {
         console.log("✅ Suggestion patient already exists — skipping add.");
         skipAddPatient = true;
       }
-    } else if (patientId) {
+    } 
+    else if (selectedOption === 'Appointment' && tokenNumber) {
+    // 🆕 Handle appointment-based token number → check patient by phone from token
+    console.log("🔍 Checking via tokan:", tokenNumber);
+
+    const tokenRes = await post('/api/checkToken', { tokan: tokenNumber });
+    console.log("tokenRes (via token):", tokenRes);
+    const appointmentPatientId = tokenRes.patient_id;
+
+    if (tokenRes.exists) {
+      console.log("✅ Token patient already exists — skipping add.");
+      skipAddPatient = true;
+    }
+  }
+    else if (patientId) {
       // 👇 Check token-based patient ID
       console.log("🔍 Checking token-based patientId:", patientId);
     
@@ -586,9 +603,9 @@ const handleSubmit = async () => {
 
         clinic_id: "CLINIC123", // Replace with dynamic clinic_id
         doctor_id: userData.id || "1",
-        name: patientName,
+        name: patientName || data?.appointment?.name,
         email,
-        phone,
+        phone:data?.appointment?.phone,
         address: patientAddress,
         dob,
        occupation :  Occupation,
@@ -609,11 +626,11 @@ const handleSubmit = async () => {
     }
 
     const billData = {
-      patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get tokan',
-      patient_name: data?.patient?.name || patientName,
+      patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID || appointmentPatientId ||'not get tokan',
+      patient_name: data?.patient?.name || patientName || data?.appointment?.name,
       address: data?.patient?.address || patientAddress,
       email: data?.patient?.email || email,
-      contact: data?.patient?.phone || `91${phone}`,
+      contact: data?.patient?.phone || data?.appointment?.phone ||`91${phone}`,
       dob: data?.patient?.dob || dob,
       occupation: data?.patient?.occupation || Occupation,
       pincode: data?.patient?.pincode || Pincode,
@@ -1037,6 +1054,7 @@ useEffect(() => {
 
 const[TokanPatientID,setTokanPatientID] = useState();
 console.log(TokanPatientID);
+const [appointment, setAppointment] = useState()
 
 
   // Handle input change
@@ -1051,44 +1069,174 @@ console.log(TokanPatientID);
       return;
     }
   
-    try {
-      // Determine endpoint based on dropdown option
-      const endpoint =
-        selectedOption === 'Appointment'
-          ? `/api/appointments/${inputValue}` // Replace with your real Appointment API endpoint
-          : `/api/getPatientInfo`;
-  
-      // Make API call
-      const response = await post(endpoint, { tokan_number: inputValue });
-      const patientId = response?.patient?.id;
-  
-      if (!patientId) {
-        throw new Error("Patient ID not found in response.");
+//   try {
+//   let response, patientId;
+
+//   if (selectedOption === 'Appointment') {
+//     const endpoint = `/api/getAppointmentByToken/${inputValue}`;
+//     response = await getAPICall(endpoint); // use GET
+//     console.log(response.name);
+//     setAppointment
+
+//     console.log("📩 Appointment API Response:", response);
+
+//     // If patient_id exists => it's a registered patient
+//     patientId = response?.patient_id;
+
+//     setData(response);
+//     setTokanPatientID(patientId || null);
+
+//     if (patientId) {
+//       // ✅ Registered patient — fetch full details
+//       const res = await getAPICall(`/api/patient-details/${patientId}`);
+//       console.log("✅ Selected Patient:", res);
+
+//       setLastBill(res?.last_bill);
+//       sethealthdirectives(res?.health_directives || []);
+//       setpatientExaminations(res?.patient_examinations || []);
+//       setayurvedicExaminations(res?.ayurvedic_examintion || []);
+//     } else {
+//       // 🆕 New patient from appointment — just show basic info
+//       setLastBill(null);
+//       sethealthdirectives([]);
+//       setpatientExaminations([]);
+//       setayurvedicExaminations([]);
+//     }
+
+//     setShowPatientCard(true);
+
+//   } else {
+//     // Handle token patient (token flow remains the same)
+//     const endpoint = `/api/getPatientInfo`;
+//     response = await post(endpoint, { tokan_number: inputValue });
+
+//     patientId = response?.patient?.id;
+
+//     if (!patientId) {
+//       throw new Error("❌ Patient ID not found in token response.");
+//     }
+
+//     setData(response);
+//     setTokanPatientID(patientId);
+
+//     const res = await getAPICall(`/api/patient-details/${patientId}`);
+//     console.log("✅ Selected Token Patient:", res);
+
+//     setLastBill(res?.last_bill);
+//     sethealthdirectives(res?.health_directives || []);
+//     setpatientExaminations(res?.patient_examinations || []);
+//     setayurvedicExaminations(res?.ayurvedic_examintion || []);
+
+//     setShowPatientCard(true);
+//   }
+
+// } catch (error) {
+//   console.error('❌ Error fetching patient full details', error);
+//   showToast('Failed to fetch data. Please check the ID and try again.', 'Validation Error', '#d9534f');
+//   setData(null);
+//   setShowPatientCard(false);
+// }
+
+
+try {
+  let response, patientId;
+    let skipAddPatient = false;
+
+  if (selectedOption === 'Appointment') {
+    const endpoint = `/api/getAppointmentByToken/${inputValue}`;
+    response = await getAPICall(endpoint); // use GET
+    console.log("📩 Appointment API Response:", response);
+
+    // ✅ Step 1: Check if patient already exists via checkToken
+    const tokenRes = await post('/api/checkToken', { tokan: inputValue });
+    console.log("tokenRes (via token):", tokenRes);
+    const appointmentPatientId = tokenRes.patient_id;
+    console.log(appointmentPatientId);
+    
+
+    if (tokenRes.exists) {
+      console.log("✅ Token patient already exists — skipping add.");
+      skipAddPatient = true;
+    }
+
+    // ✅ Step 2: Use existing patient ID if found
+    patientId = appointmentPatientId || response?.patient_id;
+
+    // ✅ Step 3: If no patient_id and we have phone, fallback to phone match
+    if (!patientId && response?.phone) {
+      const phoneOnly10Digits = response.phone.slice(-10);
+
+      try {
+        const matchResponse = await getAPICall(`/api/findByPhone/${phoneOnly10Digits}`);
+        if (matchResponse?.patient?.id) {
+          patientId = matchResponse.patient.id;
+
+          setLastBill(matchResponse?.last_bill || []);
+          sethealthdirectives(matchResponse?.health_directives || []);
+          setpatientExaminations(matchResponse?.patient_examinations || []);
+          setayurvedicExaminations(matchResponse?.ayurvedic_examintion || []);
+        }
+      } catch (error) {
+        console.warn("ℹ️ No patient match found by phone.");
       }
-  
-      console.log("✅ Patient ID:", patientId);
-  
-      // Set the fetched data
-      setData(response);
-      setTokanPatientID(patientId); // still store it if you want elsewhere
-  
-      // 🔥 Use the ID directly here
+    }
+
+    // ✅ Step 4: Save data and patient ID
+    setData(response);
+    setTokanPatientID(patientId || null);
+
+    // ✅ Step 5: Fetch full patient details if patientId exists
+    if (patientId) {
       const res = await getAPICall(`/api/patient-details/${patientId}`);
-      console.log("✅ Selected Patient :", res);
-  
-      setLastBill(res?.last_bill);
+      console.log("✅ Selected Patient:", res);
+
+      setLastBill(res?.last_bill || []);
       sethealthdirectives(res?.health_directives || []);
       setpatientExaminations(res?.patient_examinations || []);
-      setayurvedicExaminations(res?.ayurvedic_examintion|| []);
-
-      setShowPatientCard(true);
-
-    } catch (error) {
-      console.error('❌ Error fetching patient full details', error);
-      alert('Failed to fetch data. Please check the ID and try again.');
-      setData(null); // Clear data on error
-      setShowPatientCard(false); // Hide on error
+      setayurvedicExaminations(res?.ayurvedic_examintion || []);
+    } else {
+      setLastBill([]);
+      sethealthdirectives([]);
+      setpatientExaminations([]);
+      setayurvedicExaminations([]);
     }
+
+    setShowPatientCard(true);
+  } else {
+    // ✅ Token flow or other option remains unchanged
+    const endpoint = `/api/getPatientInfo`;
+    response = await post(endpoint, { tokan_number: inputValue });
+
+    patientId = response?.patient?.id;
+
+    if (!patientId) {
+      throw new Error("❌ Patient ID not found in token response.");
+    }
+
+    setData(response);
+    setTokanPatientID(patientId);
+
+    const res = await getAPICall(`/api/patient-details/${patientId}`);
+    console.log("✅ Selected Token Patient:", res);
+
+    setLastBill(res?.last_bill || []);
+    sethealthdirectives(res?.health_directives || []);
+    setpatientExaminations(res?.patient_examinations || []);
+    setayurvedicExaminations(res?.ayurvedic_examintion || []);
+    setShowPatientCard(true);
+  }
+} catch (error) {
+  console.error("❌ Error fetching patient full details", error);
+  showToast('Failed to fetch data. Please check the ID and try again.', 'Validation Error', '#d9534f');
+  setData(null);
+  setShowPatientCard(false);
+}
+
+
+
+
+
+
   };
   
   
@@ -1104,7 +1252,7 @@ console.log(TokanPatientID);
 const [selectedOption, setSelectedOption] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [data, setData] = useState(null);
-  console.log("data",data);
+  console.log("data",data?.name);
   
 
   // Handle dropdown selection
@@ -1424,46 +1572,119 @@ const investigationOptions = [
 ].map(item => ({ label: item, value: item }));
 
 
-
+const isActive = selectedOption === 'Appointment'
+const isActive1 = selectedOption === 'Default'
 
   return (
     <>
 
 
   
-{/* <CCard className="mb-3  shadow-md rounded-2xl border border-gray-200"> */}
+{/* <CCard className="mb-3  shadow-md rounded-2xl border border-gray-200 p-4"> */}
  
 
-  {/* <CCardBody className="bg-white"> */}
+  <CCardBody className="bg-grey border  rounded-4 p-4" 
+  style={{
+    background: 'linear-gradient(135deg, #e0f7fa, #f0fdf4)', // light cyan to light green
+  }}
+  >
     <CForm> 
-      <div className="flex flex-wrap gap-3 items-center mb-3">
+      <div className="flex flex-wrap gap-3 items-center mb-2">
         {/* Visit Type Buttons */}
-        <CButton
-          color={selectedOption === "Token" ? "primary" : "light"}
-          shape="rounded-pill"
-          onClick={() => handleDropdownSelect("Token")}
-          className="border border-blue-500 text-blue-700 hover:bg-blue-50 shadow-sm"
+      <CRow className="mb-1">
+  {/* 🔵 Token Card */}
+  <CCol xs={12} sm={6} md={4}>
+    <CCard
+      onClick={() => handleDropdownSelect('Token')}
+      className={`mb-2 shadow-sm border-2 ${selectedOption === 'Token' ? 'border-primary' : 'border-primary'}`}
+      style={{
+        borderRadius: '1rem',
+        backgroundColor: selectedOption === 'Token' ? '#eaf3ff' : '#f8f9fa',
+        transition: '0.3s ease',
+        cursor: 'pointer',
+      }}
+    >
+      <CCardBody className="d-flex align-items-center gap-3 py-2">
+        <div
+          className="d-flex align-items-center justify-content-center bg-white border border-primary"
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+          }}
         >
-          Token
-        </CButton>&nbsp;&nbsp;
+          <CIcon icon={cilClock} size="lg" className="text-primary" />
+        </div>
+        <div>
+          <div className="fw-semibold text-primary small">Token</div>
+          <div className="text-medium-emphasis" style={{ fontSize: '0.75rem' }}>Quick token-based visit</div>
+        </div>
+      </CCardBody>
+    </CCard>
+  </CCol>
 
-        <CButton
-          color={selectedOption === "Appointment" ? "primary" : "light"}
-          shape="rounded-pill"
-          onClick={() => handleDropdownSelect("Appointment")}
-          className="border border-green-500 text-green-700 hover:bg-green-50 shadow-sm"
+  {/* 🟢 Appointment Card */}
+  <CCol xs={12} sm={6} md={4}>
+    <CCard
+      onClick={() => handleDropdownSelect('Appointment')}
+      className={`mb-2 shadow-sm border-2 ${isActive ? 'border-success' : 'border-success'}`}
+      style={{
+        borderRadius: '1rem',
+        backgroundColor: isActive ? '#d4f7e4' : '#f8f9fa',
+        transition: '0.3s ease',
+        cursor: 'pointer',
+      }}
+    >
+      <CCardBody className="d-flex align-items-center gap-3 py-2">
+        <div
+          className="d-flex align-items-center justify-content-center bg-white border border-success"
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+          }}
         >
-          Appointment
-        </CButton> &nbsp;&nbsp;
+          <CIcon icon={cilCalendar} size="lg" className="text-success" />
+        </div>
+        <div>
+          <div className="fw-semibold text-success small">Appointment</div>
+          <div className="text-medium-emphasis" style={{ fontSize: '0.75rem' }}>Scheduled appointment</div>
+        </div>
+      </CCardBody>
+    </CCard>
+  </CCol>
 
-        <CButton
-          color={selectedOption === "Default" ? "primary" : "light"}
-          shape="rounded-pill"
-          // onClick={() => handleDropdownSelect("Default")}
-          className="border border-green-500 text-green-700 hover:bg-green-50 shadow-sm"
+  {/* 🟣 Default Card */}
+  <CCol xs={12} sm={6} md={4}>
+    <CCard
+      // onClick={() => handleDropdownSelect('Default')}
+      className={`mb-2 shadow-sm border-2 ${isActive1 ? 'border-primary' : 'border-primary'}`}
+      style={{
+        borderRadius: '1rem',
+        backgroundColor: isActive1 ? '#f6efff' : '#f8f9fa',
+        transition: '0.3s ease',
+        cursor: 'pointer',
+      }}
+    >
+      <CCardBody className="d-flex align-items-center gap-3 py-2">
+        <div
+          className="d-flex align-items-center justify-content-center bg-white border border-primary"
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+          }}
         >
-     Default
-        </CButton> &nbsp;&nbsp;
+          <CIcon icon={cilSettings} size="lg" style={{ color: '#8000ff' }} />
+        </div>
+        <div>
+          <div className="fw-semibold" style={{ color: '#8000ff', fontSize: '0.95rem' }}>Default</div>
+          <div className="text-medium-emphasis" style={{ fontSize: '0.75rem' }}>Default configuration</div>
+        </div>
+      </CCardBody>
+    </CCard>
+  </CCol>
+</CRow>
 
 
 
@@ -1477,10 +1698,10 @@ const investigationOptions = [
       variant="ghost"
       shape="rounded-pill"
       size="sm"
-      className="text-lg font-bold px-2"
+      className=" fw-semibold text-lg font-bold px-0 p-2 ps-2 pe-2"
       title="Clear"
     >
-      ✕
+      ✕ Clear Section
     </CButton>
   )}
 
@@ -1488,7 +1709,7 @@ const investigationOptions = [
 
 
         {/* Input + Submit */}
-        {selectedOption && (
+        {/* {selectedOption && (
   <CRow className="mt-3">
     <CCol sm={12} md={6} lg={4}>
       <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full">
@@ -1509,11 +1730,67 @@ const investigationOptions = [
       </div>
     </CCol>
   </CRow>
+)} */}
+{selectedOption && (
+  <>
+    {/* 🔷 Token Input and Submit Button on same row */}
+    <CRow className="mb-3 align-items-end">
+      {/* Input Field */}
+      <CCol md={6} lg={8}>
+        <CFormLabel className="fw-semibold mb-1">{selectedOption} ID</CFormLabel>
+        <CInputGroup>
+          <CInputGroupText>
+            <CIcon icon={cilUser} />
+          </CInputGroupText>
+          <CFormInput
+            type="text"
+            placeholder={`Enter ${selectedOption} ID`}
+            value={inputValue}
+            onChange={handleInputChange}
+          />
+
+        </CInputGroup>
+        {/* <small className="text-muted ms-1">Enter the unique {selectedOption.toLowerCase()} identifier</small> */}
+      </CCol>
+
+      {/* Search Button */}
+      <CCol md={6} lg={4}>
+        <CButton
+          color="success"
+          className="w-100 py-2 d-flex align-items-center justify-content-center"
+          style={{ borderRadius: '10px', fontWeight: 'bold' }}
+          onClick={handleFetchData}
+        >
+          <CIcon icon={cilSearch} className="me-2" />
+          Search Patient
+        </CButton>
+      </CCol>
+    </CRow>
+
+    {/* ℹ️ Info Alert Box */}
+    {selectedOption === 'Token' && (
+      <CCard
+        className="border-0 shadow-sm"
+        style={{ backgroundColor: '#e9f2ff', borderLeft: '5px solid #3182ce' }}
+      >
+        <CCardBody className="d-flex">
+          <CIcon icon={cilInfo} className="text-primary me-3 mt-1" size="lg" />
+          <div>
+            <div className="fw-semibold text-primary mb-1">Token Information</div>
+            <div className="text-muted">
+              Token-based visits are processed in order of arrival. Please ensure the token number is valid.
+            </div>
+          </div>
+        </CCardBody>
+      </CCard>
+    )}
+  </>
 )}
+
 
       </div>
     </CForm>
-  {/* </CCardBody> */}
+  </CCardBody>
 {/* </CCard> */}
 
 
@@ -1521,15 +1798,17 @@ const investigationOptions = [
 
 
 
-{/* <CCard className="mb-3  shadow-md rounded-2xl border border-gray-200"> */}
+<div className="mb-2 mt-2   " 
+style={{ backgroundColor: 'light' }}
+>
 <CRow className="p-3 space-y-3 md:space-y-0">
   {/* Patient Name */}
   <CCol xs={12} md={6}>
     <div className="flex flex-col md:flex-row items-start gap-2 relative">
-      <CFormLabel className="fw-bold min-w-[120px]">Patient Name</CFormLabel>
+      <CFormLabel className="fw-semibold min-w-[120px]">👤  Patient Name</CFormLabel>
       <div className="w-full relative">
         <CFormInput
-          value={patientName || data?.patient?.name || ''}
+          value={patientName || data?.patient?.name || data?.appointment?.name ||''}
           onChange={(e) => setPatientName(e.target.value)}
           placeholder="Enter patient name"
           required
@@ -1558,7 +1837,7 @@ const investigationOptions = [
   {/* Occupation */}
   <CCol xs={12} md={6}>
     <div className="flex flex-col md:flex-row items-start gap-2">
-      <CFormLabel className="fw-bold min-w-[120px]">Occupation</CFormLabel>
+      <CFormLabel className="fw-semibold min-w-[120px]">💼 Occupation</CFormLabel>
       <div className="w-full">
         <CFormInput
           value={Occupation || data?.patient?.occupation || ''}
@@ -1575,10 +1854,10 @@ const investigationOptions = [
 
   {/* Contact Details */}
   <CCol xs={12} md={6} lg={3}>
-    <CFormLabel className="fw-bold">Mobile Number</CFormLabel>
+    <CFormLabel className="fw-semibold">📱 Mobile Number</CFormLabel>
     <CFormInput
       type="tel"
-      value={phone || data?.patient?.phone || ''}
+      value={phone || data?.patient?.phone || data?.appointment?.phone || ''}          // (data?.phone ? data.phone.toString().substring(2) : '') 
       onChange={(e) => setContactNumber(e.target.value)}
       onInput={(e) => {
         if (e.target.value.length > 10) {
@@ -1592,7 +1871,7 @@ const investigationOptions = [
   </CCol>
 
   <CCol xs={12} md={6} lg={3}>
-    <CFormLabel className="fw-bold">Email</CFormLabel>
+    <CFormLabel className="fw-semibold">📧 Email</CFormLabel>
     <CFormInput
       type="email"
       value={email || data?.patient?.email || ''}
@@ -1604,7 +1883,7 @@ const investigationOptions = [
   </CCol>
 
   <CCol xs={12} md={6} lg={3}>
-    <CFormLabel className="fw-bold">Patient DOB</CFormLabel>
+    <CFormLabel className="fw-semibold">🎂 Patient DOB</CFormLabel>
     <CFormInput
       type="date"
       value={
@@ -1638,7 +1917,7 @@ const investigationOptions = [
   </CCol>
 
   <CCol xs={12} md={6} lg={3}>
-    <CFormLabel className="fw-bold">Visit Date</CFormLabel>
+    <CFormLabel className="fw-semibold">📅 Visit Date</CFormLabel>
     <CFormInput
       type="date"
       value={visitDate}
@@ -1652,7 +1931,7 @@ const investigationOptions = [
   {/* Patient Address */}
   <CCol xs={12} md={6}>
     <div className="flex flex-col md:flex-row items-start gap-2">
-      <CFormLabel className="fw-bold min-w-[120px]">Patient Address</CFormLabel>
+      <CFormLabel className="fw-semibold min-w-[120px]">🏠 Patient Address</CFormLabel>
       <div className="w-full">
         <CFormInput
           value={patientAddress || data?.patient?.address || ''}
@@ -1670,7 +1949,7 @@ const investigationOptions = [
   {/* Pincode */}
   <CCol xs={12} md={6}>
     <div className="flex flex-col md:flex-row items-start gap-2">
-      <CFormLabel className="fw-bold min-w-[120px]">Pincode</CFormLabel>
+      <CFormLabel className="fw-semibold min-w-[120px]">📮 Pincode</CFormLabel>
       <div className="w-full">
         <CFormInput
           value={Pincode || data?.patient?.pincode || ''}
@@ -1686,7 +1965,7 @@ const investigationOptions = [
   </CCol>
 </CRow>
 
-{/* </CCard> */}
+</div>
 
 
 {/* Old Bill Displyed POP up */}
@@ -1809,52 +2088,74 @@ const investigationOptions = [
 
 
 
-
+<CCard className="mb-2 mt-2 p-3  rounded-4 border border-gray-200" 
+style={{ backgroundColor: '	#F0F8FF' }}
+>
 
     
- <div className="d-flex justify-content-start lign-items-center mb-3">
+ <div className="d-flex justify-content-start lign-items-center mb-2">
   <div className="d-flex align-items-center gap-2">
-    <CIcon icon={cilFile} className="text-primary" size="lg" /> &nbsp;
+    {/* <CIcon icon={cilFile} className="text-primary" size="lg" /> &nbsp; */}
+     <div
+          className="d-flex align-items-center justify-content-center bg-white border border-primary ms-2"
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+          }}
+        >
+          <CIcon icon={cilFile} size="lg" className="text-primary" />
+        </div>
     <h6 className="mb-0 fw-semibold">Medical Observations</h6>&nbsp;&nbsp;
   </div>
-  {/* <CButton
-    color="success"
-    variant="outline"
-    shape="rounded-pill"
-    className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
-    onClick={toggleForm}
-  >
-    <span className="fs-5 text-dark" >{isExpanded ? '−' : '+'}</span>
-    <span className="fw-medium text-dark"  >
-      {isExpanded ? 'Close' : 'Add Observation'}
-    </span>
-  </CButton> */}
+
  <div className="d-flex flex-column flex-md-row gap-2">
   <CButton
-    color="primary"
-    variant="outline"
-    shape="rounded-pill"
-    className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
-    onClick={toggleMedicalForm}
-  >
-    <span className="fs-5 text-dark">{isMedicalExpanded ? '−' : '+'}</span>
-    <span className="fw-medium text-dark">
-      {isMedicalExpanded ? 'Close' : 'Add Medical Observation'}
-    </span>
-  </CButton>
+  color="light"
+  className="d-flex align-items-center gap-2 px-4 py-2 fw-semibold rounded rounded-4"
+  onClick={toggleMedicalForm}
+  style={{
+   // borderColor: '#8000ff', // Bootstrap Primary Blue
+    border: '2px solid #1B9C8F',
+    backgroundColor: 'white',
+    transition: 'background-color 0.3s',
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.backgroundColor = '#D5ECE9'; // light blue on hover
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.backgroundColor = 'white'; // reset on leave
+  }}
+>
+  {/* <span className="" style={{ color: '#1B9C8F'}}> Add Medical Observation</span> */}
+   <span style={{ color: '#1B9C8F' }}>
+    🩺 {isMedicalExpanded ? 'Close' : 'Add Medical Observation'}
+  </span>
+</CButton>
 
-  <CButton
-    color="success"
-    variant="outline"
-    shape="rounded-pill"
-    className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
-    onClick={toggleAyurvedicForm}
-  >
-    <span className="fs-5 text-dark">{isAyurvedicExpanded ? '−' : '+'}</span>
-    <span className="fw-medium text-dark">
-      {isAyurvedicExpanded ? 'Close' : 'Add Ayurvedic Observation'}
-    </span>
-  </CButton>
+
+
+ <CButton
+  color="light"
+  className="d-flex align-items-center gap-2 px-4 py-2 fw-semibold rounded rounded-4"
+  onClick={toggleAyurvedicForm}
+  style={{
+    border: '2px solid #8B3E2F', // Green border
+    backgroundColor: 'white',
+    transition: 'background-color 0.3s',
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.backgroundColor = '#EED7D3'; // light green on hover
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.backgroundColor = 'white';
+  }}
+>
+  <span style={{ color: '	#8B3E2F' }}>
+    🌿 {isAyurvedicExpanded ? 'Close' : 'Add Ayurvedic Observation'}
+  </span>
+</CButton>
+
 </div>
 
 
@@ -2622,34 +2923,56 @@ const investigationOptions = [
   {/* Prescriptions Section */}
   {!showTable && (
     <>
-      <div className="d-flex justify-content-start align-items-center mb-3">
+      <div className="d-flex justify-content-start align-items-center mb-2">
         <div className="d-flex align-items-center gap-2">
-          <CIcon icon={cilMedicalCross} className="text-primary" size="lg" /> &nbsp;
+          {/* <CIcon icon={cilMedicalCross} className="text-primary" size="lg" /> &nbsp; */}
+          <div
+          className="d-flex align-items-center justify-content-center bg-white border border-primary ms-2"
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+          }}
+        >
+          <CIcon icon={cilMedicalCross} size="lg" className="text-primary" />
+        </div>
           <h6 className="mb-0 fw-semibold">Medical Prescriptions</h6>&nbsp;&nbsp;
         </div>
         <CButton
-          color="success"
-          variant="outline"
-          shape="rounded-pill"
-          className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm"
-          onClick={() => setShowTable(true)}
-        >
-          <span className="fs-5 text-dark" >{showTable ? '−' : '+'}</span>
-          <span className="fw-medium text-dark" >
-            {showTable ? 'Close' : 'Add Prescriptions'}
-          </span>
-        </CButton>
+  color="light"
+  className="d-flex align-items-center gap-2 px-4 py-2  fw-semibold rounded rounded-4"
+  onClick={() => setShowTable(true)}
+  style={{
+    border: '2px solid #4B0082', // Deep indigo or prescription theme
+    backgroundColor: 'white',
+    transition: 'background-color 0.3s',
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.backgroundColor = '#E6DEFA'; // light lavender on hover
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.backgroundColor = 'white';
+  }}
+>
+  <span style={{ color: '#4B0082' }}>
+    💊 &nbsp;&nbsp;{showTable ? 'Close' : 'Add Prescriptions'}
+  </span>
+</CButton>
+
       </div>
     </>
   )}
 
   {showTable && (
     <>
-      <div className="d-flex justify-content-start mb-2">
-        <CButton
-          onClick={() => {
+   <div className="ms-auto">
+      <CButton
+        color="light"
+        className="d-flex align-items-center gap-2 px-4 py-2 fw-semibold rounded rounded-4"
+        onClick={() => {
+          if (showTable) {
+            // Reset everything when closing
             setShowTable(false);
-            // Reset all data when removing section
             setRowss([{
               description: '',
               strength: '',
@@ -2666,15 +2989,27 @@ const investigationOptions = [
             setMedicineOptions({});
             setSuggestionFlags({});
             setActiveEditableRowIndex(null);
-          }}  
-          color="danger"
-          variant="outline"
-          shape="rounded-pill"
-          className="d-flex align-items-center gap-1 px-3 py-1 border rounded shadow-sm text-white bg-danger"
-        >
-          Remove Section
-        </CButton>
-      </div>
+          } else {
+            setShowTable(true);
+          }
+        }}
+        style={{
+          border: '2px solid #4B0082',
+          backgroundColor: 'white',
+          transition: 'background-color 0.3s',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#E6DEFA';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'white';
+        }}
+      >
+        <span style={{ color: '#4B0082' }}>
+          💊 {showTable ? 'Close Prescriptions' : 'Add Prescriptions'}
+        </span>
+      </CButton>
+    </div>
       
       <CCardBody className="rounded shadow-sm bg-white p-2 mt-2 border border-gray-200">
         {/* Desktop View */}
@@ -2793,44 +3128,7 @@ const investigationOptions = [
                   </CTableDataCell>
 
                   {/* Dosage */}
-                  {/* <CTableDataCell className="px-2 py-3">
-                    <CFormInput
-                      value={row.dosage}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/-/g, '').trim();
-                        const only01 = raw.replace(/[^01]/g, '');
-                        
-                        // Validate dosage format - must have exactly 3 digits
-                        if (only01.length > 3) {
-                          return; // Don't allow more than 3 digits
-                        }
-                        
-                        // Check for invalid patterns like "11", "00", etc.
-                        if (only01.length === 2 && (only01 === '11' || only01 === '00')) {
-                          setRowErrors(prev => ({
-                            ...prev,
-                            [index]: {
-                              ...prev[index],
-                              dosage: 'Invalid dosage format. Use format like 1-0-1'
-                            }
-                          }));
-                          return;
-                        }
-                        
-                        const formatted = only01.length === 3 ? `${only01[0]}-${only01[1]}-${only01[2]}` : only01;
-                        handleRowChangee(index, 'dosage', formatted);
-                        
-                        // Clear error if valid
-                        if (only01.length === 3) {
-                          clearFieldError(index, 'dosage');
-                        }
-                      }}
-                      onBlur={() => validateField(index, 'dosage')}
-                      placeholder="e.g. 1-0-1"
-                      maxLength={5}
-                    />
-                    {rowErrors[index]?.dosage && <div className="text-danger small mt-1">{rowErrors[index].dosage}</div>}
-                  </CTableDataCell> */}
+                 
                   <CTableDataCell className="px-2 py-3">
   <CFormInput
     type="text"
@@ -2994,7 +3292,7 @@ const investigationOptions = [
         {/* Mobile View */}
         <div className="d-lg-none mb-4">
           {rowss.map((row, index) => (
-            <div key={index} className="border rounded p-3 mb-3">
+            <div key={index} className=" rounded p-3 mb-3">
               {/* Medicine */}
               <div className="mb-2 position-relative">
                 <strong>Medicine:</strong>
@@ -3057,65 +3355,64 @@ const investigationOptions = [
                   <strong>Strength:</strong>
                   <CFormInput
                     value={row.strength}
-                    onChange={(e) => {
-                      handleRowChangee(index, 'strength', e.target.value);
-                      toggleSuggestion(index, 'showStrength', true);
-                    }}
-                    onFocus={() => toggleSuggestion(index, 'showStrength', true)}
-                    onBlur={() => validateField(index, 'strength')}
-                    disabled={!row.description}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        handleRowChangee(index, 'strength', value);
+                        toggleSuggestion(index, 'showStrength', false);
+                      }}
+                      onFocus={() => {
+                        if (!row.strength) {
+                          toggleSuggestion(index, 'showStrength', true);
+                        }
+                      }}
+                      onBlur={() => validateField(index, 'strength')}
+                      placeholder="Strength"
+                      disabled={!row.description}
                   />
                   {suggestionFlags[index]?.showStrength &&
-                    row.drugDetails?.filter((d) => d.drug_id === parseInt(row.description, 10))?.slice(0, 5).map((drug, i) => (
-                      <div
-                        key={i}
-                        className="position-absolute w-100 bg-white border shadow-sm mt-1 px-2 py-1 rounded cursor-pointer"
-                        style={{ zIndex: 2000 }}
-                        onClick={() => {
-                          handleRowChangee(index, 'strength', drug.strength);
-                          toggleSuggestion(index, 'showStrength', false);
-                          clearFieldError(index, 'strength');
-                        }}
-                      >
-                        {drug.strength}
-                      </div>
-                    ))}
+                      row.drugDetails?.filter((d) => d.drug_id === parseInt(row.description, 10))?.slice(0, 5).map((drug, i) => (
+                        <div
+                          key={i}
+                          className="position-absolute w-100 bg-white border shadow-sm mt-1 px-2 py-1 rounded cursor-pointer"
+                          style={{ zIndex: 2000 }}
+                          onClick={() => {
+                            handleRowChangee(index, 'strength', drug.strength);
+                            toggleSuggestion(index, 'showStrength', false);
+                            clearFieldError(index, 'strength');
+                          }}
+                        >
+                          {drug.strength}
+                        </div>
+                      ))}
                   {rowErrors[index]?.strength && <div className="text-danger small mt-1">{rowErrors[index].strength}</div>}
                 </div>
 
                 <div className="w-50">
                   <strong>Dosage:</strong>
                   <CFormInput
-                    value={row.dosage}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/-/g, '').trim();
-                      const only01 = raw.replace(/[^01]/g, '');
-                      
-                      if (only01.length > 3) {
-                        return;
-                      }
-                      
-                      if (only01.length === 2 && (only01 === '11' || only01 === '00')) {
-                        setRowErrors(prev => ({
-                          ...prev,
-                          [index]: {
-                            ...prev[index],
-                            dosage: 'Invalid dosage format. Use format like 1-0-1'
-                          }
-                        }));
-                        return;
-                      }
-                      
-                      const formatted = only01.length === 3 ? `${only01[0]}-${only01[1]}-${only01[2]}` : only01;
-                      handleRowChangee(index, 'dosage', formatted);
-                      
-                      if (only01.length === 3) {
-                        clearFieldError(index, 'dosage');
-                      }
-                    }}
-                    onBlur={() => validateField(index, 'dosage')}
-                    placeholder="1-0-1"
-                    maxLength={5}
+                  type="text"
+    value={row.dosage}
+    onChange={(e) => {
+      const raw = e.target.value.replace(/-/g, '').trim();
+      const only01 = raw.replace(/[^01]/g, '');
+
+      if (only01.length > 3) return;
+
+      // Auto-format to 1-0-1 style
+      const formatted = only01.length === 3
+        ? `${only01[0]}-${only01[1]}-${only01[2]}`
+        : only01;
+
+      handleRowChangee(index, 'dosage', formatted);
+
+      // Clear error if fully valid
+      if (/^[01]-[01]-[01]$/.test(formatted)) {
+        clearFieldError(index, 'dosage');
+      }
+    }}
+    onBlur={() => validateField(index, 'dosage')}
+    placeholder="e.g. 1-0-1"
+    maxLength={5}
                   />
                   {rowErrors[index]?.dosage && <div className="text-danger small mt-1">{rowErrors[index].dosage}</div>}
                 </div>
@@ -3248,20 +3545,22 @@ const investigationOptions = [
 </div>
 
 
-
+</CCard>
 
 
      
 {/* Descriptions */}
-      {/* <CCard className="mb-4"> */}
-  {/* Desktop View */}
-<div className="d-none d-lg-block">
-  <CCard className="mb-3 mt-2 px-3 py-3">
+   
 
-<div className="mb-3 d-flex gap-3 align-items-center">
-  <strong>GST:</strong>
+  {/* Desktop View */}
+<div className="d-none d-lg-block mt-2"  >
+  <CCard className="mb-3  px-3 py-3 rounded-4" style={{ backgroundColor: '#FFF9DB' }}>
+<sapn className='fw-semibold mb-2 fs-5' style={{ color: '#944C1F' }}>💰 Billing Information</sapn>
+<div className="mb-2 d-flex gap-3 align-items-center">
+  {/* <strong className='fw-semibold'>GST:</strong> */}
   <CFormCheck
     type="radio"
+    className='fw-semibold'
     label="With GST"
     name="gstToggle"
     checked={showGST}
@@ -3269,6 +3568,7 @@ const investigationOptions = [
   />
   <CFormCheck
     type="radio"
+    className='fw-semibold'
     label="Without GST"
     name="gstToggle"
     checked={!showGST}
@@ -3279,8 +3579,8 @@ const investigationOptions = [
 
 
     <CRow>
-      <CTable hover responsive className='table-borderless'>
-        <CTableHead className="text-center text-sm font-semibold bg-light">
+      <CTable hover responsive className='table-borderless' style={{ backgroundColor: 'transparent' }}>
+        <CTableHead className="text-center text-sm font-semibold ">
           {/* <CTableRow>
             {['Description', 'Quantity', 'Fees', 'GST (%)', 'Total', 'Actions'].map((header, idx) => (
               <CTableHeaderCell key={idx} className="px-2 py-2">{header}</CTableHeaderCell>
@@ -3288,22 +3588,22 @@ const investigationOptions = [
           </CTableRow> */}
 
 <>
-  <CTableHeaderCell className="px-2 py-2">Description</CTableHeaderCell>
-  <CTableHeaderCell className="px-2 py-2">Quantity</CTableHeaderCell>
-  <CTableHeaderCell className="px-2 py-2">Fees</CTableHeaderCell>
+  <CTableHeaderCell className="px-2 py-2 fw-semibold">Description</CTableHeaderCell>
+  <CTableHeaderCell className="px-2 py-2 fw-semibold">Quantity</CTableHeaderCell>
+  <CTableHeaderCell className="px-2 py-2 fw-semibold">Fees</CTableHeaderCell>
   {showGST && (
-    <CTableHeaderCell className="px-2 py-2">GST (%)</CTableHeaderCell>
+    <CTableHeaderCell className="px-2 py-2 fw-semibold">GST (%)</CTableHeaderCell>
   )}
-  <CTableHeaderCell className="px-2 py-2">Total</CTableHeaderCell>
-  <CTableHeaderCell className="px-2 py-2">Actions</CTableHeaderCell>
+  <CTableHeaderCell className="px-2 py-2 fw-semibold">Total</CTableHeaderCell>
+  <CTableHeaderCell className="px-2 py-2 fw-semibold">Actions</CTableHeaderCell>
 </>
 
 
 
         </CTableHead>
-        <CTableBody>
+        <CTableBody className=' border border-grey rounded-4 no-bg' style={{ backgroundColor: 'transparent' }}>
           {rows.map((row, index) => (
-            <CTableRow key={index} className="align-middle text-center">
+            <CTableRow key={index} className="align-middle text-center ">
               <CTableDataCell style={{ width: '16.66%' }}>
                 <CFormSelect
                   className="text-center"
@@ -3569,6 +3869,7 @@ const investigationOptions = [
 </div>
 
 {/* Mobile View */}
+
 <div className="d-block d-lg-none mt-2">
 
   {rows.map((row, index) => (
@@ -3576,6 +3877,7 @@ const investigationOptions = [
 
 
 <div className="d-block d-lg-none px-3 py-2">
+  
   <div className="mb-3 d-flex gap-3 align-items-center">
     <strong>GST:</strong>
     <CFormCheck
@@ -3771,14 +4073,14 @@ const investigationOptions = [
 
 <CRow className="g-3 align-items-center">
   {/* Label + Input + Button Grouped */}
-  <CCol xs={12} md={8} lg={6}>
+  <CCol xs={12} md={8} lg={7}>
     <div className="d-flex flex-column flex-md-row align-items-md-center">
       <CFormLabel
         htmlFor="followupdate"
-        className="fw-bold mb-2 mb-md-0 me-md-2"
-        style={{ minWidth: '120px' }}
+        className="fw-semibold mb-2 mb-md-0 me-md-2 "
+        style={{ minWidth: '150px' }}
       >
-        Followup Date
+       📅 Followup Date
       </CFormLabel>
       <CFormInput
         type="date"
@@ -3786,10 +4088,11 @@ const investigationOptions = [
         value={followupdate}
         onChange={(e) => setfollowupdate(e.target.value)}
         required
-        className="me-md-2"
+        className="me-md-2 border border-2 border-black"
       />
-      <CButton color="primary" onClick={handleSubmit} className="mt-2 mt-md-0">
-        Submit
+    
+      <CButton color="primary" onClick={handleSubmit} className="mt-2 mt-md-0 fw-semibold w-75">
+         Submit
       </CButton>
     </div>
   </CCol>
@@ -4432,3 +4735,174 @@ export default Typography;
 
 
   // };
+
+
+
+
+
+
+    //    {/* <CButton
+    //       color={selectedOption === "Token" ? "primary" : "light"}
+    //       shape="rounded-pill"
+    //       onClick={() => handleDropdownSelect("Token")}
+    //       className="border border-blue-500 text-blue-700 hover:bg-blue-50 shadow-sm"
+    //     >
+    //       Token
+    //     </CButton>&nbsp;&nbsp; */}
+    //      <CCard
+    //   className={`mb-3 shadow-sm border-2 cursor-pointer ${
+    //     selectedOption === 'Token' ? 'border-primary' : 'border-primary'
+    //   }`}
+    //   style={{
+    //     borderRadius: '1rem',
+    //     backgroundColor: selectedOption === 'Token' ? '#eaf3ff' : '#f8f9fa',
+    //     transition: '0.3s ease',
+    //     maxWidth: '300px',
+    //     cursor: 'pointer',
+    //   }}
+    //   onClick={() => handleDropdownSelect('Token')}
+    // >
+    //   <CCardBody className="d-flex align-items-center gap-3">
+    //     <div
+    //       className="d-flex align-items-center justify-content-center bg-white border border-primary"
+    //       style={{
+    //         width: '48px',
+    //         height: '48px',
+    //         borderRadius: '12px',
+    //       }}
+    //     >
+    //       <CIcon icon={cilClock} size="xl" className="text-primary" />
+    //     </div>
+    //     <div>
+    //       <div className="fw-semibold text-primary fs-5">Token</div>
+    //       <div className="text-medium-emphasis small">Quick token-based visit</div>
+    //     </div>
+    //   </CCardBody>
+    // </CCard>
+
+    //     {/* <CButton
+    //       color={selectedOption === "Appointment" ? "primary" : "light"}
+    //       shape="rounded-pill"
+    //       onClick={() => handleDropdownSelect("Appointment")}
+    //       className="border border-green-500 text-green-700 hover:bg-green-50 shadow-sm"
+    //     >
+    //       Appointment
+    //     </CButton> &nbsp;&nbsp; */}
+    //         <CCard
+    //   onClick={() => handleDropdownSelect('Appointment')}
+    //   className={`mb-3 shadow-sm border-2 cursor-pointer ${
+    //     isActive ? 'border-success' : 'border-success'
+    //   }`}
+    //   style={{
+    //     borderRadius: '1rem',
+    //     backgroundColor: isActive ? '#d4f7e4' : '#f8f9fa',
+    //     transition: '0.3s ease',
+    //     maxWidth: '300px',
+    //     cursor: 'pointer',
+    //   }}
+    // >
+    //   <CCardBody className="d-flex align-items-center gap-3">
+    //     <div
+    //       className="d-flex align-items-center justify-content-center bg-white border border-success"
+    //       style={{
+    //         width: '48px',
+    //         height: '48px',
+    //         borderRadius: '12px',
+    //       }}
+    //     >
+    //       <CIcon icon={cilCalendar} size="xl" className="text-success" />
+    //     </div>
+    //     <div>
+    //       <div className="fw-semibold text-success fs-5">Appointment</div>
+    //       <div className="text-medium-emphasis small">Scheduled appointment</div>
+    //     </div>
+    //   </CCardBody>
+    // </CCard>
+
+    //     {/* <CButton
+    //       color={selectedOption === "Default" ? "primary" : "light"}
+    //       shape="rounded-pill"
+    //       // onClick={() => handleDropdownSelect("Default")}
+    //       className="border border-green-500 text-green-700 hover:bg-green-50 shadow-sm"
+    //     >
+    //  Default
+    //     </CButton> &nbsp;&nbsp; */}
+    //         <CCard
+    //   onClick={() => handleDropdownSelect('Default')}
+    //   className={`mb-3 shadow-sm border-2 cursor-pointer ${
+    //     isActive1 ? 'border-primary' : 'border-primary'
+    //   }`}
+    //   style={{
+    //     borderRadius: '1rem',
+    //     backgroundColor: isActive1 ? '#f6efff' : '#f8f9fa', // light violet background
+    //     transition: '0.3s ease',
+    //     maxWidth: '300px',
+    //     cursor: 'pointer',
+    //   }}
+    // >
+    //   <CCardBody className="d-flex align-items-center gap-3">
+    //     <div
+    //       className="d-flex align-items-center justify-content-center bg-white border border-primary"
+    //       style={{
+    //         width: '48px',
+    //         height: '48px',
+    //         borderRadius: '12px',
+            
+    //       }}
+    //     >
+    //       <CIcon icon={cilSettings} size="xl" style={{ color: '#8000ff' }} />
+    //     </div>
+    //     <div>
+    //       <div className="fw-semibold" style={{ color: '#8000ff', fontSize: '1.1rem' }}>
+    //         Default
+    //       </div>
+    //       <div className="text-medium-emphasis small">Default configuration</div>
+    //     </div>
+    //   </CCardBody>
+    // </CCard>
+
+
+
+    // tokan
+    //     try {
+    //   // Determine endpoint based on dropdown option
+    //   const endpoint =
+    //     selectedOption === 'Appointment'
+    //       ? `/api/getAppointmentByToken/2` // ${inputValue} Replace with your real Appointment API endpoint
+    //       : `/api/getPatientInfo`;
+  
+    //   // Make API call
+    //   const response = await post(endpoint, { tokan_number: inputValue });
+    //   const patientId = response?.patient?.id;
+
+    //   console.log(endpoint);
+      
+
+    //   if (!patientId) {
+    //     throw new Error("Patient ID not found in response.");
+    //   }
+  
+    //   console.log("✅ Patient ID:", patientId);
+  
+    //   // Set the fetched data
+    //   setData(response);
+    //   setTokanPatientID(patientId); // still store it if you want elsewhere
+  
+    //   // 🔥 Use the ID directly here
+    //   const res = await getAPICall(`/api/patient-details/${patientId}`);
+    //   console.log("✅ Selected Patient :", res);
+  
+    //   setLastBill(res?.last_bill);
+    //   sethealthdirectives(res?.health_directives || []);
+    //   setpatientExaminations(res?.patient_examinations || []);
+    //   setayurvedicExaminations(res?.ayurvedic_examintion|| []);
+
+    //   setShowPatientCard(true);
+
+    // } catch (error) {
+    //   console.error('❌ Error fetching patient full details', error);
+    //   showToast('Failed to fetch data. Please check the ID and try again.', 'Validation Error', '#d9534f');
+    //   // alert('Failed to fetch data. Please check the ID and try again.');
+    //   setData(null); // Clear data on error
+    //   setShowPatientCard(false); // Hide on error
+    // }

@@ -295,7 +295,9 @@ import {
   CModalTitle,
   CModalBody,
   CModalFooter,
-  CFormLabel
+  CFormLabel,
+  CPagination,
+  CPaginationItem
 } from '@coreui/react';
 import { Loader } from '@mantine/core';
 import { getAPICall, put } from '../../../util/api';

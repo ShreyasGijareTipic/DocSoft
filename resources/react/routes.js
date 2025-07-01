@@ -39,6 +39,7 @@ const Profile = React.lazy(() => import('./Profile'))
 const Billing = React.lazy(() => import('./Billing'))
 const docDashboard = React.lazy(()=>import('./views/theme/docDashboard/docDashboard'))
 const Dashboard2 = React.lazy(()=>import('./views/dashboard/Dashboard2'))
+const AppointmentDashboard = React.lazy(()=>import('./views/dashboard/AppointmentDashboard'))
 
 // invoices
 
@@ -111,6 +112,8 @@ const routes = [
   { path: '/Invoice', name: 'Invoice', element: invoices },
   { path: '/Dashboard', name: 'Dashboard', element: docDashboard },
   { path: '/Dashboard2', name: 'Dashboard', element: Dashboard2 },
+  { path: '/AppointmentDashboard', name: 'Appointment Dashboard', element: AppointmentDashboard },
+
 
   { path: '/Prescription' , name  :'Prescription',element : prescriptionForm},
   { path: '/theme/PrescriptionView' , name : 'PrescriptionView' ,element :PrescriptionView},

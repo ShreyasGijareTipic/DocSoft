@@ -23,6 +23,7 @@ import {
   cilClock,
   cilBarcode,
   cilLoop,
+  cilCalendarCheck,
   
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle,  } from '@coreui/react'
@@ -173,6 +174,12 @@ const getNavigation = () => {
             icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
             
           },
+           {
+            component: CNavItem,
+            name: 'Online Appointment',
+            to: '/AppointmentDashboard',
+            icon: <CIcon icon={cilCalendarCheck} customClassName="nav-icon" />,
+          },
           {
             component: CNavItem,
             name: 'Follow Up',
@@ -240,6 +247,7 @@ const getNavigation = () => {
             to: '/Medicines',
             icon: <CIcon icon={cilMedicalCross} customClassName="nav-icon" />,
           },
+           
           // {
           //   component: CNavItem,
           //   name: 'Medicines',
