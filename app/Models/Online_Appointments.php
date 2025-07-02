@@ -9,7 +9,7 @@ class Online_Appointments extends Model
 {
     protected $table = 'online_appointments'; // NOT 'online__appointments'
 
-    protected $fillable = ['name', 'service', 'date', 'time', 'phone','status','tokan'];
+    protected $fillable = ['clinic_id','name', 'service', 'date', 'time', 'phone','status','tokan'];
     use HasFactory;
     
     public function patient()

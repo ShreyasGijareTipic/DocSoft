@@ -275,7 +275,7 @@ const CoreUIPatientTable = () => {
       const response = await getAPICall(`/api/bills/doctor`);
       setData(response);
     } catch (error) {
-      setError('Error fetching data.');
+      // setError('Error fetching data.');
     } finally {
       setLoading(false);
     }
@@ -311,7 +311,7 @@ const CoreUIPatientTable = () => {
       <div className="d-flex justify-content-between align-items-center mb-3 mt-2">
         <CFormInput
           type="text"
-          placeholder="Search by patient name..."
+          placeholder="🔍 Search by patient name..."
           style={{ maxWidth: '300px' }}
           value={searchTerm}
           onChange={(e) => {

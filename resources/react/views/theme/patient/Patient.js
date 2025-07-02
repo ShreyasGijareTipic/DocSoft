@@ -546,7 +546,7 @@ const CoreUIPatientTable = () => {
         <div className="d-flex justify-content-between align-items-center mb-3 mt-2">
         <CFormInput
           type="text"
-          placeholder="Search patient by name..."
+          placeholder="🔍 Search patient by name..."
            style={{ maxWidth: '300px' }}
           value={searchTerm}
           onChange={(e) => {

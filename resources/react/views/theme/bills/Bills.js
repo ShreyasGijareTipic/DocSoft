@@ -3601,7 +3601,7 @@ style={{ backgroundColor: '	#F0F8FF' }}
 
 
         </CTableHead>
-        <CTableBody className=' border border-grey rounded-4 no-bg' style={{ backgroundColor: 'transparent' }}>
+        <CTableBody className=' rounded-4 no-bg' style={{   border: '2px solid #944C1F'  }}>
           {rows.map((row, index) => (
             <CTableRow key={index} className="align-middle text-center ">
               <CTableDataCell style={{ width: '16.66%' }}>
@@ -3872,195 +3872,120 @@ style={{ backgroundColor: '	#F0F8FF' }}
 
 <div className="d-block d-lg-none mt-2">
 
-  {rows.map((row, index) => (
-    <CCard className="mb-2 px-2 py-2" key={index}>
-
-
-<div className="d-block d-lg-none px-3 py-2">
   
-  <div className="mb-3 d-flex gap-3 align-items-center">
-    <strong>GST:</strong>
-    <CFormCheck
-      type="radio"
-      label="With GST"
-      name="gstToggleMobile"
-      checked={showGST}
-      onChange={() => setShowGST(true)}
-    />
-    <CFormCheck
-      type="radio"
-      label="Without GST"
-      name="gstToggleMobile"
-      checked={!showGST}
-      onChange={() => setShowGST(false)}
-    />
-  </div>
+
+  { rows.map((row, index) => (
+    <CCard className="mb-3 px-3 py-3 rounded-4 shadow-sm" style={{ backgroundColor: '#FFF9DB' }} key={index}>
+
+<sapn className='fw-semibold mb-2 fs-5' style={{ color: '#944C1F' }}>💰 Billing Information</sapn>
+<div className="mb-2 d-flex gap-3 align-items-center">
+  {/* <strong className='fw-semibold'>GST:</strong> */}
+  <CFormCheck
+    type="radio"
+    className='fw-semibold'
+    label="With GST"
+    name="gstToggle"
+    checked={showGST}
+    onChange={() => setShowGST(true)}
+  />
+  <CFormCheck
+    type="radio"
+    className='fw-semibold'
+    label="Without GST"
+    name="gstToggle"
+    checked={!showGST}
+    onChange={() => setShowGST(false)}
+  />
 </div>
 
 
-      <CRow className="mb-2">
-        <CCol xs="12">
-          <strong>Description</strong>
-          <CFormSelect
-            value={row.description}
-            onChange={(e) => handleRowChange(index, 'description', e.target.value)}
-          >
-            <option value="Consulting">Consulting</option>
-            <option value="Medicine">Medicine</option>
-            <option value="OPD">OPD</option>
-          </CFormSelect>
-        </CCol>
-      </CRow>
 
-      <CRow className="mb-2">
-        <CCol xs="12">
-          <strong>Quantity</strong>
-          <CFormInput
-  type="number"
-  className="text-center"
-  placeholder='Add Quantity Here'
-  value={
-    row.description === 'Medicine'
-      ? rowss.length
-      : row.quantity === 0
-      ? ''
-      : row.quantity
-  }
-  onChange={(e) => handleRowChange(index, 'quantity', Number(e.target.value))}
-  onFocus={(e) => {
-    if (row.description !== 'Medicine' && (row.quantity === 0 || row.quantity === null)) {
-      handleRowChange(index, 'quantity', '');
-    }
-  }}
-  readOnly={row.description === 'Medicine'}
-/>
-          {rowErrors[index]?.quantity && (
-            <div className="text-danger small">{rowErrors[index].quantity}</div>
-          )}
-        </CCol>
-      </CRow>
+      <div className="mb-2">
+        <label className="fw-semibold text-muted">Description</label>
+        <CFormSelect
+          value={row.description}
+          onChange={(e) => handleRowChange(index, 'description', e.target.value)}
+        >
+          <option value="Consulting">Consulting</option>
+          <option value="Medicine">Medicine</option>
+          <option value="OPD">OPD</option>
+        </CFormSelect>
+      </div>
 
+      <div className="mb-2">
+        <label className="fw-semibold text-muted">Quantity</label>
+        <CFormInput
+          type="number"
+          placeholder="Add Quantity Here"
+          value={
+            row.description === 'Medicine' ? rowss.length : row.quantity === 0 ? '' : row.quantity
+          }
+          onChange={(e) => handleRowChange(index, 'quantity', Number(e.target.value))}
+          onFocus={(e) => {
+            if (row.description !== 'Medicine' && (row.quantity === 0 || row.quantity === null)) {
+              handleRowChange(index, 'quantity', '');
+            }
+          }}
+          readOnly={row.description === 'Medicine'}
+        />
+        {rowErrors[index]?.quantity && (
+          <div className="text-danger small">{rowErrors[index].quantity}</div>
+        )}
+      </div>
 
-
-      <CRow className="mb-2">
-        <CCol xs="12">
-          <strong>Fees</strong>
-           {row.description === 'Medicine' ? (
-  <CFormInput
-    type="number"
-    className="text-center"
-    value={row.price === 0 ? '' : row.price} // Display empty string when price is 0
-    onChange={(e) => {
-      const value = Number(e.target.value);
-      if (value >= 0) {
-        handleRowChange(index, 'price', value);
-      }
-    }}
-    onFocus={(e) => {
-      if (row.price === 0) {
-        e.target.value = ''; // Clear the input on focus if the value is 0
-        handleRowChange(index, 'price', ''); // Also update the state to empty string
-      }
-    }}
-    onKeyDown={(e) => {
-      // Prevent minus key, 'e', 'E', '+' keys
-      if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
-        e.preventDefault();
-      }
-    }}
-  />
-) : (
-  <>
-    <CFormInput
-      type="number"
-      className="text-center"
-      value={row.price === 0 ? '' : row.price} // Display empty string when price is 0
-      onChange={(e) => {
-        const value = Number(e.target.value);
-        if (value >= 0) {
-          handleRowChange(index, 'price', value);
-        }
-      }}
-      onFocus={(e) => {
-        if (row.price === 0) {
-          e.target.value = ''; // Clear the input on focus if the value is 0
-          handleRowChange(index, 'price', ''); // Also update the state to empty string
-        }
-      }}
-      onKeyDown={(e) => {
-        // Prevent minus key, 'e', 'E', '+' keys
-        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
-          e.preventDefault();
-        }
-      }}
-      onBlur={(e) => {
-        // Double check on blur - if somehow negative value got through
-        const value = Number(e.target.value);
-        if (value < 0) {
-          handleRowChange(index, 'price', 0);
-        }
-      }}
-    />
-    {rowErrors[index]?.price && (
-      <div className="error">{rowErrors[index].price}</div>
-    )}
-  </>
-)}
-
-        </CCol>
-      </CRow>
+      <div className="mb-2">
+        <label className="fw-semibold text-muted">Fees</label>
+        <CFormInput
+          type="number"
+          value={row.price === 0 ? '' : row.price}
+          onChange={(e) => {
+            const value = Number(e.target.value);
+            if (value >= 0) handleRowChange(index, 'price', value);
+          }}
+          onFocus={(e) => {
+            if (row.price === 0) {
+              e.target.value = '';
+              handleRowChange(index, 'price', '');
+            }
+          }}
+          onKeyDown={(e) => {
+            if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault();
+          }}
+        />
+        {rowErrors[index]?.price && (
+          <div className="text-danger small">{rowErrors[index].price}</div>
+        )}
+      </div>
 
       {showGST && (
-        <CRow className="mb-2">
-          <CCol xs="12">
-            <strong>GST (%)</strong>
-            <CFormInput
-      type="text"
-      className="text-center"
-      value={(row.gst === 0 || row.gst === '') ? '' : row.gst} // Display empty string when gst is 0 or ''
-      onChange={(e) => handleRowChange(index, 'gst', e.target.value)} // Store as string
-      onFocus={(e) => {
-        if (row.gst === 0 || row.gst === '') {
-          e.target.value = ''; // Clear the input on focus if the value is 0 or ''
-          handleRowChange(index, 'gst', ''); // Update state to empty string
-        }
-      }}
-      onBlur={(e) => {
-        if (e.target.value === '') {
-          handleRowChange(index, 'gst', 0); // Set to 0 if input is empty
-        } else {
-          handleRowChange(index, 'gst', Number(e.target.value)); // Convert to number if not empty
-        }
-      }}
-      placeholder="0" // Add a placeholder
-      disabled={row.description === 'Medicine'} // Disable if description is Medicine
-    />
-          </CCol>
-        </CRow>
+        <div className="mb-2">
+          <label className="fw-semibold text-muted">GST (%)</label>
+          <CFormInput
+            type="number"
+            placeholder="0"
+            value={(row.gst === 0 || row.gst === '') ? '' : row.gst}
+            onChange={(e) => handleRowChange(index, 'gst', e.target.value)}
+            onBlur={(e) => {
+              if (e.target.value === '') handleRowChange(index, 'gst', 0);
+              else handleRowChange(index, 'gst', Number(e.target.value));
+            }}
+            disabled={row.description === 'Medicine'}
+          />
+        </div>
       )}
 
-      <CRow className="mb-2">
-        <CCol xs="12">
-          <strong>Total</strong>
-          <div className="fw-bold">₹ {row.total.toFixed(2)}</div>
-        </CCol>
-      </CRow>
+      <div className="mb-2 fw-bold fs-5 text-end" style={{ color: '#944C1F' }}>
+        ₹ {row.total.toFixed(2)}
+      </div>
 
-      <CRow>
-        <CCol xs="12" className="d-flex justify-content-center gap-2">
-          <CButton
-            color="danger"
-            size="sm"
-            onClick={() => handleRemoveRow(index)}
-            disabled={index === 0}
-          >
-            <CIcon icon={cilDelete} />
-          </CButton>
-          <CButton color="success" size="sm" onClick={handleAddRow}>
-            <CIcon icon={cilPlus} />
-          </CButton>
-        </CCol>
-      </CRow>
+      <div className="d-flex justify-content-end gap-2 mt-2">
+        <CButton color="danger" size="sm" onClick={() => handleRemoveRow(index)} disabled={index === 0}>
+          <CIcon icon={cilDelete} />
+        </CButton>
+        <CButton color="success" size="sm" onClick={handleAddRow}>
+          <CIcon icon={cilPlus} />
+        </CButton>
+      </div>
     </CCard>
   ))}
 </div>

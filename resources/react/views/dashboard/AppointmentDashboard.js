@@ -32,6 +32,7 @@ import {
   CModalFooter
 } from '@coreui/react';
 import { Eye, Edit, Trash2, Search, Filter, Calendar, Clock, Phone, User, Activity, CheckCircle, AlertCircle, XCircle, Download, FileText } from 'lucide-react';
+import { getAPICall, post } from '../../util/api';
 
 function AppointmentsTable() {
   const [data, setData] = useState([]);
@@ -169,24 +170,44 @@ function AppointmentsTable() {
     }
   };
 
+  // const fetchAppointments = () => {
+  //   setLoading(true);
+  //   getAPICall('/api/getAppointments')
+  //     .then((response) => response.json())
+  //     .then((json) => {
+  //       setData(json);
+  //       setFilteredData(json);
+  //       setLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error fetching appointments:', error);
+  //       setLoading(false);
+  //     });
+  // };
   const fetchAppointments = () => {
-    setLoading(true);
-    fetch('/api/getAppointments')
-      .then((response) => response.json())
-      .then((json) => {
-        setData(json);
-        setFilteredData(json);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching appointments:', error);
-        setLoading(false);
-      });
-  };
+  setLoading(true);
+  getAPICall('/api/getAppointments')
+    
+    .then((json) => {
+      // Extract appointments array from response
+      if (json.appointments) {
+        setData(json.appointments);
+        setFilteredData(json.appointments);
+      } else {
+        console.error("Invalid response format: ", json);
+      }
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error('Error fetching appointments:', error);
+      setLoading(false);
+    });
+};
+
 
   const cancelAppointment = async (phone) => {
     try {
-      const response = await fetch('/api/cancel-appointment', {
+      const response = await post('/api/cancel-appointment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

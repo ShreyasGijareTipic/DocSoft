@@ -81,9 +81,11 @@ Route::get('/webhook', [WhatsAppWebhookController::class, 'verifyToken']);
 // Route::post('/webhook', [WhatsappWebhookController::class, 'receiveMessage']);
 Route::post('/webhook', [WhatsAppWebhookController::class, 'webhook']);
 Route::post('/appointments', [OnlineAppointmentsController::class, 'store']);
-Route::get('/getAppointments', [OnlineAppointmentsController::class, 'getAppointments']);
+// Route::get('/getAppointments', [OnlineAppointmentsController::class, 'getAppointments']);
+Route::middleware('auth:sanctum')->get('/getAppointments', [OnlineAppointmentsController::class, 'getAppointments']);
+
 Route::get('/export', [OnlineAppointmentsController::class, 'export']);
-Route::get('/getAppointmentByToken/{id}', [OnlineAppointmentsController::class, 'getAppointmentByToken']);
+// Route::get('/getAppointmentByToken/{id}', [OnlineAppointmentsController::class, 'getAppointmentByToken']);
 Route::post('/cancel-appointment', [WhatsAppWebhookController::class, 'cancelAppointment']);
 
 
@@ -229,6 +231,10 @@ Route::post('/uploadDrugs', [CsvUploadController::class, 'uploadDrugs']);
 Route::post('/TokanCreate', [TokanController::class, 'store']);
 Route::get('/TokanGet/{id}', [TokanController::class, 'show']); 
 // Route::get('/suggestionPatient', [TokanController::class, 'suggestionPatient']);
+
+// Route::get('/getAppointments', [OnlineAppointmentsController::class, 'getAppointments']);
+Route::get('/getAppointmentByToken/{id}', [OnlineAppointmentsController::class, 'getAppointmentByToken']);
+
 
 
 });

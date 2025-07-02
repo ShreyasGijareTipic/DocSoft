@@ -373,7 +373,7 @@ const MedicinesShow = () => {
       <div className="d-flex justify-content-between align-items-center mb-3 mt-2">
         <CFormInput
           type="text"
-          placeholder="Search drug name..."
+          placeholder="🔍 Search drug name..."
           value={searchTerm}
            style={{ maxWidth: '300px' }}
           onChange={(e) => setSearchTerm(e.target.value)}

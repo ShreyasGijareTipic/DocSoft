@@ -287,27 +287,62 @@ class WhatsAppWebhookController extends Controller
                     Cache::put("step_{$phoneNumber}", 'ask_time', now()->addMinutes(10));
                     $this->sendTimeOfDayButtons($phoneNumber, $phoneNumberId);
                 } else {
+                    // try {
+                    //     $appointmentDate = Carbon::parse($selectedDate)->format('Y-m-d');
+                    //     $latestToken = Online_Appointments::where('date', $appointmentDate)
+                    //         ->max(DB::raw('CAST(tokan AS UNSIGNED)'));
+
+                    //     $nextToken = $latestToken ? $latestToken + 1 : 1;
+
+                    //     Online_Appointments::create([
+                    //         'name' => $profileName,
+                    //         'phone' => $phoneNumber,
+                    //         'date' => $appointmentDate,
+                    //         'time' => $slotTime,
+                    //         'status' => '0',
+                    //         'service' => 'service 1',
+                    //         'tokan' => $nextToken,
+                    //         'clinic_id' => 15,
+
+                    //     ]);
+                    // } catch (\Illuminate\Database\QueryException $e) {
+                    //     $this->appointmentMessage($phoneNumber,$phoneNumberId, "❌ Sorry, this slot is already booked. Please choose another.");
+                    // }
                     try {
-                        $appointmentDate = Carbon::parse($selectedDate)->format('Y-m-d');
-                        $latestToken = Online_Appointments::where('date', $appointmentDate)
-                            ->max(DB::raw('CAST(tokan AS UNSIGNED)'));
+    $appointmentDate = Carbon::parse($selectedDate)->format('Y-m-d');
 
-                        $nextToken = $latestToken ? $latestToken + 1 : 1;
+    // 🔍 Find clinic by phone number ID from webhook
+    $clinic = Clinic::where('clinic_whatsapp_url', $phoneNumberId)->first();
 
-                        Online_Appointments::create([
-                            'name' => $profileName,
-                            'phone' => $phoneNumber,
-                            'date' => $appointmentDate,
-                            'time' => $slotTime,
-                            'status' => '0',
-                            'service' => 'service 1',
-                            'tokan' => $nextToken,
-                            // 'clinic_id' => 0,
+    if (!$clinic) {
+        Log::error("❌ Clinic not found for phone ID: " . $phoneNumberId);
+        $this->appointmentMessage($phoneNumber, $phoneNumberId, "❌ Something went wrong. Clinic not found.");
+        return;
+    }
 
-                        ]);
-                    } catch (\Illuminate\Database\QueryException $e) {
-                        $this->appointmentMessage($phoneNumber,$phoneNumberId, "❌ Sorry, this slot is already booked. Please choose another.");
-                    }
+    // ✅ Get latest token for this clinic and this date
+    $latestToken = Online_Appointments::where('date', $appointmentDate)
+        ->where('clinic_id', $clinic->id)
+        ->max(DB::raw('CAST(tokan AS UNSIGNED)'));
+
+    $nextToken = $latestToken ? $latestToken + 1 : 1;
+
+    // ✅ Create appointment and save clinic_id
+    Online_Appointments::create([
+        'name' => $profileName,
+        'phone' => $phoneNumber,
+        'date' => $appointmentDate,
+        'time' => $slotTime,
+        'status' => '0',
+        'service' => 'service 1',
+        'tokan' => $nextToken,
+        'clinic_id' => $clinic->id,
+    ]);
+} catch (\Illuminate\Database\QueryException $e) {
+    Log::error("❌ Appointment booking failed: " . $e->getMessage());
+    $this->appointmentMessage($phoneNumber, $phoneNumberId, "❌ Sorry, this slot is already booked. Please choose another.");
+}
+
 
                     $this->sendConfirmationMessage($phoneNumber, $selectedDate, $slotTime,$phoneNumberId);
                     Cache::forget("step_{$phoneNumber}");

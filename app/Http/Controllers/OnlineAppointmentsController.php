@@ -2,6 +2,9 @@
  
 namespace App\Http\Controllers;
  
+use Illuminate\Support\Facades\Log;
+
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\Online_Appointments;
@@ -34,13 +37,63 @@ class OnlineAppointmentsController extends Controller
     //         'appointment' => $appointment,
     //     ], 201);
     // }
+// ___________________________________________________________________________________  
+//     public function getAppointments()
+// {
+//     $Online_Appointments = Online_Appointments::all(); // Fetches all records
  
-    public function getAppointments()
+//     return response()->json($Online_Appointments);
+// }
+
+public function getAppointments()
 {
-    $Online_Appointments = Online_Appointments::all(); // Fetches all records
- 
-    return response()->json($Online_Appointments);
+    $user = auth()->user();
+
+    // Check if user is logged in and has a clinic_id
+    if (!$user || !isset($user->clinic_id)) {
+        return response()->json(['message' => 'Unauthorized or clinic ID not found'], 401);
+    }
+
+    // Fetch appointments where clinic_id matches logged-in user's clinic_id
+    $appointments = Online_Appointments::where('clinic_id', $user->clinic_id)->get();
+
+    return response()->json($appointments);
 }
+// public function getAppointments()
+// {
+//     $user = auth()->user();
+
+//       $user = auth()->user();
+// if ($user) {
+//     Log::info("🧑 Logged-in User ID: " . $user->id);
+// } else {
+//     Log::warning("⚠️ No user is currently authenticated.");
+// }
+
+
+//     // 🛡️ Step 1: Auth check
+//     if (!$user || !isset($user->clinic_id)) {
+//         return response()->json(['message' => 'Unauthorized or clinic ID not found'], 401);
+//     }
+
+//     $clinicId = $user->clinic_id;
+
+//     // ✅ Step 2: Get appointments for this clinic only
+//     $appointments = Online_Appointments::where('clinic_id', $clinicId)->get();
+
+//     // ✅ Step 3: Return JSON
+//     return response()->json([
+//         'clinic_id' => $clinicId,
+//         'total_appointments' => $appointments->count(),
+//         'appointments' => $appointments
+//     ]);
+    
+// }
+
+
+
+// __________________________________________________________________________________________
+
 
 // public function getAppointmentByToken($tokan)
 // {
@@ -56,40 +109,94 @@ class OnlineAppointmentsController extends Controller
 
 //     return response()->json($appointment);
 // }
+// public function getAppointmentByToken($tokan)
+// {
+//     $today = Carbon::today()->format('Y-m-d');
+
+//     // Step 1: Fetch appointment by token and today's date
+//     $appointment = Online_Appointments::where('tokan', $tokan)
+//         ->where('date', $today)
+//         ->first();
+
+//     if (!$appointment) {
+//         return response()->json(['message' => 'Appointment not found'], 404);
+//     }
+
+//     // Step 2: Extract last 10 digits of phone
+//     $cleanPhone = substr(preg_replace('/\D/', '', $appointment->phone), -10);
+
+//     // Step 3: Check if patient with that phone exists
+//     $patient = Patient::where('phone', 'LIKE', "%$cleanPhone")->first();
+
+//     // Step 4: Return response accordingly
+//     if ($patient) {
+//         return response()->json([
+//             'appointment' => $appointment,
+//             'patient_id' => $patient->id,
+//             'patient' => $patient,
+//         ]);
+//     } else {
+//         // Just appointment info if no match found
+//         return response()->json([
+//             'appointment' => $appointment,
+//             'patient_id' => null,
+//         ]);
+//     }
+// }
 public function getAppointmentByToken($tokan)
 {
+    // Step 0: Check if user is logged in
+    $user = auth()->user();
+if ($user) {
+    Log::info("🧑 Logged-in User ID: " . $user->id);
+} else {
+    Log::warning("⚠️ No user is currently authenticated.");
+}
+
+    if (!$user || !isset($user->clinic_id)) {
+        return response()->json( [$user,'message' => 'Unauthorized'], 401);
+    }
+
+    $clinicId = $user->clinic_id;
+    $doctorId = $user->id;
     $today = Carbon::today()->format('Y-m-d');
 
-    // Step 1: Fetch appointment by token and today's date
+    // Step 1: Get today's appointment with matching clinic and token
     $appointment = Online_Appointments::where('tokan', $tokan)
         ->where('date', $today)
+        ->where('clinic_id', $clinicId)
         ->first();
 
     if (!$appointment) {
         return response()->json(['message' => 'Appointment not found'], 404);
     }
 
-    // Step 2: Extract last 10 digits of phone
+    // Step 2: Clean the phone number to get last 10 digits
     $cleanPhone = substr(preg_replace('/\D/', '', $appointment->phone), -10);
 
-    // Step 3: Check if patient with that phone exists
-    $patient = Patient::where('phone', 'LIKE', "%$cleanPhone")->first();
+    // Step 3: Find patient in same clinic AND created by same doctor
+    $patient = Patient::where('clinic_id', $clinicId)
+        ->where('doctor_id', $doctorId) // You can also use 'doctor_id' if your schema uses that
+        ->where('phone', 'LIKE', "%$cleanPhone")
+        ->first();
 
-    // Step 4: Return response accordingly
+    // Step 4: Return response based on existence
     if ($patient) {
         return response()->json([
             'appointment' => $appointment,
             'patient_id' => $patient->id,
             'patient' => $patient,
+            'is_existing_patient' => true
         ]);
     } else {
-        // Just appointment info if no match found
         return response()->json([
             'appointment' => $appointment,
             'patient_id' => null,
+            'is_existing_patient' => false
         ]);
     }
 }
+
 
  
  
