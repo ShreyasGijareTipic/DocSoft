@@ -38,12 +38,33 @@ class OnlineAppointmentsController extends Controller
     //     ], 201);
     // }
 // ___________________________________________________________________________________  
-//     public function getAppointments()
+//     public function getAppointmentsAllList()
 // {
 //     $Online_Appointments = Online_Appointments::all(); // Fetches all records
  
 //     return response()->json($Online_Appointments);
 // }
+public function getAppointmentsAllList()
+{
+    // ✅ Step 1: Get logged-in user
+    $user = auth()->user();
+
+    // ❌ Step 2: Check if user is authenticated and has a clinic ID
+    if (!$user || !isset($user->clinic_id)) {
+        return response()->json(['message' => 'Unauthorized or clinic ID missing'], 401);
+    }
+
+    // ✅ Step 3: Filter appointments by user's clinic_id
+    $appointments = Online_Appointments::where('clinic_id', $user->clinic_id)->get();
+
+    // ✅ Step 4: Return response
+    return response()->json([
+        'clinic_id' => $user->clinic_id,
+        'total_appointments' => $appointments->count(),
+        'appointments' => $appointments
+    ]);
+}
+
 
 public function getAppointments()
 {

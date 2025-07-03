@@ -232,7 +232,7 @@ Route::post('/TokanCreate', [TokanController::class, 'store']);
 Route::get('/TokanGet/{id}', [TokanController::class, 'show']); 
 // Route::get('/suggestionPatient', [TokanController::class, 'suggestionPatient']);
 
-// Route::get('/getAppointments', [OnlineAppointmentsController::class, 'getAppointments']);
+Route::get('/getAppointmentsAllList', [OnlineAppointmentsController::class, 'getAppointmentsAllList']);
 Route::get('/getAppointmentByToken/{id}', [OnlineAppointmentsController::class, 'getAppointmentByToken']);
 
 

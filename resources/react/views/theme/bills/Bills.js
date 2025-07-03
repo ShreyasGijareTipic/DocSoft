@@ -1757,7 +1757,7 @@ const isActive1 = selectedOption === 'Default'
       <CCol md={6} lg={4}>
         <CButton
           color="success"
-          className="w-100 py-2 d-flex align-items-center justify-content-center"
+          className="w-100 mt-2 py-2 d-flex align-items-center justify-content-center"
           style={{ borderRadius: '10px', fontWeight: 'bold' }}
           onClick={handleFetchData}
         >
@@ -2093,74 +2093,56 @@ style={{ backgroundColor: '	#F0F8FF' }}
 >
 
     
- <div className="d-flex justify-content-start lign-items-center mb-2">
+<div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-start gap-1 gap-md-3 mb-2">
+  {/* Label and Icon */}
   <div className="d-flex align-items-center gap-2">
-    {/* <CIcon icon={cilFile} className="text-primary" size="lg" /> &nbsp; */}
-     <div
-          className="d-flex align-items-center justify-content-center bg-white border border-primary ms-2"
-          style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '10px',
-          }}
-        >
-          <CIcon icon={cilFile} size="lg" className="text-primary" />
-        </div>
-    <h6 className="mb-0 fw-semibold">Medical Observations</h6>&nbsp;&nbsp;
+    <div
+      className="d-flex align-items-center justify-content-center bg-white border border-primary"
+      style={{ width: '36px', height: '36px', borderRadius: '10px' }}
+    >
+      <CIcon icon={cilFile} size="lg" className="text-primary" />
+    </div>
+    <h6 className="mb-0 fw-semibold">Medical Observations</h6>
   </div>
 
- <div className="d-flex flex-column flex-md-row gap-2">
-  <CButton
-  color="light"
-  className="d-flex align-items-center gap-2 px-4 py-2 fw-semibold rounded rounded-4"
-  onClick={toggleMedicalForm}
-  style={{
-   // borderColor: '#8000ff', // Bootstrap Primary Blue
-    border: '2px solid #1B9C8F',
-    backgroundColor: 'white',
-    transition: 'background-color 0.3s',
-  }}
-  onMouseEnter={(e) => {
-    e.currentTarget.style.backgroundColor = '#D5ECE9'; // light blue on hover
-  }}
-  onMouseLeave={(e) => {
-    e.currentTarget.style.backgroundColor = 'white'; // reset on leave
-  }}
->
-  {/* <span className="" style={{ color: '#1B9C8F'}}> Add Medical Observation</span> */}
-   <span style={{ color: '#1B9C8F' }}>
-    🩺 {isMedicalExpanded ? 'Close' : 'Add Medical Observation'}
-  </span>
-</CButton>
+  {/* Buttons (stack on mobile, inline on desktop) */}
+  <div className="d-flex flex-column flex-sm-column flex-md-row gap-2 mt-2 mt-md-0">
+    <CButton
+      color="light"
+      className="d-flex align-items-center gap-2 px-4 py-2 fw-semibold rounded-4"
+      onClick={toggleMedicalForm}
+      style={{
+        border: '2px solid #1B9C8F',
+        backgroundColor: 'white',
+        transition: 'background-color 0.3s',
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#D5ECE9')}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+    >
+      <span style={{ color: '#1B9C8F' }}>
+        🩺 {isMedicalExpanded ? 'Close' : 'Add Medical Observation'}
+      </span>
+    </CButton>
 
-
-
- <CButton
-  color="light"
-  className="d-flex align-items-center gap-2 px-4 py-2 fw-semibold rounded rounded-4"
-  onClick={toggleAyurvedicForm}
-  style={{
-    border: '2px solid #8B3E2F', // Green border
-    backgroundColor: 'white',
-    transition: 'background-color 0.3s',
-  }}
-  onMouseEnter={(e) => {
-    e.currentTarget.style.backgroundColor = '#EED7D3'; // light green on hover
-  }}
-  onMouseLeave={(e) => {
-    e.currentTarget.style.backgroundColor = 'white';
-  }}
->
-  <span style={{ color: '	#8B3E2F' }}>
-    🌿 {isAyurvedicExpanded ? 'Close' : 'Add Ayurvedic Observation'}
-  </span>
-</CButton>
-
+    <CButton
+      color="light"
+      className="d-flex align-items-center gap-2 px-4 py-2 fw-semibold rounded-4"
+      onClick={toggleAyurvedicForm}
+      style={{
+        border: '2px solid #8B3E2F',
+        backgroundColor: 'white',
+        transition: 'background-color 0.3s',
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#EED7D3')}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+    >
+      <span style={{ color: '#8B3E2F' }}>
+        🌿 {isAyurvedicExpanded ? 'Close' : 'Add Ayurvedic Observation'}
+      </span>
+    </CButton>
+  </div>
 </div>
 
-
-
-</div>
 
 
 
@@ -2923,43 +2905,44 @@ style={{ backgroundColor: '	#F0F8FF' }}
   {/* Prescriptions Section */}
   {!showTable && (
     <>
-      <div className="d-flex justify-content-start align-items-center mb-2">
-        <div className="d-flex align-items-center gap-2">
-          {/* <CIcon icon={cilMedicalCross} className="text-primary" size="lg" /> &nbsp; */}
-          <div
-          className="d-flex align-items-center justify-content-center bg-white border border-primary ms-2"
-          style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '10px',
-          }}
-        >
-          <CIcon icon={cilMedicalCross} size="lg" className="text-primary" />
-        </div>
-          <h6 className="mb-0 fw-semibold">Medical Prescriptions</h6>&nbsp;&nbsp;
-        </div>
-        <CButton
-  color="light"
-  className="d-flex align-items-center gap-2 px-4 py-2  fw-semibold rounded rounded-4"
-  onClick={() => setShowTable(true)}
-  style={{
-    border: '2px solid #4B0082', // Deep indigo or prescription theme
-    backgroundColor: 'white',
-    transition: 'background-color 0.3s',
-  }}
-  onMouseEnter={(e) => {
-    e.currentTarget.style.backgroundColor = '#E6DEFA'; // light lavender on hover
-  }}
-  onMouseLeave={(e) => {
-    e.currentTarget.style.backgroundColor = 'white';
-  }}
->
-  <span style={{ color: '#4B0082' }}>
-    💊 &nbsp;&nbsp;{showTable ? 'Close' : 'Add Prescriptions'}
-  </span>
-</CButton>
+     <div className="d-flex flex-column flex-md-row justify-content-start align-items-start align-items-md-center gap-0 mb-2">
+  {/* Label + Icon */}
+  <div className="d-flex align-items-center me-md-3 mb-2 mb-md-0" style={{ width: '200px'}}>
+    <div
+      className="d-flex align-items-center justify-content-center bg-white border border-primary me-2"
+      style={{ width: '36px', height: '36px', borderRadius: '10px' }}
+    >
+      <CIcon icon={cilMedicalCross} size="lg" className="text-primary" />
+    </div>
+    <h6 className="mb-0 fw-semibold">Medical Prescriptions</h6>
+  </div>
 
-      </div>
+  {/* Button – stacked below on mobile, inline on desktop */}
+  <div className="w-md-auto" style={{ width: '260px'}}>
+    <CButton
+      color="light"
+      className="d-flex align-items-center gap-2 px-4 py-2 fw-semibold rounded-4 w-100 w-md-auto"
+      onClick={() => setShowTable(true)}
+      style={{
+        border: '2px solid #4B0082',
+        backgroundColor: 'white',
+        transition: 'background-color 0.3s',
+
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = '#E6DEFA';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = 'white';
+      }}
+    >
+      <span style={{ color: '#4B0082' }}>
+        💊 &nbsp;&nbsp;{showTable ? 'Close' : 'Add Prescriptions'}
+      </span>
+    </CButton>
+  </div>
+</div>
+
     </>
   )}
 
@@ -3871,124 +3854,133 @@ style={{ backgroundColor: '	#F0F8FF' }}
 {/* Mobile View */}
 
 <div className="d-block d-lg-none mt-2">
+  <CCard className="mb-3 px-3 py-3 rounded-4 shadow-sm" style={{ backgroundColor: '#FFF9DB' }}>
+    {/* Show header only for first row */}
+    {rows.length > 0 && (
+      <span className="fw-semibold mb-2 fs-5 d-block" style={{ color: '#944C1F' }}>
+        💰 Billing Information
+      </span>
+    )}
 
-  
+    {/* Show GST toggle just once */}
+    <div className="mb-2 d-flex gap-3 align-items-center">
+      <CFormCheck
+        type="radio"
+        className="fw-semibold"
+        label="With GST"
+        name="gstToggle"
+        checked={showGST}
+        onChange={() => setShowGST(true)}
+      />
+      <CFormCheck
+        type="radio"
+        className="fw-semibold"
+        label="Without GST"
+        name="gstToggle"
+        checked={!showGST}
+        onChange={() => setShowGST(false)}
+      />
+    </div>
 
-  { rows.map((row, index) => (
-    <CCard className="mb-3 px-3 py-3 rounded-4 shadow-sm" style={{ backgroundColor: '#FFF9DB' }} key={index}>
-
-<sapn className='fw-semibold mb-2 fs-5' style={{ color: '#944C1F' }}>💰 Billing Information</sapn>
-<div className="mb-2 d-flex gap-3 align-items-center">
-  {/* <strong className='fw-semibold'>GST:</strong> */}
-  <CFormCheck
-    type="radio"
-    className='fw-semibold'
-    label="With GST"
-    name="gstToggle"
-    checked={showGST}
-    onChange={() => setShowGST(true)}
-  />
-  <CFormCheck
-    type="radio"
-    className='fw-semibold'
-    label="Without GST"
-    name="gstToggle"
-    checked={!showGST}
-    onChange={() => setShowGST(false)}
-  />
-</div>
-
-
-
-      <div className="mb-2">
-        <label className="fw-semibold text-muted">Description</label>
-        <CFormSelect
-          value={row.description}
-          onChange={(e) => handleRowChange(index, 'description', e.target.value)}
-        >
-          <option value="Consulting">Consulting</option>
-          <option value="Medicine">Medicine</option>
-          <option value="OPD">OPD</option>
-        </CFormSelect>
-      </div>
-
-      <div className="mb-2">
-        <label className="fw-semibold text-muted">Quantity</label>
-        <CFormInput
-          type="number"
-          placeholder="Add Quantity Here"
-          value={
-            row.description === 'Medicine' ? rowss.length : row.quantity === 0 ? '' : row.quantity
-          }
-          onChange={(e) => handleRowChange(index, 'quantity', Number(e.target.value))}
-          onFocus={(e) => {
-            if (row.description !== 'Medicine' && (row.quantity === 0 || row.quantity === null)) {
-              handleRowChange(index, 'quantity', '');
-            }
-          }}
-          readOnly={row.description === 'Medicine'}
-        />
-        {rowErrors[index]?.quantity && (
-          <div className="text-danger small">{rowErrors[index].quantity}</div>
-        )}
-      </div>
-
-      <div className="mb-2">
-        <label className="fw-semibold text-muted">Fees</label>
-        <CFormInput
-          type="number"
-          value={row.price === 0 ? '' : row.price}
-          onChange={(e) => {
-            const value = Number(e.target.value);
-            if (value >= 0) handleRowChange(index, 'price', value);
-          }}
-          onFocus={(e) => {
-            if (row.price === 0) {
-              e.target.value = '';
-              handleRowChange(index, 'price', '');
-            }
-          }}
-          onKeyDown={(e) => {
-            if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault();
-          }}
-        />
-        {rowErrors[index]?.price && (
-          <div className="text-danger small">{rowErrors[index].price}</div>
-        )}
-      </div>
-
-      {showGST && (
+    {rows.map((row, index) => (
+      <div key={index} className="mb-3 border-bottom pb-3">
+        {/* Description */}
         <div className="mb-2">
-          <label className="fw-semibold text-muted">GST (%)</label>
+          <label className="fw-semibold text-muted">Description</label>
+          <CFormSelect
+            value={row.description}
+            onChange={(e) => handleRowChange(index, 'description', e.target.value)}
+          >
+            <option value="Consulting">Consulting</option>
+            <option value="Medicine">Medicine</option>
+            <option value="OPD">OPD</option>
+          </CFormSelect>
+        </div>
+
+        {/* Quantity */}
+        <div className="mb-2">
+          <label className="fw-semibold text-muted">Quantity</label>
           <CFormInput
             type="number"
-            placeholder="0"
-            value={(row.gst === 0 || row.gst === '') ? '' : row.gst}
-            onChange={(e) => handleRowChange(index, 'gst', e.target.value)}
-            onBlur={(e) => {
-              if (e.target.value === '') handleRowChange(index, 'gst', 0);
-              else handleRowChange(index, 'gst', Number(e.target.value));
+            placeholder="Add Quantity Here"
+            value={
+              row.description === 'Medicine' ? rowss.length : row.quantity === 0 ? '' : row.quantity
+            }
+            onChange={(e) => handleRowChange(index, 'quantity', Number(e.target.value))}
+            onFocus={(e) => {
+              if (row.description !== 'Medicine' && (row.quantity === 0 || row.quantity === null)) {
+                handleRowChange(index, 'quantity', '');
+              }
             }}
-            disabled={row.description === 'Medicine'}
+            readOnly={row.description === 'Medicine'}
           />
+          {rowErrors[index]?.quantity && (
+            <div className="text-danger small">{rowErrors[index].quantity}</div>
+          )}
         </div>
-      )}
 
-      <div className="mb-2 fw-bold fs-5 text-end" style={{ color: '#944C1F' }}>
-        ₹ {row.total.toFixed(2)}
-      </div>
+        {/* Price */}
+        <div className="mb-2">
+          <label className="fw-semibold text-muted">Fees</label>
+          <CFormInput
+            type="number"
+            value={row.price === 0 ? '' : row.price}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              if (value >= 0) handleRowChange(index, 'price', value);
+            }}
+            onFocus={(e) => {
+              if (row.price === 0) {
+                e.target.value = '';
+                handleRowChange(index, 'price', '');
+              }
+            }}
+            onKeyDown={(e) => {
+              if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault();
+            }}
+          />
+          {rowErrors[index]?.price && (
+            <div className="text-danger small">{rowErrors[index].price}</div>
+          )}
+        </div>
 
-      <div className="d-flex justify-content-end gap-2 mt-2">
-        <CButton color="danger" size="sm" onClick={() => handleRemoveRow(index)} disabled={index === 0}>
-          <CIcon icon={cilDelete} />
-        </CButton>
-        <CButton color="success" size="sm" onClick={handleAddRow}>
-          <CIcon icon={cilPlus} />
-        </CButton>
+        {/* GST field shown only if enabled */}
+        {showGST && (
+          <div className="mb-2">
+            <label className="fw-semibold text-muted">GST (%)</label>
+            <CFormInput
+              type="number"
+              placeholder="0"
+              value={row.gst === 0 || row.gst === '' ? '' : row.gst}
+              onChange={(e) => handleRowChange(index, 'gst', e.target.value)}
+              onBlur={(e) => {
+                if (e.target.value === '') handleRowChange(index, 'gst', 0);
+                else handleRowChange(index, 'gst', Number(e.target.value));
+              }}
+              disabled={row.description === 'Medicine'}
+            />
+          </div>
+        )}
+
+        {/* Total */}
+        <div className="mb-2 fw-bold fs-5 text-end" style={{ color: '#944C1F' }}>
+          ₹ {row.total.toFixed(2)}
+        </div>
+
+        {/* Actions */}
+        <div className="d-flex justify-content-end gap-2 mt-2">
+          <CButton color="danger" size="sm" onClick={() => handleRemoveRow(index)} disabled={index === 0}>
+            <CIcon icon={cilDelete} />
+          </CButton>
+          <CButton color="success" size="sm" onClick={() => handleAddRow(row.description)}>
+            <CIcon icon={cilPlus} />
+          </CButton>
+        </div>
       </div>
-    </CCard>
-  ))}
+    ))}
+  </CCard>
 </div>
+
 
 
 

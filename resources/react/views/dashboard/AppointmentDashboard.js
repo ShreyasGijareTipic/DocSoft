@@ -186,7 +186,7 @@ function AppointmentsTable() {
   // };
   const fetchAppointments = () => {
   setLoading(true);
-  getAPICall('/api/getAppointments')
+  getAPICall('/api/getAppointmentsAllList')
     
     .then((json) => {
       // Extract appointments array from response
