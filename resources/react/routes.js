@@ -91,6 +91,10 @@ const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
+// forget Password 
+const Resetpassword = React.lazy(() => import('./views/pages/password/Newpassword'))
+const Updatepassword = React.lazy(() => import('./views/pages/password/Updatepassword'))
+
 const routes = [
   { path: '/', exact: true, name: 'home' },
   // { path: '/dashboard', name: 'Dashboard', element: Dashboard },
@@ -170,6 +174,10 @@ const routes = [
   { path: '/widgets', name: 'Widgets', element: Widgets },
   { path: '/Profile', name: 'Profile', element: Profile },
   { path: '/Billing', name: 'Billing', element: Billing },
+
+   //for reset password
+    { path:'/resetPassword', name: 'Update Password', element: Resetpassword },
+    { path: '/updatepassword', name: 'Reset Password', element: Updatepassword },
 
 ]
 

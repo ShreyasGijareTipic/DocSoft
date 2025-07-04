@@ -11,12 +11,15 @@ import {
 import {
   cilUser,
   cilLockLocked,
+  cilSettings,
+  cilApplications,
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import avatar8 from '../../assets/images/avatars/profile.jpg'
 import { getAPICall, post } from '../../../react/util/api'
 // import { deleteUserData } from '../../../util/session'
 import { deleteUserData, getUser } from '../../../react/util/session'
+import { Link } from 'react-router-dom'
 
 
 const AppHeaderDropdown = () => {
@@ -75,7 +78,21 @@ const AppHeaderDropdown = () => {
           <CIcon icon={cilLockLocked} className="me-2" />
           Logout
         </CDropdownItem>
-
+        <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Password</CDropdownHeader>
+       
+        <Link to="/resetPassword" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <CDropdownItem>
+            <CIcon icon={cilSettings} className="me-2" />
+            Password
+          </CDropdownItem>
+        </Link>
+        <Link to="/sendEmailForResetLink" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <CDropdownItem>
+            <CIcon icon={cilApplications} className="me-2" />
+            Forgot Password
+          </CDropdownItem>
+        </Link>
+        <CDropdownDivider />
      
 
       </CDropdownMenu>

@@ -21,6 +21,8 @@ const WhatsappClinicRegister = React.lazy(() => import('./views/pages/register/W
 const EditWhatsappClinicRegister = React.lazy(() => import('./views/pages/register/EditwhatsappClinicRegister'))
 
 // const ToastContainer = React.lazy(() => import('./views/theme/toastContainer/toastContainer'))
+const SendResetLink = React.lazy(() => import('./views/pages/password/ResetLink'))
+const Updatepassword = React.lazy(() => import('./views/pages/password/Updatepassword'))
 
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -76,7 +78,9 @@ const App = () => {
           {/* Fallback to Default Layout */}
           <Route path="*" name="Home" element={<DefaultLayout />} />
 
-            
+              {/* Forget Password  */}
+            <Route exact path="/updatepassword" name="Update password" element={<Updatepassword/>} />
+          <Route exact path="/sendEmailForResetLink" name="Send Reset Link" element={<SendResetLink />} />  
         
         </Routes>
         <ToastContainer/>

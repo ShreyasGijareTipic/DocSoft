@@ -48,8 +48,11 @@ use App\Http\Controllers\TokanController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\RazorpayController;
 
+use App\Http\Controllers\MailController;
 
 
+Route::post('/reset-password-link', [MailController::class, 'sendEmail']);
+Route::post('/newPassword',[MailController::class, 'resetPassword']);
 
 Route::get('/doctor-medical-observations/{doctorId}', [DoctorMedicalObservationController::class, 'getByDoctor']);
 Route::post('/save-doctor-medical-observations', [DoctorMedicalObservationController::class, 'save']);
