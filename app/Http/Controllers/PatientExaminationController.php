@@ -117,7 +117,7 @@ public function store(Request $request)
 {
     // Validate the request data
     $validatedData = $request->validate([
-        'p_p_i_id' => 'required|exists:Bills,id',
+        'p_p_i_id' => 'required|exists:bills,id',
         'patient_id' => 'nullable|exists:patients,id',
         'bp' => 'nullable|string',
         'height' => 'nullable|string',
@@ -226,7 +226,7 @@ public function store(Request $request)
     {
         // Validate the request data
         $validatedData = $request->validate([
-            'p_p_i_id' => 'required|exists:Bills,id',
+            'p_p_i_id' => 'required|exists:bills,id',
             'bp' => 'nullable|string',
             'pulse' => 'nullable|string',
             'height' => 'nullable|string',
@@ -419,22 +419,38 @@ public function getAyurvedictExaminationsByBillId($p_p_i_id)
             $item = (array) $item;
 
             // Handle JSON fields: personal_history and prasavvedan_parikshayein
-            foreach (['personal_history', 'prasavvedan_parikshayein', 'habits'] as $field) {
-                if (!empty($item[$field])) {
-                    $decoded = json_decode($item[$field], true);
+            // foreach (['personal_history', 'prasavvedan_parikshayein', 'habits'] as $field) {
+            //     if (!empty($item[$field])) {
+            //         $decoded = json_decode($item[$field], true);
 
-                    if (json_last_error() === JSON_ERROR_NONE) {
-                        // Remove keys where value is null or empty string
-                        $filtered = array_filter($decoded, fn($v) => $v !== null && $v !== '');
-                        $item[$field] = !empty($filtered) ? $filtered : null;
-                    } else {
-                        // If invalid JSON, keep it null
-                        $item[$field] = null;
-                    }
-                } else {
-                    $item[$field] = null;
-                }
-            }
+            //         if (json_last_error() === JSON_ERROR_NONE) {
+            //             // Remove keys where value is null or empty string
+            //             $filtered = array_filter($decoded, fn($v) => $v !== null && $v !== '');
+            //             $item[$field] = !empty($filtered) ? $filtered : null;
+            //         } else {
+            //             // If invalid JSON, keep it null
+            //             $item[$field] = null;
+            //         }
+            //     } else {
+            //         $item[$field] = null;
+            //     }
+            // }
+                foreach (['personal_history', 'prasavvedan_parikshayein', 'habits'] as $field) {
+    if (!empty($item[$field])) {
+        $decoded = json_decode($item[$field], true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $filtered = array_filter($decoded, fn($v) => $v !== null && $v !== '');
+            $item[$field] = !empty($filtered) ? $filtered : null;
+        } else {
+            $item[$field] = null;
+        }
+    } else {
+        $item[$field] = null;
+    }
+}
+
+
 
             // Convert back to object if you want consistent response structure
             return (object) $item;

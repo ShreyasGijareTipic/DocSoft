@@ -253,7 +253,7 @@ public function store(Request $request)
             'clinic_id' => 'string',
             'doctor_id' => 'string',
             'name' => 'required|min:1',
-            'email' => 'required|email',
+            'email' => 'email',
             'phone' => ['required', 'string', 'digits:10', 'regex:/^\d{10}$/'],
             'address' => 'required',
             'dob' => 'required|date',
@@ -341,7 +341,7 @@ public function manuallyAddPatient(Request $request)
     // ✅ First, validate only the fields that come from the request
     $validatedData = $request->validate([
         'name'    => 'required|string|min:1',
-        'email'   => 'required|email',
+        'email'   => 'nullable|email',
         'phone'   => ['required', 'string','regex:/^\d{10}$|^\d{12}$/'],
         'address' => 'required|string',
         'dob'     => 'required|date',
@@ -413,7 +413,7 @@ public function manuallyAddPatient(Request $request)
 
     $request->validate([
         'name' => 'sometimes|required|string',
-        'email' => 'sometimes|required|email',
+        'email' => 'sometimes|email',
         'phone' => 'sometimes|required|string',
         'address' => 'sometimes|required|string',
         'dob' => 'sometimes|required|date',

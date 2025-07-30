@@ -78,6 +78,7 @@ class AuthController extends Controller
                 'address' => 'required|string',
                 'clinic_id' => 'required|exists:clinic,id',
                 'type' => 'required|in:1,2',
+                'sign' => 'required|string',
                 // We don't validate medical_observations here as they'll be handled separately
             ]);
 
@@ -87,6 +88,7 @@ class AuthController extends Controller
 
             // Create the user
             $user = User::create([
+
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
@@ -98,6 +100,7 @@ class AuthController extends Controller
                 'address' => $request->address,
                 'clinic_id' => $request->clinic_id,
                 'type' => $request->type,
+                'sign'=>$request->sign
             ]);
 
             // Handle medical observations if provided and if this is a doctor (type = 1)

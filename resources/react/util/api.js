@@ -90,7 +90,7 @@ async function postOrPutData(url = '', data = {}, method = 'POST') {
 async function getOrDelete(url='', method = 'GET') {
   try {
     const token = await getToken();
-    console.log(token);
+    // console.log(token);
     const response = await fetch(url,{
       method: method,
       headers: {

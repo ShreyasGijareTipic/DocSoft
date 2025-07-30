@@ -946,12 +946,12 @@ const inv = () => {
 
       const doctorResponse = await getAPICall(`/api/users/${response.doctor_id}`);
       setDoctorData(doctorResponse);
-      console.log("doctorResponse",doctorResponse.clinic_id);
+      console.log("doctorResponse",doctorResponse.sign);
 
       if (doctorResponse && doctorResponse.clinic_id) {
         const clinicResponse = await getAPICall(`/api/clinic/${doctorResponse.clinic_id}`);
         setClinicData(clinicResponse);
-        // console.log(clinicResponse.logo);
+        // console.log(clinicResponse.sign);
       }
       
       setGrandTotal(finalAmount);
@@ -1241,6 +1241,7 @@ const handleShareWhatsApp = async () => {
   }
 };
 
+
 // Alternative method: Direct WhatsApp sharing with Base64 (for better compatibility)
 const handleShareWhatsAppBase64 = async () => {
   const billNumber = formData.id || billId;
@@ -1254,7 +1255,7 @@ const handleShareWhatsAppBase64 = async () => {
 
   try {
     // Generate PDF blob
-    const pdfBlob = generatePDFBlob(
+    const pdfBlob = await generatePDFBlob(
       grandTotal || totalAmount || 0, 
       billNumber || "N/A", 
       formData.patient_name || "N/A", 
@@ -1331,6 +1332,11 @@ const handleDownloadPDF = () => {
     showToast('danger', 'Error downloading PDF: ' + error.message);
   }
 };
+
+
+
+
+
 // Also, remove the handleDownload call from handleFileInputClick
 const handleFileInputClick = () => {
   // Removed handleDownload() call - no need to download when just opening file picker
@@ -1512,7 +1518,8 @@ if (hasData1(observation?.personal_history)) {
       { id: 'dosage', label: 'Dosage' },
       { id: 'timing', label: 'Timing' },
       { id: 'frequency', label: 'Frequency' },
-      { id: 'duration', label: 'Duration' }
+      { id: 'duration', label: 'Duration' },
+      { id: 'price', label: 'Price' }
     ];
     
     return columns.filter(column => hasPrescriptionData(column.id));

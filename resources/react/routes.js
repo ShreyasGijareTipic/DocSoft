@@ -95,6 +95,9 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const Resetpassword = React.lazy(() => import('./views/pages/password/Newpassword'))
 const Updatepassword = React.lazy(() => import('./views/pages/password/Updatepassword'))
 
+// New Bill Page
+ const BillsNew = React.lazy(() => import('./views/theme/SeprationPages/index'))
+
 const routes = [
   { path: '/', exact: true, name: 'home' },
   // { path: '/dashboard', name: 'Dashboard', element: Dashboard },
@@ -177,8 +180,11 @@ const routes = [
 
    //for reset password
     { path:'/resetPassword', name: 'Update Password', element: Resetpassword },
-    { path: '/updatepassword', name: 'Reset Password', element: Updatepassword },
+    { path: '/updatepassword', name: 'Reset Password', element: Updatepassword }, 
 
+    // New Bill Page
+      { path: '/BillsNew', name: 'New Bill Page', element: BillsNew },
 ]
+
 
 export default routes

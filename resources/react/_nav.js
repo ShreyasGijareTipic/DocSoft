@@ -129,7 +129,7 @@ import classNames from 'classnames';
 const getNavigation = () => {
   const user = getUser();
   
-  console.log("User data in getNavigation:", user); // Debugging log
+  // console.log("User data in getNavigation:", user); // Debugging log
  
    if (!user) {
      console.warn("User is not defined. Returning default navigation.");
@@ -174,12 +174,12 @@ const getNavigation = () => {
             icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
             
           },
-           {
-            component: CNavItem,
-            name: 'Online Appointment',
-            to: '/AppointmentDashboard',
-            icon: <CIcon icon={cilCalendarCheck} customClassName="nav-icon" />,
-          },
+          //  {
+          //   component: CNavItem,
+          //   name: 'Online Appointment',
+          //   to: '/AppointmentDashboard',
+          //   icon: <CIcon icon={cilCalendarCheck} customClassName="nav-icon" />,
+          // },
           {
             component: CNavItem,
             name: 'Follow Up',
@@ -191,6 +191,13 @@ const getNavigation = () => {
             component: CNavItem,
             name: 'Create Bill',
             to: '/Bills',
+            icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
+            
+          },
+           {
+            component: CNavItem,
+            name: 'New Bill Page',
+            to: '/BillsNew',
             icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
             
           },

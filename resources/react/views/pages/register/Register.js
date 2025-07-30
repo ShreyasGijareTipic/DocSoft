@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { CButton, CCard, CCardBody, CCol, CContainer, CForm, CFormInput, CFormSelect, CRow, CFormCheck, CCardHeader, CSpinner } from '@coreui/react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getAPICall, post } from '../../../util/api';
+import { getAPICall, post, postFormData } from '../../../util/api';
 
 const Register = () => {
   const { storeid } = useParams();
   const navigate = useNavigate();
+  // const logoInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
+    sign:'',
     clinic_id: storeid,
     name: '',
     registration_number: '',
@@ -19,7 +21,7 @@ const Register = () => {
     email: '',
     password: '',
     password_confirmation: '',
-    logo: '',
+    // logo: '',
     type: ''
   });
 
@@ -53,6 +55,58 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
+// Updated handleImageUpload function
+const handleImageUpload = (e) => {
+  const file = e.target.files[0];
+  const validTypes = ['image/jpeg', 'image/png'];
+  const maxSize = 300 * 1024; // 300 KB
+
+  if (!file) {
+    return;
+  }
+
+  if (!validTypes.includes(file.type)) {
+    alert('Only JPG and PNG images are allowed.');
+    e.target.value = ""; // Reset input
+    setFormData({ ...formData, sign: '' }); // Reset to empty string
+    return;
+  }
+
+  if (file.size > maxSize) {
+    alert('File size must be under 300 KB.');
+    e.target.value = ""; // Reset input
+    setFormData({ ...formData, sign: '' }); // Reset to empty string
+    return;
+  }
+
+  // Convert file to base64
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64String = e.target.result; // This includes the data:image/jpeg;base64, prefix
+    
+    // Store the complete base64 string (with prefix) or just the base64 part
+    // If your backend expects just the base64 data without prefix:
+    // const base64Data = base64String.split(',')[1];
+    // setFormData({ ...formData, sign: base64Data });
+    
+    // If your backend expects the complete data URL:
+    setFormData({ ...formData, sign: base64String });
+  };
+
+  reader.onerror = () => {
+    alert('Error reading file');
+    e.target.value = "";
+    setFormData({ ...formData, sign: '' });
+  };
+
+  reader.readAsDataURL(file);
+
+  // Clear error message if any
+  setErrors((prev) => ({ ...prev, sign: '' }));
+};
+
+  
+
   // Clear autofill values on component mount
   useEffect(() => {
     setFormData((prevData) => ({
@@ -84,7 +138,7 @@ const Register = () => {
     const newErrors = {};
 
     Object.keys(formData).forEach((key) => {
-      if (!formData[key] && key !== 'logo') {
+      if (!formData[key] && key !== 'sign') {
         newErrors[key] = `${key.replace('_', ' ')} is required.`;
       }
     });
@@ -109,53 +163,104 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+//     if (!validateForm()) {
+//       return;
+//     }
 
-    try {
-      setIsLoading(true);
+//     try {
+//       setIsLoading(true);
       
-      // Convert checkbox boolean values to 1/0 for backend
-      const medicalObsForSubmit = {};
-      Object.keys(medicalObservations).forEach(key => {
-        medicalObsForSubmit[key] = medicalObservations[key] ? 1 : 0;
-      });
+//       // Convert checkbox boolean values to 1/0 for backend
+//       const medicalObsForSubmit = {};
+//       Object.keys(medicalObservations).forEach(key => {
+//         medicalObsForSubmit[key] = medicalObservations[key] ? 1 : 0;
+//       });
 
-      const ayurvedicObsForSubmit = {};
-Object.keys(ayurvedicObservations).forEach(key => {
-  ayurvedicObsForSubmit[key] = ayurvedicObservations[key] ? 1 : 0;
-});
+//       const ayurvedicObsForSubmit = {};
+// Object.keys(ayurvedicObservations).forEach(key => {
+//   ayurvedicObsForSubmit[key] = ayurvedicObservations[key] ? 1 : 0;
+// });
 
-      // Prepare data for submission with medical observations
-      const dataToSubmit = {
-        ...formData,
-        medical_observations: medicalObsForSubmit,
-         ayurvedic_observations: ayurvedicObsForSubmit,
-      };
+//       // Prepare data for submission with medical observations
+//       const dataToSubmit = {
+//         ...formData,
+//         medical_observations: medicalObsForSubmit,
+//          ayurvedic_observations: ayurvedicObsForSubmit,
+//       };
 
-      const response = await post('/api/register', dataToSubmit);
+//       const response = await post('/api/register', dataToSubmit);
       
-      if (response && response.user && !response?.errors) {
-        alert('Doctor registered successfully');
-        navigate(`/register/EditwhatsappClinicRegister/${storeid}`);
-      } else if (response?.errors) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          mobile: response?.errors?.mobile ? 'Mobile number has already been taken.' : null,
-          email: response?.errors?.email ? 'Email has already been taken.' : null,
-        }));
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      alert('Error occurred during registration');
-    } finally {
-      setIsLoading(false);
+//       if (response && response.user && !response?.errors) {
+//         alert('Doctor registered successfully');
+//         navigate(`/register/EditwhatsappClinicRegister/${storeid}`);
+//       } else if (response?.errors) {
+//         setErrors((prevErrors) => ({
+//           ...prevErrors,
+//           mobile: response?.errors?.mobile ? 'Mobile number has already been taken.' : null,
+//           email: response?.errors?.email ? 'Email has already been taken.' : null,
+//         }));
+//       }
+//     } catch (error) {
+//       console.error('Registration error:', error);
+//       alert('Error occurred during registration');
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!validateForm()) {
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+
+    const medicalObsForSubmit = {};
+    Object.keys(medicalObservations).forEach(key => {
+      medicalObsForSubmit[key] = medicalObservations[key] ? 1 : 0;
+    });
+
+    const ayurvedicObsForSubmit = {};
+    Object.keys(ayurvedicObservations).forEach(key => {
+      ayurvedicObsForSubmit[key] = ayurvedicObservations[key] ? 1 : 0;
+    });
+
+    // Since we're now storing base64 string, use regular POST
+    const dataToSubmit = {
+      ...formData,
+      medical_observations: medicalObsForSubmit,
+      ayurvedic_observations: ayurvedicObsForSubmit,
+    };
+
+    // Use regular post instead of postFormData
+    const response = await post('/api/register', dataToSubmit);
+
+    if (response && response.user && !response?.errors) {
+      alert('Doctor registered successfully');
+      navigate(`/register/EditwhatsappClinicRegister/${storeid}`);
+    } else if (response?.errors) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        mobile: response?.errors?.mobile ? 'Mobile number has already been taken.' : null,
+        email: response?.errors?.email ? 'Email has already been taken.' : null,
+        sign: response?.errors?.sign ? response?.errors?.sign[0] : null,
+      }));
     }
-  };
+  } catch (error) {
+    console.error('Registration error:', error);
+    alert('Error occurred during registration');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] =  useState(false);
@@ -251,6 +356,26 @@ Object.keys(ayurvedicObservations).forEach(key => {
                   <option value="2">Receptionist</option>
                 </CFormSelect>
                 {errors.type && <div className="text-danger">{errors.type}</div>}
+
+                           {/* sign Upload */}
+                               
+                               {/* <CFormLabel htmlFor="sign"><strong>Upload Doctor Sign</strong></CFormLabel> */}
+<CFormInput
+  type="file"
+  id="sign"
+  name="sign"
+   label={<strong>Upload Doctor Sign</strong>}
+  accept=".png, .jpg, .jpeg"
+  onChange={handleImageUpload}
+  className="mb-2"
+/>
+{errors.sign && <div className="text-danger">{errors.sign}</div>}
+
+{/* Optional: show uploaded file name */}
+{formData.sign && typeof formData.sign === 'object' && (
+  <div className="text-success mt-1">Selected: {formData.sign.name}</div>
+)}
+
 
                 <CFormInput
                   className="mb-3"

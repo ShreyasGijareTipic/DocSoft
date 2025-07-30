@@ -5,7 +5,7 @@
  */
 export function storeUserData(userData) {
   sessionStorage.setItem('userData', JSON.stringify(userData))
-  console.log(userData);
+  // console.log(userData);
 }
 
 /**
@@ -37,7 +37,7 @@ export function getUserType() {
 
 export function getUser() {
   const userData = JSON.parse(sessionStorage.getItem('userData'))
-  console.log(userData);
+  // console.log(userData);
   
   return userData ? userData.user: null
 }

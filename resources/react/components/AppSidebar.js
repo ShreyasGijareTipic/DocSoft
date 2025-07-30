@@ -20,7 +20,7 @@ import { sygnet } from 'resources/react/assets/brand/sygnet'
 // sidebar nav config
 import navigation from '../_nav'
 const nav=navigation();
-console.log(navigation);
+// console.log(navigation);
 
 const AppSidebar = () => {
   const dispatch = useDispatch()

@@ -3,36 +3,9 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { useLocation } from 'react-router-dom';
 import Select from 'react-select'
 import {
-  CCard,
-  CCardHeader,
-  CCardBody,
-  CRow,
-  CCol,
-  CFormInput,
-  CButton,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CFormSelect,
-  CFormTextarea,
-  CListGroup, CListGroupItem,
-  CDropdown,
-  CDropdownToggle,
-  CDropdownMenu,
-  CDropdownItem,
-  CDropdownDivider,
-  CInputGroup,
-  CForm,
-  CCardText,
-  CFormLabel,
-  CAlert,
-  CFormCheck,
-  CInputGroupText
+  CCard,CCardHeader,CCardBody,CRow,CCol,CFormInput,CButton,CTable,CTableHead,CTableRow,CTableHeaderCell,CTableBody,CTableDataCell,CFormSelect,CFormTextarea,CListGroup, CListGroupItem,CDropdown,CDropdownToggle,CDropdownMenu,CDropdownItem,CDropdownDivider,CInputGroup,CForm,CCardText,CFormLabel,CAlert,CFormCheck,CInputGroupText
 } from '@coreui/react';
-// import axios from 'axios'; // Make sure to import axios
+
 import { getAPICall, post, postFormData } from '../../../util/api';
 import { getUser } from '../../../util/session';
 import { showToast } from '../toastContainer/toastContainer'; 
@@ -40,65 +13,51 @@ import { cilFile, cilMedicalCross, cilDelete, cilPlus, cilMinus, cilClock, cilCa
 import CIcon from '@coreui/icons-react';
 import { FaMinus, FaPlus } from 'react-icons/fa';
 
-
 const Typography = () => {
 
 const today = new Date().toISOString().split('T')[0];
   
 const user = getUser();
-console.log("user",user.consulting_fee);
+// console.log("user",user.consulting_fee);
 
+const location = useLocation();
+const { formDataa } = location.state || {};
+// console.log("data",formDataa?.occupation);
 
-  const location = useLocation();
-  const { formDataa } = location.state || {};
-  // console.log("data",formDataa?.occupation);
-
-
-
-  const navigate = useNavigate(); // Initialize useNavigate
-  const [rows, setRows] = useState([
-    { description: 'Consulting', quantity: 0, price: user?.consulting_fee || 0, gst: 0, total: 0 }
-  ]);
+const navigate = useNavigate(); // Initialize useNavigate
+const [rows, setRows] = useState([
+ { description: 'Consulting', quantity: 0, price: user?.consulting_fee || 0, gst: 0, total: 0 }
+ ]);
   
-  const [patientName, setPatientName] = useState(formDataa?.patient_name || '');
-  const [patientAddress, setPatientAddress] = useState(formDataa?.patient_address || '');
-  const [email, setEmail] = useState(formDataa?.patient_email || '');
-  const [phone, setContactNumber] = useState((formDataa?.patient_contact || ''));
-  const [dob, setDob] = useState(formDataa?.patient_dob || '');
+const [patientName, setPatientName] = useState(formDataa?.patient_name || '');
+const [patientAddress, setPatientAddress] = useState(formDataa?.patient_address || '');
+const [email, setEmail] = useState(formDataa?.patient_email || '');
+const [phone, setContactNumber] = useState((formDataa?.patient_contact || ''));
+const [dob, setDob] = useState(formDataa?.patient_dob || '');
+const [Occupation, setoccupation] = useState(formDataa?.occupation || '');
+const [Pincode, setpincode] = useState(formDataa?.pincode || '');
 
-  //Occupation and Pincode
-  const [Occupation, setoccupation] = useState(formDataa?.occupation || '');
-  const [Pincode, setpincode] = useState(formDataa?.pincode || '');
-
-
-
-  const [patientSuggestionId, setPatientSuggestionId] = useState(null);
-  const [lastBill , setLastBill] = useState([{}]);
+const [patientSuggestionId, setPatientSuggestionId] = useState(null);
+const [lastBill , setLastBill] = useState([{}]);
 // console.log("lastBill",lastBill);
 const [healthdirectives , sethealthdirectives ] = useState([{}]);
 // console.log("lastBill",healthdirectives);
-
 const [showPatientCard, setShowPatientCard] = useState(false);
-
 const [patientExaminations , setpatientExaminations ] = useState([{}]);
-
 const [AyurvedicExaminations , setayurvedicExaminations ] = useState([{}]);
+const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
-  const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-
-  let manualPatientID = null;
-
-  
-  const [billId, setBillId] = useState('');
-  const [visitDate, setVisitDate] = useState(formDataa?.visit_date || today);
-  const [patientAge, setPatientAge] = useState('');
-  const [doctor_name, setDoctorName] = useState('');
-  const [registration_number, setRegistration] = useState('');
-  const [suggestionFlags, setSuggestionFlags] = useState({});
-  
-  const [followupdate, setfollowupdate] = useState();
-  
-  const toggleSuggestion = (index, type, value) => {
+let manualPatientID = null;
+ 
+const [billId, setBillId] = useState('');
+const [visitDate, setVisitDate] = useState(formDataa?.visit_date || today);
+const [patientAge, setPatientAge] = useState('');
+const [doctor_name, setDoctorName] = useState('');
+const [registration_number, setRegistration] = useState('');
+const [suggestionFlags, setSuggestionFlags] = useState({});
+const [followupdate, setfollowupdate] = useState();
+ 
+const toggleSuggestion = (index, type, value) => {
     setSuggestionFlags((prev) => ({
       ...prev,
       [index]: {
@@ -107,67 +66,47 @@ const [AyurvedicExaminations , setayurvedicExaminations ] = useState([{}]);
       },
     }));
   };
-  
-
-
-
-
-
+ 
   const [errors, setErrors] = useState({
-    patientName: '',
-    patientAddress: '',
-    phone: '',
-    email: '',
-    dob: '',
-   
-    visitDate: '',
+    patientName: '',patientAddress: '',phone: '',email: '',dob: '',visitDate: '',
   });
-
-
 
   const handleAddRow = () => {
     const usedDescriptions = rows.map((row) => row.description);
     const allDescriptions = ['Consulting', 'Medicine', 'OPD'];
-  
-
-    const nextDescription = allDescriptions.find(
+     const nextDescription = allDescriptions.find(
       (desc) => !usedDescriptions.includes(desc)
     );
-  
-  
     if (!nextDescription) return;
-  
     setRows((prevRows) => [
       ...prevRows,
       { description: nextDescription, quantity: 0, price: 0, gst: 0, total: 0 }
     ]);
   };
   
-  
-
-
-
-
   const [grandTotal, setGrandTotal] = useState(0); // State for grand total
 
- 
   const calculateGrandTotal = () => {
     const total = rows.reduce((acc, row) => acc + parseFloat(row.total || 0), 0);
     setGrandTotal(total.toFixed(2));
   };
+
+  const [medicineRowTotal, setMedicineRowTotal] = useState({
+  quantity: 0,
+  price: 0,
+  total: 0,
+});
 
   // Recalculate grand total whenever rows change
   useEffect(() => {
     calculateGrandTotal();
   }, [rows]);
 
-
-  
  //Fetch patient suggestions
   // ------------------------------------------------------------------------------------------------------------------------
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  console.log("Suggestion IDs:", suggestions.map(p => p.id));
+  // console.log("Suggestion IDs:", suggestions.map(p => p.id));
   const [isSuggestionClicked, setIsSuggestionClicked] = useState(false);
  
   useEffect(() => {
@@ -178,7 +117,7 @@ const [AyurvedicExaminations , setayurvedicExaminations ] = useState([{}]);
           // Optional: remove selected patient from suggestions
        
           const filtered = response.filter(p => p.id !== selectedPatient?.id);
-          console.log("filtered",filtered);
+          // console.log("filtered",filtered);
           
           setSuggestions(filtered);
         } catch (error) {
@@ -192,11 +131,10 @@ const [AyurvedicExaminations , setayurvedicExaminations ] = useState([{}]);
   
     fetchSuggestions();
   }, [patientName]);
-  
 
   // Handle patient name suggestion click
   const handleSuggestionClick = async(patient) => {
-    console.log("Selected Patient ID:", patient.id); 
+    // console.log("Selected Patient ID:", patient.id); 
     setPatientSuggestionId(patient.id)
     setPatientName(patient.name);
     setPatientAddress(patient.address);
@@ -208,13 +146,10 @@ const [AyurvedicExaminations , setayurvedicExaminations ] = useState([{}]);
     setIsSuggestionClicked(true); 
     setSuggestions([]);
 
-
     try {
-
       const res = await getAPICall(`/api/patient-details/${patient.id}`);
-      console.log("res",res);
-      
-      console.log("✅ Selected Patient Full Details:", res.data);
+      // console.log("res",res);
+      // console.log("✅ Selected Patient Full Details:", res.data);
       // setSelectedPatient(res.data.patient);
       setLastBill(res?.last_bill || []);
       sethealthdirectives(res?.health_directives|| []);
@@ -226,89 +161,119 @@ const [AyurvedicExaminations , setayurvedicExaminations ] = useState([{}]);
       console.error("❌ Error fetching patient full details", err);
       setShowPatientCard(false);
     }
-
-
   };
-
-
-
 // ------------------------------------------------------------------------------------------------------------------
 
+// const calculateRowTotal = (row) => {
+//   // Check if row is defined and has necessary properties
+//   if (!row || typeof row !== 'object' || !row.dosage || !row.duration || !row.price && !row.drugDetails?.[0]?.price) {
+//     return 0;
+//   }
 
+//   const dosage = row.dosage || '';
+//   const durationStr = row.duration || '';
+//   const pricePerTablet = Number(row.price) || Number(row.drugDetails?.[0]?.price) || 0;
 
- 
-  // console.log(user);
+//   // Validate dosage format (e.g., "1-0-1")
+//   if (!/^[0-6]-[0-6]-[0-6]$/.test(dosage)) return 0;
 
-  // const handleRowChange = (index, field, value) => {
-  //   const updatedRows = [...rows];
+//   // Calculate daily dose by summing the dosage values (e.g., 1+0+1 = 2)
+//   const dailyDose = dosage.split('-').reduce((sum, val) => sum + Number(val), 0);
 
-  //   if (field === 'quantity' || field === 'price' || field === 'gst') {
-  //     // Check if the value is a valid number and integer
-  //     if (!Number.isInteger(Number(value)) || isNaN(value)) {
-  //       value = 0; // Reset to 0 if not a valid integer
-  //     }
-  //   }
+//   // Extract numeric duration (e.g., "7 Days" -> 7)
+//   const durationMatch = durationStr.match(/\d+/) || [0];
+//   const duration = parseInt(durationMatch[0], 10);
 
-  //   updatedRows[index][field] = value;
+//   // Calculate total: dailyDose * duration * pricePerTablet
+//   const total = dailyDose * duration * pricePerTablet;
 
-  //   const quantity = Number(updatedRows[index].quantity || 0);
-  //   const price = Number(updatedRows[index].price || 0);
-  //   const gst = Number(updatedRows[index].gst || 0);
-  //   updatedRows[index].total = (quantity * price) + ((quantity * price * gst) / 100);
-
-
- 
-
-
-  //   setRows(updatedRows);
-
-
-  //   const errors = [...rowErrors];
-  //   if (field === 'quantity' || field === 'price' || field === 'gst') {
-  //     errors[index] = {
-  //       quantity: field === 'quantity' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
-  //       price: field === 'price' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
-  //       gst: field === 'gst' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : ''
-  //     };
-  //   }
-  //   setRowErrors(errors);
-
-  // };
-
+//   // Return total as a number (avoid toFixed here to prevent string return)
+//   return isNaN(total) ? 0 : total;
+// };
   const [selectedMedicine , setSelectedMedicine] = useState()
-  console.log(selectedMedicine);
-  
+  // console.log(selectedMedicine);
+
+// const handleRowChange = (index, field, value) => {
+//   const updatedRows = [...rows];
+//     if (field === 'description' && value === 'Medicine') {
+//     // Assuming you store selected medicine data in `selectedMedicine`
+//     if (selectedMedicine && selectedMedicine.price) {
+//       updatedRows[index].price = parseFloat(selectedMedicine.price);
+//     }
+//   }
+//   if (field === 'quantity' || field === 'price' || field === 'gst') {
+//     // Validate number
+//     if (!Number.isInteger(Number(value)) || isNaN(value)) {
+//       value = 0;
+//     }
+//   }
+
+//   // Always update the field (even if it will be overridden below)
+//   updatedRows[index][field] = value;
+
+//   const description = updatedRows[index].description;
+//   const quantity = description === 'Medicine' ? rowss.length : parseFloat(updatedRows[index].quantity) || 0;
+//   const price = description === 'Medicine' ? totalPrice : parseFloat(updatedRows[index].price) || 0;
+//   const gst = parseFloat(updatedRows[index].gst) || 0;
+
+//   // Calculate total
+//   let subtotal = 0;
+//   if (description === 'Medicine') {
+//     subtotal = totalPrice;
+//   } else {
+//     subtotal = quantity * price;
+//     if (showGST) {
+//       subtotal += subtotal * (gst / 100);
+//     }
+//   }
+
+//   // Set corrected values
+//   updatedRows[index].quantity = quantity;
+//   updatedRows[index].price = price;
+//   updatedRows[index].total = subtotal;
+
+//   setRows(updatedRows);
+
+//   // Error handling
+//   const errors = [...rowErrors];
+//   if (field === 'quantity' || field === 'price' || field === 'gst') {
+//     errors[index] = {
+//       quantity: field === 'quantity' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
+//       price: field === 'price' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
+//       gst: field === 'gst' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : ''
+//     };
+//   }
+//   setRowErrors(errors);
+// };
 
 const handleRowChange = (index, field, value) => {
   const updatedRows = [...rows];
 
-
-    if (field === 'description' && value === 'Medicine') {
-    // Assuming you store selected medicine data in `selectedMedicine`
+  // Handle "Medicine" special case
+  if (field === 'description' && value === 'Medicine') {
     if (selectedMedicine && selectedMedicine.price) {
       updatedRows[index].price = parseFloat(selectedMedicine.price);
     }
   }
 
-
-  if (field === 'quantity' || field === 'price' || field === 'gst') {
-    // Validate number
+  // Forcing correct value types
+  if (field === 'quantity') {
     if (!Number.isInteger(Number(value)) || isNaN(value)) {
       value = 0;
     }
+  } else if ((field === 'price' || field === 'gst') && isNaN(value)) {
+    value = 0;
   }
 
- 
-
-  // Always update the field (even if it will be overridden below)
   updatedRows[index][field] = value;
 
   const description = updatedRows[index].description;
-  const quantity = description === 'Medicine' ? rowss.length : parseFloat(updatedRows[index].quantity) || 0;
-  const price = description === 'Medicine' ? totalPrice : parseFloat(updatedRows[index].price) || 0;
+  const quantity =
+    description === 'Medicine' ? rowss.length : parseFloat(updatedRows[index].quantity) || 0;
+  const price =
+    description === 'Medicine' ? totalPrice : parseFloat(updatedRows[index].price) || 0;
   const gst = parseFloat(updatedRows[index].gst) || 0;
 
-  // Calculate total
   let subtotal = 0;
   if (description === 'Medicine') {
     subtotal = totalPrice;
@@ -319,24 +284,82 @@ const handleRowChange = (index, field, value) => {
     }
   }
 
-  // Set corrected values
   updatedRows[index].quantity = quantity;
   updatedRows[index].price = price;
   updatedRows[index].total = subtotal;
 
   setRows(updatedRows);
 
-  // Error handling
-  const errors = [...rowErrors];
-  if (field === 'quantity' || field === 'price' || field === 'gst') {
-    errors[index] = {
-      quantity: field === 'quantity' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
-      price: field === 'price' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
-      gst: field === 'gst' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : ''
-    };
+  // ✅ Fix rowErrors logic
+  const errors = Array.isArray(rowErrors) ? [...rowErrors] : [];
+
+  if (!errors[index]) errors[index] = {};
+
+  if (field === 'quantity') {
+    errors[index].quantity = !Number.isInteger(Number(value)) ? 'Only integers allowed' : '';
   }
+
+  if (field === 'price') {
+    errors[index].price = isNaN(value) || value < 0 ? 'Invalid price' : '';
+  }
+
+  if (field === 'gst') {
+    errors[index].gst = isNaN(value) || value < 0 ? 'Invalid GST' : '';
+  }
+
   setRowErrors(errors);
 };
+
+
+// const handleRowChange = (index, field, value) => {
+//   const updatedRows = [...rows];
+//   if (field === 'description' && value === 'Medicine') {
+//     if (selectedMedicine && selectedMedicine.price) {
+//       updatedRows[index].price = parseFloat(selectedMedicine.price);
+//     }
+//   }
+//   if (field === 'quantity' || field === 'price' || field === 'gst') {
+//     if (!Number.isInteger(Number(value)) || isNaN(value)) {
+//       value = 0;
+//     }
+//   }
+
+//   updatedRows[index][field] = value;
+
+//   const description = updatedRows[index].description;
+//   const quantity = description === 'Medicine' ? rowss.length : parseFloat(updatedRows[index].quantity) || 0;
+//   const price = description === 'Medicine' ? calculateRowTotal(rows[index]) : parseFloat(updatedRows[index].price) || 0;
+//   const gst = parseFloat(updatedRows[index].gst) || 0;
+
+//   let subtotal = 0;
+//   if (description === 'Medicine') {
+//     subtotal = calculateRowTotal(rows[index]);
+//   } else {
+//     subtotal = quantity * price;
+//     if (showGST) {
+//       subtotal += subtotal * (gst / 100);
+//     }
+//   }
+//   subtotal = isNaN(subtotal) ? 0 : Number(subtotal);
+
+//   updatedRows[index].quantity = quantity;
+//   updatedRows[index].price = price;
+//   updatedRows[index].total = subtotal;
+
+//   setRows(updatedRows);
+
+//   // Error handling
+//   let errors = [...(rowErrors || [])]; // Ensure rowErrors is iterable
+//   if (field === 'quantity' || field === 'price' || field === 'gst') {
+//     errors[index] = {
+//       quantity: field === 'quantity' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
+//       price: field === 'price' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
+//       gst: field === 'gst' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : ''
+//     };
+//   }
+//   setRowErrors(errors);
+// };
+
 
 
 const handleMedicineSelect = (medicine, index) => {
@@ -351,24 +374,15 @@ const handleMedicineSelect = (medicine, index) => {
   setRowss(updatedRows);
 };
 
-
-
-
-
-
   const handleRemoveRow = (index) => {
     if (index === 0) {
-      
       return;
-      
     }
     setRows(rows.filter((_, i) => i !== index));
   };
 
   // Handle patient form submission
-  
-  
-
+ 
   let r_num='';
   if(registration_number==''){
     r_num=user.registration_number;
@@ -384,8 +398,6 @@ const handleMedicineSelect = (medicine, index) => {
   else{
     d_name=doctor_name;
   }
-
-  
 
   // console.log(r_num);
   // console.log(d_name);
@@ -406,27 +418,13 @@ const handleMedicineSelect = (medicine, index) => {
       isValid = false;
     }
   
-    // Validate Phone Number (Mandatory)
-//     const phoneRegex = /^\d{10}$/; // Ensures exactly 10 digits
-
-// if (!data?.patient?.phone && !phone.trim()) {
-//   formErrors["phone"] = "Contact number is required";
-//   isValid = false;
-// } else if (!phoneRegex.test(String(phone).trim())) {  // Convert phone to string explicitly
-//   formErrors["phone"] = "Phone number must have exactly 10 digits";
-//   isValid = false;
-// }
-
-
-    
-  
     // Validate Email (Optional but properly formatted)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email.trim() && !emailRegex.test(email.trim())) {
       formErrors["email"] = "Enter a valid email address";
       isValid = false;
     }
-  
+
     // Validate DOB (Mandatory & Not a Future Date)
     if (!data?.patient?.dob && !dob) {
       formErrors["dob"] = "Date of birth is required";
@@ -449,24 +447,16 @@ const handleMedicineSelect = (medicine, index) => {
     return isValid;
   };
   
-
-
-
   const [rowErrors, setRowErrors] = useState([]);
-  
-   
   
   const validateRows = (rows) => {
     let errors = rows.map((row) => ({
       quantity: !row.quantity || row.quantity <= 0 ? 'Quantity is required and must be positive' : '',
       price: !row.price || row.price <= 0 ? 'Price is required and must be positive' : '',
-     
-    }));
-
-    setRowErrors(errors); // Update row errors
+      }));
+   setRowErrors(errors); // Update row errors
     return !errors.some((error) => Object.values(error).some((err) => err));
   };
-
 
 // ----------------- 
 const validateRowss = () => {
@@ -482,9 +472,6 @@ const validateRowss = () => {
   return errors.every((error) => Object.values(error).every((e) => e === null));
 };
 
-
-
-
 const [showTable, setShowTable] = useState(false); 
   const [rowss, setRowss] = useState([
     {
@@ -499,349 +486,91 @@ const [showTable, setShowTable] = useState(false);
       drugDetails: [],
     },
   ]);
-console.log(rowss);
+// console.log(rowss);
 
+// const totalPrice = rowss.reduce((acc, row) => {
+//   // let value = row.drugDetails?.[0]?.price;
+//    let value = row.price || row.drugDetails?.[0]?.price;
+//   // console.log(value);
+//   // If empty or invalid, fallback to drugDetails[0]?.price
+//   if (!value || isNaN(parseFloat(value))) {
+//     value = row.drugDetails?.[0]?.price;
+//   }
+//   // console.log(value);
+//   const price = parseFloat(value);
+//   return acc + (isNaN(price) ? 0 : price);
+// }, 0);
 
+// const totalPrice = rowss.reduce((acc, row) => {
+//     // Check if row is defined and has necessary properties
+//   if (!row || typeof row !== 'object' || !row.dosage || !row.duration || !row.price && !row.drugDetails?.[0]?.price) {
+//     return 0;
+//   }
+
+//   const dosage = row.dosage || '';
+//   const durationStr = row.duration || '';
+//   const pricePerTablet = Number(row.price) || Number(row.drugDetails?.[0]?.price) || 0;
+
+//   // Validate dosage format (e.g., "1-0-1")
+//   if (!/^[0-6]-[0-6]-[0-6]$/.test(dosage)) return 0;
+
+//   // Calculate daily dose by summing the dosage values (e.g., 1+0+1 = 2)
+//   const dailyDose = dosage.split('-').reduce((sum, val) => sum + Number(val), 0);
+
+//   // Extract numeric duration (e.g., "7 Days" -> 7)
+//   const durationMatch = durationStr.match(/\d+/) || [0];
+//   const duration = parseInt(durationMatch[0], 10);
+
+//   // Calculate total: dailyDose * duration * pricePerTablet
+//   const total = dailyDose * duration * pricePerTablet;
+
+//   // Return total as a number (avoid toFixed here to prevent string return)
+//   return isNaN(total) ? 0 : total;
+//   }, 0);
 
 const totalPrice = rowss.reduce((acc, row) => {
-
-  // let value = row.drugDetails?.[0]?.price;
-   let value = row.price || row.drugDetails?.[0]?.price;
-  console.log(value);
-  
-
-  // If empty or invalid, fallback to drugDetails[0]?.price
-  if (!value || isNaN(parseFloat(value))) {
-    value = row.drugDetails?.[0]?.price;
-    
+  if (!row || typeof row !== 'object' || !row.dosage || !row.duration || (!row.price && !row.drugDetails?.[0]?.price)) {
+    return acc;
   }
-  console.log(value);
-  
 
-  const price = parseFloat(value);
-  return acc + (isNaN(price) ? 0 : price);
+  const dosage = row.dosage || '';
+  const durationStr = row.duration || '';
+  const pricePerTablet = Number(row.price) || Number(row.drugDetails?.[0]?.price) || 0;
+
+  if (!/^[0-6]-[0-6]-[0-6]$/.test(dosage)) return acc;
+
+  const dailyDose = dosage.split('-').reduce((sum, val) => sum + Number(val), 0);
+  const durationMatch = durationStr.match(/\d+/) || [0];
+  const duration = parseInt(durationMatch[0], 10);
+  const total = dailyDose * duration * pricePerTablet;
+
+  return acc + (isNaN(total) ? 0 : total);
 }, 0);
 
 
 
 
 
-
-const handleSubmit = async () => {
-  if (!validateForm()) return;
-  if (!validateRows(rows)) return;
  
-   // Only validate prescription fields if the section is open
-  if (showTable && !validateAllFields()) {
-    return; // Stop submission if prescription validation fails
-  }
-  
-
-  const today = new Date();
-  const dobDate = new Date(dob);
-  if (dobDate >= today) {
-    alert('Date of birth cannot be in the future.');
-    return;
-  }
-
-  
-
-  try {
-    const patientId = data?.patient?.id;
-      const tokenNumber = data?.tokan; // this is only present when selectedOption === 'Appointment'
-
-
-    console.log("patientId",patientId);
-    let skipAddPatient = false;
-
-  
-    if (patientSuggestionId) {
-      // 👇 Check suggestion-based patient in both tables
-      console.log("🔍 Checking patientSuggestionId:", patientSuggestionId);
-    
-      const patientRes = await post('/api/checkPatient', { id: patientSuggestionId });
-      const tokenRes = await post('/api/checkToken', { patient_id: patientSuggestionId });
-    
-      console.log("patientRes:", patientRes);
-      console.log("tokenRes:", tokenRes);
-    
-      if (patientRes.exists || tokenRes.exists) {
-        console.log("✅ Suggestion patient already exists — skipping add.");
-        skipAddPatient = true;
-      }
-    } 
-    else if (selectedOption === 'Appointment' && tokenNumber) {
-    // 🆕 Handle appointment-based token number → check patient by phone from token
-    console.log("🔍 Checking via tokan:", tokenNumber);
-
-    const tokenRes = await post('/api/checkToken', { tokan: tokenNumber });
-    console.log("tokenRes (via token):", tokenRes);
-    const appointmentPatientId = tokenRes.patient_id;
-
-    if (tokenRes.exists) {
-      console.log("✅ Token patient already exists — skipping add.");
-      skipAddPatient = true;
-    }
-  }
-    else if (patientId) {
-      // 👇 Check token-based patient ID
-      console.log("🔍 Checking token-based patientId:", patientId);
-    
-      const tokenRes = await post('/api/checkToken', { patient_id: patientId });
-    
-      console.log("tokenRes:", tokenRes);
-    
-      if (tokenRes.exists) {
-        console.log("✅ Token patient already exists — skipping add.");
-        skipAddPatient = true;
-      }
-    }
-
-    // ➕ Add patient only if ID doesn't exist in both tables
-    if (!skipAddPatient && (!patientId || (patientId && (!data?.patient?.fromSuggestion)))) {
-      const newPatientData = {
-
-        clinic_id: "CLINIC123", // Replace with dynamic clinic_id
-        doctor_id: userData.id || "1",
-        name: patientName || data?.appointment?.name,
-        email,
-        phone:data?.appointment?.phone,
-        address: patientAddress,
-        dob,
-       occupation :  Occupation,
-        pincode:Pincode
-      };
-
-      try {
-        const added = await post('/api/manuallyAddPatient', newPatientData);    // /api/manuallyAddPatient
-        console.log("✅ Patient added:", added?.patient?.id);
-          manualPatientID = added?.patient?.id;
-       
-
-      } catch (e) {
-        console.error("❌ Failed to add patient:", e);
-        alert("Error adding patient.");
-        return;
-      }
-    }
-
-    const billData = {
-      patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID || appointmentPatientId ||'not get tokan',
-      patient_name: data?.patient?.name || patientName || data?.appointment?.name,
-      address: data?.patient?.address || patientAddress,
-      email: data?.patient?.email || email,
-      contact: data?.patient?.phone || data?.appointment?.phone ||`91${phone}`,
-      dob: data?.patient?.dob || dob,
-      occupation: data?.patient?.occupation || Occupation,
-      pincode: data?.patient?.pincode || Pincode,
-      doctor_name: d_name,
-      registration_number: r_num,
-      visit_date: visitDate,
-      followup_date: followupdate,
-      grand_total: grandTotal,
-    };
-
-    // 💳 Continue with bill creation...
-    const billResponse = await post('/api/bills', billData);
-    const billno = billResponse.id;
-    setBillId(billno);
-
-    // const descriptionData = rows.map(row => ({
-    //   bill_id: `${billno}`,
-    //   description: `${row.description}`,
-    //   quantity: `${row.quantity}`,
-    //   price:  `${row.price}`,        //`${row.price}` , 
-    //   gst: `${row.gst}`,
-    //   total: `${row.total}`
-    // }));
-    // await post('/api/descriptions', { descriptions: descriptionData });
-
-    const descriptionData = rows.map((row) => ({
-  bill_id: `${billno}`,
-  description: row.description,
-  quantity: row.quantity,
-  price: row.price,
-  gst: row.gst,
-  total: row.total,
-}));
-await post('/api/descriptions', { descriptions: descriptionData });
-
-
-    // 💊 Prescriptions
-    if (validateRowss()) {
-      const prescriptionPromises = rowss.map((row) => {
-        const prescriptionData = {
-          p_p_i_id: `${billno}`,
-          patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get Patien ID',
-          medicine: medicines.find(med => med.id === parseInt(row.description, 10))?.drug_name || "",
-          strength: row.strength,
-          dosage: row.dosage,
-          timing: row.timing,
-          frequency: row.frequency,
-          duration: row.duration,
-        };
-
-       
-
-
-
-
-        return post("/api/healthdirectives", prescriptionData);
-      });
-
-      await Promise.all(prescriptionPromises);
-    }
-
-    // 🧪 Examinations
-
-
-    const hasPatientExamData = bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA || weight || height;
-
-    const hasAyurvedicDiagnosisData =  emaill || ayurPastHistory || prasavvedanParikshayein ||
-  habits || labInvestigation || personalHistory || foodAndDrugAllergy || lmp || edd;
-
-  
-
-//     if (bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA || weight || height) {
-//       const patientExaminationData = {
-//         p_p_i_id: `${billno}`,
-//         patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get patient ID',
-//         bp,
-//         pulse,
-//         weight,
-//         height,
-//         past_history: pastHistory,
-//         complaints,
-//         systemic_exam_general: sysExGeneral,
-//         systemic_exam_pa: sysExPA,
-//       };
-
-
-//         const ayurvedicDiagnosisData = {
-//   p_p_i_id: `${billno}`,
-//   patient_id: patientSuggestionId || data?.patient?.id || manualPatientID || 'not get Patient ID',
-//   occupation: occupation || "",
-//   pincode: pincode || "",
-//   email: emaill || "", // corrected: match state variable `emaill`
-//   past_history: ayurPastHistory || "",
-//   prasavvedan_parikshayein: prasavvedanParikshayein || "",
-//   habits: habits || "",
-//   lab_investigation: labInvestigation || "",
-//   personal_history: personalHistory || "",
-//   food_and_drug_allergy: foodAndDrugAllergy || "",
-//   lmp: lmp || "",
-//   edd: edd || ""
-// };
-
-
-// const payload = {
-//   ...patientExaminationData,
-//   ...ayurvedicDiagnosisData,
-// };
-
-//       await post('/api/patientexaminations',payload );
-//     }
-
-if (hasPatientExamData || hasAyurvedicDiagnosisData) {
-  const patientExaminationData = hasPatientExamData
-    ? {
-        p_p_i_id: `${billno}`,
-        patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get patient ID',
-        bp,
-        pulse,
-        weight,
-        height,
-        past_history: pastHistory,
-        complaints,
-        systemic_exam_general: sysExGeneral,
-        systemic_exam_pa: sysExPA,
-      }
-    : {};
-
-  const ayurvedicDiagnosisData = hasAyurvedicDiagnosisData
-    ? {
-        p_p_i_id: `${billno}`,
-        patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get patient ID',
-        // occupation: occupation || "",
-        // pincode: pincode || "",
-        email: emaill || "",
-        ayurPastHistory: ayurPastHistory || "",
-        prasavvedan_parikshayein: JSON.stringify(ashtvidhData) || "",
-        habits: JSON.stringify(habits) || "",
-        lab_investigation: labInvestigation || "",
-        personal_history: JSON.stringify(personalHistory) || "",
-        food_and_drug_allergy: foodAndDrugAllergy || "",
-        drug_allery:drugAllergy|| "",
-        lmp: lmp || "",
-        edd: edd || ""
-      }
-    : {};
-
-  const payload = {
-    ...patientExaminationData,
-    ...ayurvedicDiagnosisData,
-  };
-
-  await post('/api/patientexaminations', payload);
-}
-
-    // alert('Bill and descriptions created successfully!');
-    showToast('Bill and descriptions created successfully!', 'Successfully Submitted', '#198754');
-    navigate('/Invoice', { state: { billId: billno } });
-
-  } catch (error) {
-    console.error('Error in handleSubmit:', error);
-    // alert('An error occurred while submitting data.');
-    showToast('An error occurred while submitting data.', 'Validation Error', '#d9534f');
-  }
-};
-
-
-
-  
 const handleCreatePrescription = async () =>{
-
-
   navigate('/theme/prescriptionForm');
-
 }
-
 // const suggestions = [];
-
-
-
-
 // ------------------------------------------------------------------------------------- 
 
-
-
-console.log(totalPrice);
-console.log("Rows", rows);
+// console.log(totalPrice);
+// console.log("Rows", rows);
 console.log("Total Price", totalPrice);
-
-
-
-
 
   // Handle adding a new row
   const handleAddRoww = () => {
     setRowss([
       ...rowss,
       {
-        description: "",
-        strength: "",
-        dosage: "",
-        timing: "",
-        frequency: "",
-        duration: "",
-        isCustom: false,
-        price:"",
-        drugDetails: [],
+        description: "", strength: "", dosage: "",timing: "",frequency: "",duration: "",isCustom: false,price:"",drugDetails: [],
       },
     ]);
   };
-
-
 
   // Handle removing a row
   const handleRemoveRoww = (index) => {
@@ -849,13 +578,10 @@ console.log("Total Price", totalPrice);
   // if (index === 1) {
   //   return;
   // }
-
   // Use the correct state variable 'rowss' for filtering
   const updatedRows = rowss.filter((_, i) => i !== index);
   setRowss(updatedRows);
   };
-
-
 
   // Handle row change
   const [activeEditableRowIndex, setActiveEditableRowIndex] = useState(null);
@@ -863,21 +589,34 @@ console.log("Total Price", totalPrice);
     const updatedRows = [...rowss];
     updatedRows[index][field] = value;
     setRowss(updatedRows);
-
   };
+//   const handleRowChangee = (index, field, value) => {
+//   const updatedRows = [...rowss];
+//   updatedRows[index][field] = value;
+//   setRowss(updatedRows);
+
+//   // Recalculate total for the current prescription row
+//   const rowTotal = calculateRowTotal(updatedRows[index]);
+//   if (field === 'dosage' || field === 'duration' || field === 'price') {
+//     const updatedBillingRows = [...rows];
+//     const medicineRowIndex = updatedBillingRows.findIndex(row => row.description === 'Medicine');
+//     if (medicineRowIndex !== -1) {
+//       updatedBillingRows[medicineRowIndex].total = rowss.reduce((total, row) => total + calculateRowTotal(row), 0);
+//       updatedBillingRows[medicineRowIndex].price = updatedBillingRows[medicineRowIndex].total; // Sync price with total for Medicine
+//       setRows(updatedBillingRows);
+//     }
+//   }
+// };
  
-
-
   // State for medical observations
   // const [isExpanded, setIsExpanded] = useState(false);
   // const toggleForm = () => setIsExpanded(!isExpanded);
 
   const [isMedicalExpanded, setIsMedicalExpanded] = useState(false);
-const [isAyurvedicExpanded, setIsAyurvedicExpanded] = useState(false);
+  const [isAyurvedicExpanded, setIsAyurvedicExpanded] = useState(false);
 
 const toggleMedicalForm = () => setIsMedicalExpanded(!isMedicalExpanded);
 const toggleAyurvedicForm = () => setIsAyurvedicExpanded(!isAyurvedicExpanded);
-
 
   const [bp, setBp] = useState("");
   const [weight, setWeight] = useState("");
@@ -888,51 +627,20 @@ const toggleAyurvedicForm = () => setIsAyurvedicExpanded(!isAyurvedicExpanded);
   const [sysExGeneral, setSysExGeneral] = useState("");
   const [sysExPA, setSysExPA] = useState("");
 
-  // Ayurvedic Observation
-//   const [occupation, setOccupation] = useState('');
-// const [pincode, setPincode] = useState('');
 const [emaill, setEmaill] = useState('');
 const [ayurPastHistory, setAyurPastHistory] = useState('');
 const [prasavvedanParikshayein, setPrasavvedanParikshayein] = useState('');
 
 const [labInvestigation, setLabInvestigation] = useState('');
-// const [personalHistory, setPersonalHistory] = useState('');
 const [foodAndDrugAllergy, setFoodAndDrugAllergy] = useState('');
-  const [drugAllergy, setDrugAllergy] = useState('')
+const [drugAllergy, setDrugAllergy] = useState('')
 
 const [lmp, setLmp] = useState('');
 const [edd, setEdd] = useState('');
 
-  
-
   const [doctorObservationSettings, setDoctorObservationSettings] = useState(null);
   const [doctorAyurvedicObservationSettings, setDoctorAyurvedicObservationSettings] = useState(null);
 
-  
-
- 
-// useEffect(() => {
-//   if (!userData?.user?.id) return;
-
-//   const fetchObservationSettings = async () => {
-//     try {
-//       const doctorId = userData.user.id;
-//       const res = await getAPICall(`/api/doctor-medical-observations/${doctorId}`);         //  ${doctorId}
-//       console.log("✅ Observation settings fetched:", res);
-
-//       const normalized = Object.fromEntries(
-//         Object.entries(res).map(([key, val]) => [key, Boolean(Number(val))])
-//       );
-
-//       setDoctorObservationSettings(normalized);
-//       setDoctorAyurvedicObservationSettings(normalized)
-//     } catch (error) {
-//       console.error("❌ Error fetching observation settings:", error);
-//     }
-//   };
-
-//   fetchObservationSettings();
-// }, [userData?.user?.id]); // 👈 Run only when doctorId is available
 useEffect(() => {
   if (!userData?.user?.id) return;
 
@@ -940,7 +648,7 @@ useEffect(() => {
     try {
       const doctorId = userData.user.id;
       const res = await getAPICall(`/api/doctor-medical-observations/${doctorId}`);
-      console.log("✅ Observation settings fetched:", res);
+      // console.log("✅ Observation settings fetched:", res);
 
       // Normalize each group separately
       const normalizedMedical = Object.fromEntries(
@@ -965,10 +673,6 @@ useEffect(() => {
   fetchObservationSettings();
 }, [userData?.user?.id]);
 
-  
-  
-  
-
 //get Medicine In Dropdown Code
 
   const [medicines, setMedicines] = useState(null);
@@ -979,11 +683,11 @@ useEffect(() => {
     const fetchMedicines = async () => {
       try {
         const response = await getAPICall('/api/drugs');
-        console.log("Drugs fetched data:", response);
+        // console.log("Drugs fetched data:", response);
         
         // Ensure response is valid and contains the expected data
         if (response) {
-          console.log("setMedicines",response) ;
+          // console.log("setMedicines",response) ;
          setMedicines(response);
           
         } else {
@@ -998,7 +702,7 @@ useEffect(() => {
   }, []); // Dependency array ensures this runs only once
 
   useEffect(() => {
-    console.log("Medicines state updated:", medicines);
+    // console.log("Medicines state updated:", medicines);
   }, [medicines]);
 
   const handleMedicineSearch = (index, searchText) => {
@@ -1009,7 +713,7 @@ useEffect(() => {
       setMedicineOptions((prev) => ({ ...prev, [index]: [] }));
       return;
     }
-  
+
     const filtered = medicines?.filter((med) =>
       med.drug_name.toLowerCase().includes(searchText.toLowerCase())
     ) || [];
@@ -1017,126 +721,44 @@ useEffect(() => {
     setMedicineOptions((prev) => ({ ...prev, [index]: filtered }));
   };
   
-  
-  
   const [drugDetails, setDrugDetails] = useState([]); // State to store drugs
-  console.log(drugDetails);
-  
-
+  // console.log(drugDetails); 
    // Fetch drug details based on selected drug
    const handleMedicineChange = async (index, drugId) => {
     try {
       const responsee = await getAPICall(`/api/drugdetails/drug_id/${drugId}`);
       setDrugDetails(responsee);
-      console.log(responsee);
+      // console.log(responsee);
       
       setRowss((prevRows) => {
         const updatedRows = [...prevRows];
         updatedRows[index].drugDetails = responsee; // Store drug details in the row
-        return updatedRows;
-        
+        return updatedRows;  
       });
-      console.log("details",responsee);
-
+      // console.log("details",responsee);
     } catch (error) {
       console.error('Error fetching drug details:', error);
     }
   
   };
-  console.log("drugDetails",drugDetails);
-
-
-  
-  
-
+  // console.log("drugDetails",drugDetails);
 
 // ------------------------------------------------------------------------------------- 
 
 const[TokanPatientID,setTokanPatientID] = useState();
-console.log(TokanPatientID);
+// console.log(TokanPatientID);
 const [appointment, setAppointment] = useState()
-
 
   // Handle input change
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
 
-  
   const handleFetchData = async () => {
     if (!inputValue) {
       alert('Please enter an ID!');
       return;
     }
-  
-//   try {
-//   let response, patientId;
-
-//   if (selectedOption === 'Appointment') {
-//     const endpoint = `/api/getAppointmentByToken/${inputValue}`;
-//     response = await getAPICall(endpoint); // use GET
-//     console.log(response.name);
-//     setAppointment
-
-//     console.log("📩 Appointment API Response:", response);
-
-//     // If patient_id exists => it's a registered patient
-//     patientId = response?.patient_id;
-
-//     setData(response);
-//     setTokanPatientID(patientId || null);
-
-//     if (patientId) {
-//       // ✅ Registered patient — fetch full details
-//       const res = await getAPICall(`/api/patient-details/${patientId}`);
-//       console.log("✅ Selected Patient:", res);
-
-//       setLastBill(res?.last_bill);
-//       sethealthdirectives(res?.health_directives || []);
-//       setpatientExaminations(res?.patient_examinations || []);
-//       setayurvedicExaminations(res?.ayurvedic_examintion || []);
-//     } else {
-//       // 🆕 New patient from appointment — just show basic info
-//       setLastBill(null);
-//       sethealthdirectives([]);
-//       setpatientExaminations([]);
-//       setayurvedicExaminations([]);
-//     }
-
-//     setShowPatientCard(true);
-
-//   } else {
-//     // Handle token patient (token flow remains the same)
-//     const endpoint = `/api/getPatientInfo`;
-//     response = await post(endpoint, { tokan_number: inputValue });
-
-//     patientId = response?.patient?.id;
-
-//     if (!patientId) {
-//       throw new Error("❌ Patient ID not found in token response.");
-//     }
-
-//     setData(response);
-//     setTokanPatientID(patientId);
-
-//     const res = await getAPICall(`/api/patient-details/${patientId}`);
-//     console.log("✅ Selected Token Patient:", res);
-
-//     setLastBill(res?.last_bill);
-//     sethealthdirectives(res?.health_directives || []);
-//     setpatientExaminations(res?.patient_examinations || []);
-//     setayurvedicExaminations(res?.ayurvedic_examintion || []);
-
-//     setShowPatientCard(true);
-//   }
-
-// } catch (error) {
-//   console.error('❌ Error fetching patient full details', error);
-//   showToast('Failed to fetch data. Please check the ID and try again.', 'Validation Error', '#d9534f');
-//   setData(null);
-//   setShowPatientCard(false);
-// }
-
 
 try {
   let response, patientId;
@@ -1145,20 +767,18 @@ try {
   if (selectedOption === 'Appointment') {
     const endpoint = `/api/getAppointmentByToken/${inputValue}`;
     response = await getAPICall(endpoint); // use GET
-    console.log("📩 Appointment API Response:", response);
+    // console.log("📩 Appointment API Response:", response);
 
     // ✅ Step 1: Check if patient already exists via checkToken
     const tokenRes = await post('/api/checkToken', { tokan: inputValue });
-    console.log("tokenRes (via token):", tokenRes);
+    // console.log("tokenRes (via token):", tokenRes);
     const appointmentPatientId = tokenRes.patient_id;
-    console.log(appointmentPatientId);
+    // console.log(appointmentPatientId);
     
-
     if (tokenRes.exists) {
-      console.log("✅ Token patient already exists — skipping add.");
+      // console.log("✅ Token patient already exists — skipping add.");
       skipAddPatient = true;
     }
-
     // ✅ Step 2: Use existing patient ID if found
     patientId = appointmentPatientId || response?.patient_id;
 
@@ -1188,7 +808,7 @@ try {
     // ✅ Step 5: Fetch full patient details if patientId exists
     if (patientId) {
       const res = await getAPICall(`/api/patient-details/${patientId}`);
-      console.log("✅ Selected Patient:", res);
+      // console.log("✅ Selected Patient:", res);
 
       setLastBill(res?.last_bill || []);
       sethealthdirectives(res?.health_directives || []);
@@ -1217,7 +837,7 @@ try {
     setTokanPatientID(patientId);
 
     const res = await getAPICall(`/api/patient-details/${patientId}`);
-    console.log("✅ Selected Token Patient:", res);
+    // console.log("✅ Selected Token Patient:", res);
 
     setLastBill(res?.last_bill || []);
     sethealthdirectives(res?.health_directives || []);
@@ -1231,75 +851,120 @@ try {
   setData(null);
   setShowPatientCard(false);
 }
-
-
-
-
-
-
   };
-  
-  
-
-
-
-
 
 // ----------------------------------------------------------------------------------------------------- 
-
-
 
 const [selectedOption, setSelectedOption] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [data, setData] = useState(null);
-  console.log("data",data?.name);
-  
+  // console.log("data",data?.name);
 
   // Handle dropdown selection
   const handleDropdownSelect = async (option) => {
-
     setSelectedOption(option);
     setInputValue(''); // Reset input field
     setData(null);     // Clear previous data
   // console.log("option",option.id);
-  
   };
   
-
-
-
-
 const [showAllHistory, setShowAllHistory] = useState(false);
-
-
 
 const [showGST, setShowGST] = useState(true); 
 
+// useEffect(() => {
+//   const updatedRows = rows.map((row) => {
+//     if (row.description === 'Medicine') {
+//       const quantity = rowss.length;
+//       const price = totalPrice;
+//       let subtotal = totalPrice;
 
+//       if (showGST) {
+//         const gst = parseFloat(row.gst) || 0;
+//         subtotal += subtotal * (gst / 100);
+//       }
+
+//       return {
+//         ...row,
+//         quantity,
+//         price,
+//         total: subtotal
+//       };
+//     }
+//     return row;
+//   });
+
+//   setRows(updatedRows);
+// }, [rowss, totalPrice, showGST]);
 useEffect(() => {
-  const updatedRows = rows.map((row) => {
-    if (row.description === 'Medicine') {
-      const quantity = rowss.length;
-      const price = totalPrice;
-      let subtotal = totalPrice;
+  const quantity = rowss.length;
+  const price = totalPrice;
+  let subtotal = totalPrice;
 
-      if (showGST) {
-        const gst = parseFloat(row.gst) || 0;
-        subtotal += subtotal * (gst / 100);
+  if (showGST) {
+    const gst = parseFloat(rowss[0]?.gst || 0); // Get GST from first item if needed
+    subtotal += subtotal * (gst / 100);
+  }
+
+  setMedicineRowTotal({ quantity, price, total: subtotal });
+
+  // Update rows only for Medicine type using frozen value
+  setRows((prevRows) =>
+    prevRows.map((row) => {
+      if (row.description === 'Medicine') {
+        return {
+          ...row,
+          quantity,
+          price,
+          total: subtotal,
+        };
       }
-
-      return {
-        ...row,
-        quantity,
-        price,
-        total: subtotal
-      };
-    }
-    return row;
-  });
-
-  setRows(updatedRows);
+      return row;
+    })
+  );
 }, [rowss, totalPrice, showGST]);
+
+
+
+// Update rows state when rowss changes to reflect Medicine total
+// useEffect(() => {
+//   const updatedRows = rows.map((row, index) => {
+//     if (row.description === 'Medicine') {
+//       const quantity = rowss.length;
+//       // Sum the totals for all prescription rows
+//       const total = rowss.reduce((sum, r) => {
+//         const rowTotal = calculateRowTotal(r);
+//         return sum + (isNaN(rowTotal) ? 0 : rowTotal);
+//       }, 0);
+//       let subtotal = total;
+
+//       if (showGST) {
+//         const gst = parseFloat(row.gst) || 0;
+//         subtotal += subtotal * (gst / 100);
+//       }
+
+//       return {
+//         ...row,
+//         quantity,
+//         price: total.toFixed(2), // Format as string for display
+//         total: subtotal.toFixed(2), // Format as string for display
+//       };
+//     }
+//     return row;
+//   });
+
+//   setRows(updatedRows);
+// }, [rowss, showGST]);
+// useEffect(() => {
+//   const medicineRowIndex = rows.findIndex(row => row.description === 'Medicine');
+//   if (medicineRowIndex !== -1) {
+//     const updatedBillingRows = [...rows];
+//     updatedBillingRows[medicineRowIndex].total = rowss.reduce((total, row) => total + calculateRowTotal(row), 0);
+//     updatedBillingRows[medicineRowIndex].price = updatedBillingRows[medicineRowIndex].total; // Sync price with total
+//     setRows(updatedBillingRows);
+//   }
+// }, [rowss]);
+
 
 
 const [expandedVisits, setExpandedVisits] = useState({}); // { [visitId]: true/false }
@@ -1316,33 +981,12 @@ const handleSearchChange = (e) => {
 };
 
 
-// just checkin for demo perpose value
+const [personalHistory, setPersonalHistory] = useState('');
 
-const [personalHistory, setPersonalHistory] = useState({
-    diet: '',
-    appetite: '',
-    sleep: '',
-    thirst: '',
-    bowel: '',
-    micturition: '',
-  });
 
-  const handleChange = (field, value) => {
-    setPersonalHistory((prev) => ({ ...prev, [field]: value }));
-  };
   const [showPersonalHistory, setShowPersonalHistory] = useState(false);
-
   const [showAshtvidh, setShowAshtvidh] = useState(false);
-  // const [ashtvidhData, setAshtvidhData] = useState({
-  //   nadi: '',
-  //   jihva: '',
-  //   mala: '',
-  //   mutra: '',
-  //   netra: '',
-  //   aakruti: '',
-  //   shabda: '',
-  //   sparsha: '',
-  // });
+ 
   const [ashtvidhData, setAshtvidhData] = useState({
   nadi: [],
   jihva: [],
@@ -1354,9 +998,6 @@ const [personalHistory, setPersonalHistory] = useState({
   sparsha: [],
 });
 
-  //  const handleAshtvidhChange = (field, value) => {
-  //   setAshtvidhData((prev) => ({ ...prev, [field]: value }));
-  // };
 const handleAshtvidhChange = (key, value) => {
   setAshtvidhData((prev) => {
     const currentValues = prev[key] || [];
@@ -1372,19 +1013,14 @@ const handleAshtvidhChange = (key, value) => {
 };
 
 const [showAllergyFields, setShowAllergyFields] = useState(false)
-  
-
-  const toggleFields = () => setShowAllergyFields(!showAllergyFields)
-  
-
-   const [showHabits, setShowHabits] = useState(false)
+const toggleFields = () => setShowAllergyFields(!showAllergyFields)
+  const [showHabits, setShowHabits] = useState(false)
   const [habits, setHabits] = useState({
     alcohol: '',
     cold_drink: '',
     fast_food: '',
     salty_food: '',
     tobbacco: '',
-    
     chocolate:'',
     drug_addict:'',
     late_night_sleep:'',
@@ -1411,8 +1047,6 @@ const [showAllergyFields, setShowAllergyFields] = useState(false)
     }
   })
 }
-
-
 
 // for Prescription shortout
 const validateField = (index, fieldName) => {
@@ -1441,13 +1075,21 @@ const validateField = (index, fieldName) => {
     case 'dosage':
      const trimmedDosage = String(row.dosage).trim();
 
+// if (!trimmedDosage) {
+//   errors[index].dosage = 'Dosage is required';
+// } else if (!/^[01]-[01]-[01]$/.test(trimmedDosage)) {
+//   errors[index].dosage = 'Invalid dosage format. Use format like 1-0-1';
+// } else {
+//   delete errors[index].dosage;
+// }
 if (!trimmedDosage) {
   errors[index].dosage = 'Dosage is required';
-} else if (!/^[01]-[01]-[01]$/.test(trimmedDosage)) {
-  errors[index].dosage = 'Invalid dosage format. Use format like 1-0-1';
+} else if (!/^[0-6]-[0-6]-[0-6]$/.test(trimmedDosage)) {
+  errors[index].dosage = 'Invalid dosage format. Use format like 1-0-1 (0-6 only)';
 } else {
   delete errors[index].dosage;
 }
+
       break;
       
     case 'timing':
@@ -1530,7 +1172,6 @@ const validateAllFields = () => {
   hasErrors = true;
 }
 
-    
     if (!row.timing) {
       rowErrors.timing = 'Timing is required';
       hasErrors = true;
@@ -1560,8 +1201,6 @@ const validateAllFields = () => {
   return !hasErrors;
 };
 
-
-
 const investigationOptions = [
   "Complete Haemogram", "CBC", "Hb", "WBC", "Platelet count", "Rh Type", "BT CT", "Mantour Test",
   "D Dimer", "ESR", "UPT", "Urine Routine", "PAP smear", "Sputum", "LFT", "KFT", "Urea", "Uric Acid",
@@ -1571,18 +1210,267 @@ const investigationOptions = [
   "ECG", "Urine Sugar", "Cancer Marker Test", "Blood Sugar"
 ].map(item => ({ label: item, value: item }));
 
-
 const isActive = selectedOption === 'Appointment'
 const isActive1 = selectedOption === 'Default'
 
-  return (
-    <>
 
+
+
+const handleSubmit = async () => {
+  if (!validateForm()) return;
+  if (!validateRows(rows)) return;
+   // Only validate prescription fields if the section is open
+  if (showTable && !validateAllFields()) {
+    return; // Stop submission if prescription validation fails
+  }
+  const today = new Date();
+  const dobDate = new Date(dob);
+  if (dobDate >= today) {
+    alert('Date of birth cannot be in the future.');
+    return;
+  }
+
+  try {
+    const patientId = data?.patient?.id;
+      const tokenNumber = data?.tokan; // this is only present when selectedOption === 'Appointment'
+    // console.log("patientId",patientId);
+    let skipAddPatient = false;
+
+    if (patientSuggestionId) {
+      // 👇 Check suggestion-based patient in both tables
+      // console.log("🔍 Checking patientSuggestionId:", patientSuggestionId);
+    
+      const patientRes = await post('/api/checkPatient', { id: patientSuggestionId });
+      const tokenRes = await post('/api/checkToken', { patient_id: patientSuggestionId });
+    
+      // console.log("patientRes:", patientRes);
+      // console.log("tokenRes:", tokenRes);
+    
+      if (patientRes.exists || tokenRes.exists) {
+        // console.log("✅ Suggestion patient already exists — skipping add.");
+        skipAddPatient = true;
+      }
+    } 
+    else if (selectedOption === 'Appointment' && tokenNumber) {
+    // 🆕 Handle appointment-based token number → check patient by phone from token
+    // console.log("🔍 Checking via tokan:", tokenNumber);
+
+    const tokenRes = await post('/api/checkToken', { tokan: tokenNumber });
+    // console.log("tokenRes (via token):", tokenRes);
+    const appointmentPatientId = tokenRes.patient_id;
+
+    if (tokenRes.exists) {
+      // console.log("✅ Token patient already exists — skipping add.");
+      skipAddPatient = true;
+    }
+  }
+    else if (patientId) {
+      // 👇 Check token-based patient ID
+      // console.log("🔍 Checking token-based patientId:", patientId);
+      const tokenRes = await post('/api/checkToken', { patient_id: patientId });
+      // console.log("tokenRes:", tokenRes);
+    
+      if (tokenRes.exists) {
+        // console.log("✅ Token patient already exists — skipping add.");
+        skipAddPatient = true;
+      }
+    }
+
+    // ➕ Add patient only if ID doesn't exist in both tables
+    if (!skipAddPatient && (!patientId || (patientId && (!data?.patient?.fromSuggestion)))) {
+      const newPatientData = {
+
+        clinic_id: "CLINIC123", // Replace with dynamic clinic_id
+        doctor_id: userData.id || "1",
+        name: patientName || data?.appointment?.name,
+        email,
+        phone:data?.appointment?.phone || phone || data?.patient?.phone,
+        address: patientAddress,
+        dob,
+        occupation :  Occupation,
+        pincode:Pincode
+      };
+
+      try {
+        const added = await post('/api/manuallyAddPatient', newPatientData);    // /api/manuallyAddPatient
+        // console.log("✅ Patient added:", added?.patient?.id);
+          manualPatientID = added?.patient?.id;
+       
+      } catch (e) {
+        // console.error("❌ Failed to add patient:", e);
+        alert("Error adding patient.");
+        return;
+      }
+    }
+
+    const billData = {
+      patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID || appointmentPatientId ||'not get tokan',
+      patient_name: data?.patient?.name || patientName || data?.appointment?.name,
+      address: data?.patient?.address || patientAddress,
+      email: data?.patient?.email || email,
+      contact: data?.patient?.phone || data?.appointment?.phone ||`91${phone}`,
+      dob: data?.patient?.dob || dob,
+      occupation: data?.patient?.occupation || Occupation,
+      pincode: data?.patient?.pincode || Pincode,
+      doctor_name: d_name,
+      registration_number: r_num,
+      visit_date: visitDate,
+      followup_date: followupdate,
+       grand_total: grandTotal,
+    };
+
+    // 💳 Continue with bill creation...
+    const billResponse = await post('/api/bills', billData);
+    const billno = billResponse.id;
+    setBillId(billno);
+
+    const descriptionData = rows.map((row) => ({
+  bill_id: `${billno}`,
+  description: row.description,
+  quantity: row.quantity,
+  price: row.price,
+  gst: row.gst,
+  total: row.total,
+}));
+await post('/api/descriptions', { descriptions: descriptionData });
+
+    // 💊 Prescriptions
+    if (validateRowss()) {
+      const prescriptionPromises = rowss.map((row) => {
+        const prescriptionData = {
+          p_p_i_id: `${billno}`,
+          patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get Patien ID',
+          medicine: medicines.find(med => med.id === parseInt(row.description, 10))?.drug_name || "",
+          strength: row.strength,
+          dosage: row.dosage,
+          timing: row.timing,
+          frequency: row.frequency,
+          duration: row.duration,
+        };
+
+        return post("/api/healthdirectives", prescriptionData);
+      });
+
+      await Promise.all(prescriptionPromises);
+    }
+
+    // 🧪 Examinations
+    const hasPatientExamData = bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA || weight || height;
+
+    const hasAyurvedicDiagnosisData =  emaill || ayurPastHistory || prasavvedanParikshayein ||
+    habits || labInvestigation || personalHistory || foodAndDrugAllergy || lmp || edd;
+
+if (hasPatientExamData || hasAyurvedicDiagnosisData) {
+  const patientExaminationData = hasPatientExamData
+    ? {
+        p_p_i_id: `${billno}`,
+        patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get patient ID',
+        bp,
+        pulse,
+        weight,
+        height,
+        past_history: pastHistory,
+        complaints,
+        systemic_exam_general: sysExGeneral,
+        systemic_exam_pa: sysExPA,
+      }
+    : {};
+
+  const ayurvedicDiagnosisData = hasAyurvedicDiagnosisData
+    ? {
+        p_p_i_id: `${billno}`,
+        patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get patient ID',
+        // occupation: occupation || "",
+        // pincode: pincode || "",
+        email: emaill || "",
+        ayurPastHistory: ayurPastHistory || "",
+        prasavvedan_parikshayein: JSON.stringify(ashtvidhData) || "",
+        habits: JSON.stringify(habits) || "",
+        lab_investigation: labInvestigation || "",
+        personal_history: JSON.stringify(personalHistory) || "",
+        food_and_drug_allergy: foodAndDrugAllergy || "",
+        drug_allery:drugAllergy|| "",
+        lmp: lmp || "",
+        edd: edd || ""
+      }
+    : {};
+
+  const payload = {
+    ...patientExaminationData,
+    ...ayurvedicDiagnosisData,
+  };
+
+  await post('/api/patientexaminations', payload);
+}
+
+    // alert('Bill and descriptions created successfully!');
+    showToast('Bill and descriptions created successfully!', 'Successfully Submitted', '#198754');
+    navigate('/Invoice', { state: { billId: billno } });
+
+  } catch (error) {
+    console.error('Error in handleSubmit:', error);
+    // alert('An error occurred while submitting data.');
+    showToast('An error occurred while submitting data.', 'Validation Error', '#d9534f');
+  }
+};
+
+
+// const calculateRowTotal = (row) => {
+//   const dosage = row.dosage || '';
+//   const durationStr = row.duration || "" ;
+//   const pricePerTablet =   row.price || row.drugDetails?.[0]?.price || '';   // Number(row.price)
+//   console.log(pricePerTablet);
+  
+
+//   if (!/^[0-6]-[0-6]-[0-6]$/.test(dosage)) return 0;
+
+//   const dailyDose = dosage.split('-').reduce((sum, val) => sum + Number(val), 0);
+//   const duration = parseInt(durationStr.match(/\d+/)?.[0], 10) || 0;
+
+//    const totalll = dailyDose * duration * pricePerTablet;
+
+// //  const totalll = 70;
+//   console.log(totalll);
+  
+
+//   return totalll ;
 
   
-{/* <CCard className="mb-3  shadow-md rounded-2xl border border-gray-200 p-4"> */}
- 
+  
+// };
 
+// const calculateRowTotal = (row) => {
+//   const dosage = row.dosage || '';
+//   const durationStr = row.duration || '';
+//   const pricePerTablet = Number(row.price) || Number(row.drugDetails?.[0]?.price) || 0;
+
+//   // Validate dosage format (e.g., "1-0-1")
+//   if (!/^[0-6]-[0-6]-[0-6]$/.test(dosage)) return 0;
+
+//   // Calculate daily dose by summing the dosage values (e.g., 1+0+1 = 2)
+//   const dailyDose = dosage.split('-').reduce((sum, val) => sum + Number(val), 0);
+
+//   // Extract numeric duration (e.g., "7 Days" -> 7)
+//   const durationMatch = durationStr.match(/\d+/) || [0];
+//   const duration = parseInt(durationMatch[0], 10);
+
+//   // Calculate total: dailyDose * duration * pricePerTablet
+//   const total = dailyDose * duration * pricePerTablet;
+
+//   // Return total as a number (avoid toFixed here to prevent string return)
+//   return isNaN(total) ? 0 : total;
+// };
+
+
+
+
+
+
+
+
+  return (
+    <>
+{/* Tokan And Appointment And Deafualt Part  */}
   <CCardBody className="bg-grey border  rounded-4 p-4" 
   style={{
     background: 'linear-gradient(135deg, #e0f7fa, #f0fdf4)', // light cyan to light green
@@ -1616,8 +1504,8 @@ const isActive1 = selectedOption === 'Default'
           <CIcon icon={cilClock} size="lg" className="text-primary" />
         </div>
         <div>
-          <div className="fw-semibold text-primary small">Token</div>
-          <div className="text-medium-emphasis" style={{ fontSize: '0.75rem' }}>Quick token-based visit</div>
+          <div className="fw-semibold text-primary small">Walk-in Consultation</div>
+          <div className="text-medium-emphasis" style={{ fontSize: '0.75rem' }}>Immediate medical attention</div>
         </div>
       </CCardBody>
     </CCard>
@@ -1647,8 +1535,8 @@ const isActive1 = selectedOption === 'Default'
           <CIcon icon={cilCalendar} size="lg" className="text-success" />
         </div>
         <div>
-          <div className="fw-semibold text-success small">Appointment</div>
-          <div className="text-medium-emphasis" style={{ fontSize: '0.75rem' }}>Scheduled appointment</div>
+          <div className="fw-semibold text-success small">Scheduled Appointment</div>
+          <div className="text-medium-emphasis" style={{ fontSize: '0.75rem' }}>Pre-booked consultation</div>
         </div>
       </CCardBody>
     </CCard>
@@ -1686,8 +1574,6 @@ const isActive1 = selectedOption === 'Default'
   </CCol>
 </CRow>
 
-
-
         {selectedOption && (
     <CButton
       onClick={() => {
@@ -1705,32 +1591,6 @@ const isActive1 = selectedOption === 'Default'
     </CButton>
   )}
 
-
-
-
-        {/* Input + Submit */}
-        {/* {selectedOption && (
-  <CRow className="mt-3">
-    <CCol sm={12} md={6} lg={4}>
-      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full">
-        <CFormInput
-          type="text"
-          placeholder={`Enter ${selectedOption} ID`}
-          value={inputValue}
-          onChange={handleInputChange}
-          className="flex-1 min-w-[200px] border-gray-300 shadow-sm"
-        />
-      </div>
-    </CCol>
-    <CCol sm={12} md={6} lg={4}>
-      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full">
-        <CButton color="success" className="whitespace-nowrap text-white" onClick={handleFetchData}>
-          Submit
-        </CButton>
-      </div>
-    </CCol>
-  </CRow>
-)} */}
 {selectedOption && (
   <>
     {/* 🔷 Token Input and Submit Button on same row */}
@@ -1791,13 +1651,8 @@ const isActive1 = selectedOption === 'Default'
       </div>
     </CForm>
   </CCardBody>
-{/* </CCard> */}
 
-
-
-
-
-
+ {/* Patient Information Part  */}
 <div className="mb-2 mt-2   " 
 style={{ backgroundColor: 'light' }}
 >
@@ -1967,10 +1822,7 @@ style={{ backgroundColor: 'light' }}
 
 </div>
 
-
 {/* Old Bill Displyed POP up */}
-
-
 {showPatientCard && (
   <>
     {/* Past History Card with Toggle */}
@@ -2083,16 +1935,10 @@ style={{ backgroundColor: 'light' }}
 )}
 
 
-
-
-
-
-
+{/* Medical Observation And Medical Prescription  */}
 <CCard className="mb-2 mt-2 p-3  rounded-4 border border-gray-200" 
 style={{ backgroundColor: '	#F0F8FF' }}
->
-
-    
+>   
 <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-start gap-1 gap-md-3 mb-2">
   {/* Label and Icon */}
   <div className="d-flex align-items-center gap-2">
@@ -2143,24 +1989,29 @@ style={{ backgroundColor: '	#F0F8FF' }}
   </div>
 </div>
 
-
-
-
 {isMedicalExpanded && doctorObservationSettings && (
   <div className="p-2">
     <CRow className="mb-2">
       {doctorObservationSettings.bp && (
-        <CCol xs={12} sm={6}>
-          <CFormLabel className="fw-bold">BP</CFormLabel>
-          <CFormInput value={bp} type='number' onChange={(e) => setBp(e.target.value)}
-            onKeyDown={(e) => {
-    if (e.key === "-" || e.key === "e" || e.key === "+" || e.key === "E") {
-      e.preventDefault();
-    }
-  }}
-  min="0"
-          />
-        </CCol>
+       <CCol xs={12} sm={6}>
+  <CFormLabel className="fw-bold">BP</CFormLabel>
+  <CFormInput
+    type="text"
+    placeholder="e.g. 120/80"
+    value={bp || '/'}
+    onChange={(e) => setBp(e.target.value)}
+    onKeyDown={(e) => {
+      const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', '/', 'Delete'];
+      if (
+        !/[0-9]/.test(e.key) &&
+        !allowedKeys.includes(e.key)
+      ) {
+        e.preventDefault();
+      }
+    }}
+  />
+</CCol>
+
       )}
 
       {doctorObservationSettings.weight && (
@@ -2228,8 +2079,6 @@ style={{ backgroundColor: '	#F0F8FF' }}
     </CRow>
   </div>
 )}
-
-
 
 {isAyurvedicExpanded && doctorAyurvedicObservationSettings && (
   <div className="p-2">
@@ -2898,9 +2747,6 @@ style={{ backgroundColor: '	#F0F8FF' }}
 )}
 
 
-
-
-
 <div>
   {/* Prescriptions Section */}
   {!showTable && (
@@ -3113,37 +2959,35 @@ style={{ backgroundColor: '	#F0F8FF' }}
                   {/* Dosage */}
                  
                   <CTableDataCell className="px-2 py-3">
-  <CFormInput
-    type="text"
-    value={row.dosage}
-    onChange={(e) => {
-      const raw = e.target.value.replace(/-/g, '').trim();
-      const only01 = raw.replace(/[^01]/g, '');
 
-      if (only01.length > 3) return;
+<CFormInput
+  type="text"
+  value={row.dosage}
+  onChange={(e) => {
+    const raw = e.target.value.replace(/-/g, '').trim();
+    const onlyDigits = raw.replace(/[^0-6]/g, ''); // Allow digits 0 to 6 only
 
-      // Auto-format to 1-0-1 style
-      const formatted = only01.length === 3
-        ? `${only01[0]}-${only01[1]}-${only01[2]}`
-        : only01;
+    if (onlyDigits.length > 3) return;
 
-      handleRowChangee(index, 'dosage', formatted);
+    const formatted = onlyDigits.length === 3
+      ? `${onlyDigits[0]}-${onlyDigits[1]}-${onlyDigits[2]}`
+      : onlyDigits;
 
-      // Clear error if fully valid
-      if (/^[01]-[01]-[01]$/.test(formatted)) {
-        clearFieldError(index, 'dosage');
-      }
-    }}
-    onBlur={() => validateField(index, 'dosage')}
-    placeholder="e.g. 1-0-1"
-    maxLength={5}
-  />
-  {rowErrors[index]?.dosage && (
+    handleRowChangee(index, 'dosage', formatted);
+
+    if (/^[0-6]-[0-6]-[0-6]$/.test(formatted)) {
+      clearFieldError(index, 'dosage');
+    }
+  }}
+  onBlur={() => validateField(index, 'dosage')}
+  placeholder="e.g. 1-0-1"
+  maxLength={5}
+/>
+{rowErrors[index]?.dosage && (
     <div className="text-danger small mt-1">{rowErrors[index].dosage}</div>
   )}
+
 </CTableDataCell>
-
-
 
                   {/* Timing */}
                   <CTableDataCell className="px-2 py-3">
@@ -3156,8 +3000,20 @@ style={{ backgroundColor: '	#F0F8FF' }}
                       onBlur={() => validateField(index, 'timing')}
                     >
                       <option value="">Select</option>
-                      <option value="After Food">After Food</option>
-                      <option value="Before Food">Before Food</option>
+                      {/* <option value="After Food">After Food</option>
+                      <option value="Before Food">Before Food</option> */}
+                      <option value="Morning 6 - Evening 6">Morning 6 - Evening 6</option>
+                      <option value="Morning 10 - Afternon 2">Morning 10 - Afternon 2</option>
+                       <option value="Morning 8 - Evening 8">Morning 8 - Evening 8</option> 
+                       <option value="Before Sleep">Before Sleep</option> 
+                       <option value="After Meal">After Meal</option>
+                        <option value="Before Meal">Before Meal </option> 
+                        {/* <option value="Evening 8">Sandhyakali 8</option> */}
+
+
+ 
+
+
                     </CFormSelect>
                     {rowErrors[index]?.timing && <div className="text-danger small mt-1">{rowErrors[index].timing}</div>}
                   </CTableDataCell>
@@ -3250,6 +3106,34 @@ style={{ backgroundColor: '	#F0F8FF' }}
                       <div className="text-danger small mt-1">{rowErrors[index].price}</div>
                     )}
                   </CTableDataCell>
+                  
+<CTableDataCell style={{ width: '16.66%' }} className="text-center">
+  ₹{(() => {
+    const dosage = row?.dosage || '';
+    const durationStr = row?.duration || '';
+    const pricePerTablet = parseFloat(row?.price) || parseFloat(row?.drugDetails?.[0]?.price) || 0;
+
+    // Validate dosage pattern (like "1-0-1")
+    if (!/^\d-\d-\d$/.test(dosage)) return '0.00';
+
+    const dailyDose = dosage
+      .split('-')
+      .map(val => parseInt(val, 10))
+      .reduce((sum, val) => sum + (isNaN(val) ? 0 : val), 0);
+
+    const durationMatch = durationStr.match(/\d+/);
+    const duration = durationMatch ? parseInt(durationMatch[0], 10) : 0;
+
+    const total = dailyDose * duration * pricePerTablet;
+    return isNaN(total) ? '0.00' : total.toFixed(2);
+  })()}
+</CTableDataCell>
+
+
+
+
+
+
 
                   {/* Actions */}
                   <CTableDataCell className="px-2 py-2">
@@ -3269,307 +3153,359 @@ style={{ backgroundColor: '	#F0F8FF' }}
             <div className="fw-bold text-end mt-3">
               Total Price: ₹{totalPrice.toFixed(2)}
             </div>
+            {/* <div className="fw-bold text-end mt-3">
+  Total Price: ₹{rowss.reduce((total, row) => total + calculateRowTotal(row), 0).toFixed(2)}
+</div> */}
+
           </CTable>
         </div>
 
         {/* Mobile View */}
-        <div className="d-lg-none mb-4">
-          {rowss.map((row, index) => (
-            <div key={index} className=" rounded p-3 mb-3">
-              {/* Medicine */}
-              <div className="mb-2 position-relative">
-                <strong>Medicine:</strong>
-                <CFormInput
-                  type="text"
-                  value={medicineSearch[index] || ''}
-                  onChange={(e) => handleMedicineSearch(index, e.target.value)}
-                  onBlur={() => validateField(index, 'description')}
-                  placeholder="Search medicine..."
-                  autoComplete="off"
-                />
-                {medicineOptions[index]?.length > 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    backgroundColor: '#fff',
-                    zIndex: 2000,
-                    width: '100%',
-                    border: '1px solid #ccc',
-                    borderTop: 'none',
-                    borderRadius: '0 0 6px 6px',
-                    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-                    overflowY: 'auto'
-                  }}>
-                    {medicineOptions[index].map((medicine) => (
-                      <div
-                        key={medicine.id}
-                        className="d-flex justify-content-center align-items-center"
-                        style={{
-                          padding: '8px',
-                          cursor: 'pointer',
-                          borderBottom: '1px solid #f1f1f1',
-                          transition: 'background 0.2s ease',
-                          textAlign: 'center',
-                          fontSize: '0.95rem',
-                          fontWeight: 500
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
-                        onClick={() => {
-                          handleRowChangee(index, 'description', medicine.id);
-                          handleMedicineChange(index, medicine.id);
-                          setMedicineSearch((prev) => ({ ...prev, [index]: medicine.drug_name }));
-                          setMedicineOptions((prev) => ({ ...prev, [index]: [] }));
-                          clearFieldError(index, 'description');
-                        }}
-                      >
-                        {medicine.drug_name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {rowErrors[index]?.description && <div className="text-danger small mt-1">{rowErrors[index].description}</div>}
-              </div>
-
-              <div className="d-flex gap-2 mb-2">
-                <div className="w-50 position-relative">
-                  <strong>Strength:</strong>
-                  <CFormInput
-                    value={row.strength}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        handleRowChangee(index, 'strength', value);
-                        toggleSuggestion(index, 'showStrength', false);
-                      }}
-                      onFocus={() => {
-                        if (!row.strength) {
-                          toggleSuggestion(index, 'showStrength', true);
-                        }
-                      }}
-                      onBlur={() => validateField(index, 'strength')}
-                      placeholder="Strength"
-                      disabled={!row.description}
-                  />
-                  {suggestionFlags[index]?.showStrength &&
-                      row.drugDetails?.filter((d) => d.drug_id === parseInt(row.description, 10))?.slice(0, 5).map((drug, i) => (
-                        <div
-                          key={i}
-                          className="position-absolute w-100 bg-white border shadow-sm mt-1 px-2 py-1 rounded cursor-pointer"
-                          style={{ zIndex: 2000 }}
-                          onClick={() => {
-                            handleRowChangee(index, 'strength', drug.strength);
-                            toggleSuggestion(index, 'showStrength', false);
-                            clearFieldError(index, 'strength');
-                          }}
-                        >
-                          {drug.strength}
-                        </div>
-                      ))}
-                  {rowErrors[index]?.strength && <div className="text-danger small mt-1">{rowErrors[index].strength}</div>}
+<div className="d-lg-none">
+  {rowss.map((row, index) => (
+    <div
+      key={index}
+      className="card mb-3 shadow-sm border rounded"
+      style={{ borderCollapse: 'separate', borderSpacing: '0 10px' }}
+    >
+      <div className="card-body p-3">
+        {/* Medicine */}
+        <div className="mb-2">
+          <label className="form-label fw-semibold">Medicine</label>
+          <CFormInput
+            type="text"
+            value={medicineSearch[index] || ''}
+            onChange={(e) => handleMedicineSearch(index, e.target.value)}
+            onBlur={() => validateField(index, 'description')}
+            placeholder="Search medicine..."
+            autoComplete="off"
+          />
+          {medicineOptions[index]?.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              backgroundColor: '#fff',
+              zIndex: 2000,
+              width: '100%',
+              border: '1px solid #ccc',
+              borderTop: 'none',
+              borderRadius: '0 0 6px 6px',
+              boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+              overflowY: 'auto',
+            }}>
+              {medicineOptions[index].map((medicine) => (
+                <div
+                  key={medicine.id}
+                  className="d-flex justify-content-center align-items-center"
+                  style={{
+                    padding: '8px',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid #f1f1f1',
+                    transition: 'background 0.2s ease',
+                    textAlign: 'center',
+                    fontSize: '0.95rem',
+                    fontWeight: 500,
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                  onClick={() => {
+                    handleRowChangee(index, 'description', medicine.id);
+                    handleMedicineChange(index, medicine.id);
+                    setMedicineSearch((prev) => ({ ...prev, [index]: medicine.drug_name }));
+                    setMedicineOptions((prev) => ({ ...prev, [index]: [] }));
+                    clearFieldError(index, 'description');
+                  }}
+                >
+                  {medicine.drug_name}
                 </div>
-
-                <div className="w-50">
-                  <strong>Dosage:</strong>
-                  <CFormInput
-                  type="text"
-    value={row.dosage}
-    onChange={(e) => {
-      const raw = e.target.value.replace(/-/g, '').trim();
-      const only01 = raw.replace(/[^01]/g, '');
-
-      if (only01.length > 3) return;
-
-      // Auto-format to 1-0-1 style
-      const formatted = only01.length === 3
-        ? `${only01[0]}-${only01[1]}-${only01[2]}`
-        : only01;
-
-      handleRowChangee(index, 'dosage', formatted);
-
-      // Clear error if fully valid
-      if (/^[01]-[01]-[01]$/.test(formatted)) {
-        clearFieldError(index, 'dosage');
-      }
-    }}
-    onBlur={() => validateField(index, 'dosage')}
-    placeholder="e.g. 1-0-1"
-    maxLength={5}
-                  />
-                  {rowErrors[index]?.dosage && <div className="text-danger small mt-1">{rowErrors[index].dosage}</div>}
-                </div>
-              </div>
-
-              <div className="d-flex gap-2 mb-2">
-                <div className="w-50">
-                  <strong>Timing:</strong>
-                  <CFormSelect 
-                    value={row.timing} 
-                    onChange={(e) => {
-                      handleRowChangee(index, 'timing', e.target.value);
-                      if (e.target.value) clearFieldError(index, 'timing');
-                    }}
-                    onBlur={() => validateField(index, 'timing')}
-                  >
-                    <option value="">Select</option>
-                    <option value="After Food">After Food</option>
-                    <option value="Before Food">Before Food</option>
-                  </CFormSelect>
-                  {rowErrors[index]?.timing && <div className="text-danger small mt-1">{rowErrors[index].timing}</div>}
-                </div>
-
-                <div className="w-50">
-                  <strong>Frequency:</strong>
-                  <CFormSelect 
-                    value={row.frequency} 
-                    onChange={(e) => {
-                      handleRowChangee(index, 'frequency', e.target.value);
-                      if (e.target.value) clearFieldError(index, 'frequency');
-                    }}
-                    onBlur={() => validateField(index, 'frequency')}
-                  >
-                    <option value="">Select</option>
-                    <option value="Daily">Daily</option>
-                    <option value="SOS">SOS</option>
-                  </CFormSelect>
-                  {rowErrors[index]?.frequency && <div className="text-danger small mt-1">{rowErrors[index].frequency}</div>}
-                </div>
-              </div>
-
-              <div className="d-flex gap-2 mb-3 w-100">
-                <div className="w-75">
-                  <strong>Duration:</strong>
-                  {row.isCustom ? (
-                    <CFormInput
-                      value={row.duration}
-                      placeholder="Custom"
-                      onChange={(e) => {
-                        handleRowChangee(index, 'duration', e.target.value);
-                        if (e.target.value) clearFieldError(index, 'duration');
-                      }}
-                      onBlur={() => validateField(index, 'duration')}
-                    />
-                  ) : (
-                    <CFormSelect
-                      value={row.duration}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        handleRowChangee(index, 'isCustom', val === 'SOS');
-                        handleRowChangee(index, 'duration', val === 'SOS' ? '' : val);
-                        if (val) clearFieldError(index, 'duration');
-                      }}
-                      onBlur={() => validateField(index, 'duration')}
-                    >
-                      <option value="">Select</option>
-                      {['3 Days', '5 Days', '7 Days', '15 Days', '30 Days', 'SOS'].map((d) => (
-                        <option key={d} value={d}>{d}</option>
-                      ))}
-                    </CFormSelect>
-                  )}
-                  {rowErrors[index]?.duration && <div className="text-danger small mt-1">{rowErrors[index].duration}</div>}
-                </div>
-
-                <div className="w-75">
-                  <strong>Price (₹):</strong>
-                  <CFormInput
-                    type="number"
-                    min="0"
-                    className="text-center"
-                    value={
-                      activeEditableRowIndex === index
-                        ? row.price ?? ''
-                        : row.price || row.drugDetails?.[0]?.price || ''
-                    }
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === '') {
-                        handleRowChangee(index, 'price', '');
-                        return;
-                      }
-                      const numberValue = Number(val);
-                      if (numberValue >= 0) {
-                        handleRowChangee(index, 'price', numberValue);
-                        clearFieldError(index, 'price');
-                      }
-                    }}
-                    onFocus={() => {
-                      setActiveEditableRowIndex(index);
-                      handleRowChangee(index, 'price', '');
-                    }}
-                    onBlur={() => {
-                      if (row.price === '' || row.price === null || row.price === undefined) {
-                        handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
-                      }
-                      setActiveEditableRowIndex(null);
-                      validateField(index, 'price');
-                    }}
-                  />
-                  {rowErrors[index]?.price && (
-                    <div className="text-danger small mt-1">{rowErrors[index].price}</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="d-flex align-items-end justify-content-center gap-2 w-50">
-                <CButton color="danger" size="sm" onClick={() => handleRemoveRoww(index)} disabled={index === 0}>
-                  <CIcon icon={cilDelete} />
-                </CButton>
-                <CButton color="success" size="sm" onClick={handleAddRoww}>
-                  <CIcon icon={cilPlus} />
-                </CButton>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
+          {rowErrors[index]?.description && <div className="text-danger small mt-1">{rowErrors[index].description}</div>}
         </div>
+
+        {/* Strength */}
+        <div className="mb-2">
+          <label className="form-label fw-semibold">Strength</label>
+          <CFormInput
+            value={row.strength}
+            onChange={(e) => {
+              const value = e.target.value;
+              handleRowChangee(index, 'strength', value);
+              toggleSuggestion(index, 'showStrength', false);
+            }}
+            onFocus={() => {
+              if (!row.strength) {
+                toggleSuggestion(index, 'showStrength', true);
+              }
+            }}
+            onBlur={() => validateField(index, 'strength')}
+            placeholder="Strength"
+            disabled={!row.description}
+          />
+          {suggestionFlags[index]?.showStrength &&
+            row.drugDetails?.filter((d) => d.drug_id === parseInt(row.description, 10))?.slice(0, 5).map((drug, i) => (
+              <div
+                key={i}
+                className="position-absolute w-100 bg-white border shadow-sm mt-1 px-2 py-1 rounded cursor-pointer"
+                style={{ zIndex: 2000 }}
+                onClick={() => {
+                  handleRowChangee(index, 'strength', drug.strength);
+                  toggleSuggestion(index, 'showStrength', false);
+                  clearFieldError(index, 'strength');
+                }}
+              >
+                {drug.strength}
+              </div>
+            ))}
+          {rowErrors[index]?.strength && <div className="text-danger small mt-1">{rowErrors[index].strength}</div>}
+        </div>
+
+        {/* Dosage */}
+        <div className="mb-2">
+          <label className="form-label fw-semibold">Dosage</label>
+          <CFormInput
+            type="text"
+            value={row.dosage}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/-/g, '').trim();
+              const onlyDigits = raw.replace(/[^0-6]/g, ''); // Allow digits 0 to 6 only
+
+              if (onlyDigits.length > 3) return;
+
+              const formatted = onlyDigits.length === 3
+                ? `${onlyDigits[0]}-${onlyDigits[1]}-${onlyDigits[2]}`
+                : onlyDigits;
+
+              handleRowChangee(index, 'dosage', formatted);
+
+              if (/^[0-6]-[0-6]-[0-6]$/.test(formatted)) {
+                clearFieldError(index, 'dosage');
+              }
+            }}
+            onBlur={() => validateField(index, 'dosage')}
+            placeholder="e.g. 1-0-1"
+            maxLength={5}
+          />
+          {rowErrors[index]?.dosage && (
+            <div className="text-danger small mt-1">{rowErrors[index].dosage}</div>
+          )}
+        </div>
+
+        {/* Timing */}
+        <div className="mb-2">
+          <label className="form-label fw-semibold">Timing</label>
+          <CFormSelect
+            value={row.timing}
+            onChange={(e) => {
+              handleRowChangee(index, 'timing', e.target.value);
+              if (e.target.value) clearFieldError(index, 'timing');
+            }}
+            onBlur={() => validateField(index, 'timing')}
+          >
+            <option value="">Select</option>
+            <option value="Morning 6">Sakali 6</option>
+            <option value="Morning 10">Sakali 10</option>
+            <option value="Afternoon 2">Dupari 2</option>
+            <option value="Evening 6">Sandhyakali 6</option>
+            <option value="before Sleep">Ratri Zoptana</option>
+            <option value="Morning 8">Sakali 8</option>
+            <option value="Evening 8">Sandhyakali 8</option>
+          </CFormSelect>
+          {rowErrors[index]?.timing && <div className="text-danger small mt-1">{rowErrors[index].timing}</div>}
+        </div>
+
+        {/* Frequency */}
+        <div className="mb-2">
+          <label className="form-label fw-semibold">Frequency</label>
+          <CFormSelect
+            value={row.frequency}
+            onChange={(e) => {
+              handleRowChangee(index, 'frequency', e.target.value);
+              if (e.target.value) clearFieldError(index, 'frequency');
+            }}
+            onBlur={() => validateField(index, 'frequency')}
+          >
+            <option value="">Select</option>
+            <option value="Daily">Daily</option>
+            <option value="SOS">SOS</option>
+          </CFormSelect>
+          {rowErrors[index]?.frequency && <div className="text-danger small mt-1">{rowErrors[index].frequency}</div>}
+        </div>
+
+        {/* Duration */}
+        <div className="mb-2">
+          <label className="form-label fw-semibold">Duration</label>
+          {row.isCustom ? (
+            <CFormInput
+              value={row.duration}
+              placeholder="Custom"
+              onChange={(e) => {
+                handleRowChangee(index, 'duration', e.target.value);
+                if (e.target.value) clearFieldError(index, 'duration');
+              }}
+              onBlur={() => validateField(index, 'duration')}
+            />
+          ) : (
+            <CFormSelect
+              value={row.duration}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleRowChangee(index, 'isCustom', val === 'SOS');
+                handleRowChangee(index, 'duration', val === 'SOS' ? '' : val);
+                if (val) clearFieldError(index, 'duration');
+              }}
+              onBlur={() => validateField(index, 'duration')}
+            >
+              <option value="">Select</option>
+              {['3 Days', '5 Days', '7 Days', '15 Days', '30 Days', 'SOS'].map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </CFormSelect>
+          )}
+          {rowErrors[index]?.duration && <div className="text-danger small mt-1">{rowErrors[index].duration}</div>}
+        </div>
+
+        {/* Price */}
+        <div className="mb-2">
+          <label className="form-label fw-semibold">Price (₹)</label>
+          <CFormInput
+            type="number"
+            min="0"
+            className="text-center"
+            value={
+              activeEditableRowIndex === index
+                ? row.price ?? ''
+                : row.price || row.drugDetails?.[0]?.price || ''
+            }
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === '') {
+                handleRowChangee(index, 'price', '');
+                return;
+              }
+              const numberValue = Number(val);
+              if (numberValue >= 0) {
+                handleRowChangee(index, 'price', numberValue);
+                clearFieldError(index, 'price');
+              }
+            }}
+            onFocus={() => {
+              setActiveEditableRowIndex(index);
+              handleRowChangee(index, 'price', '');
+            }}
+            onBlur={() => {
+              if (row.price === '' || row.price === null || row.price === undefined) {
+                handleRowChangee(index, 'price', row.drugDetails?.[0]?.price ?? '');
+              }
+              setActiveEditableRowIndex(null);
+              validateField(index, 'price');
+            }}
+          />
+          {rowErrors[index]?.price && (
+            <div className="text-danger small mt-1">{rowErrors[index].price}</div>
+          )}
+        </div>
+
+        {/* Total */}
+        <div className="mb-2">
+          <label className="form-label fw-semibold">Total (₹)</label>
+          <div className="text-center">
+            ₹{(() => {
+              const dosage = row?.dosage || '';
+              const durationStr = row?.duration || '';
+              const pricePerTablet = parseFloat(row?.price) || parseFloat(row?.drugDetails?.[0]?.price) || 0;
+
+              if (!/^\d-\d-\d$/.test(dosage)) return '0.00';
+
+              const dailyDose = dosage
+                .split('-')
+                .map(val => parseInt(val, 10))
+                .reduce((sum, val) => sum + (isNaN(val) ? 0 : val), 0);
+
+              const durationMatch = durationStr.match(/\d+/);
+              const duration = durationMatch ? parseInt(durationMatch[0], 10) : 0;
+
+              const total = dailyDose * duration * pricePerTablet;
+              return isNaN(total) ? '0.00' : total.toFixed(2);
+            })()}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="d-flex justify-content-center gap-3 mt-2">
+          <CButton
+            color="danger"
+            size="sm"
+            onClick={() => handleRemoveRoww(index)}
+            disabled={index === 0 && rowss.length === 1}
+          >
+            <CIcon icon={cilDelete} className="text-white" />
+          </CButton>
+          <CButton
+            color="success"
+            size="sm"
+            onClick={handleAddRoww}
+          >
+            <CIcon icon={cilPlus} className="text-white" />
+          </CButton>
+        </div>
+      </div>
+    </div>
+  ))}
+  <div className="fw-bold text-end mt-3">
+    Total Price: ₹{totalPrice.toFixed(2)}
+  </div>
+</div>
+
       </CCardBody>
     </>
   )}
 </div>
 
 
-</CCard>
-
-
-     
+</CCard>   
 {/* Descriptions */}
    
-
   {/* Desktop View */}
 <div className="d-none d-lg-block mt-2"  >
   <CCard className="mb-3  px-3 py-3 rounded-4" style={{ backgroundColor: '#FFF9DB' }}>
-<sapn className='fw-semibold mb-2 fs-5' style={{ color: '#944C1F' }}>💰 Billing Information</sapn>
-<div className="mb-2 d-flex gap-3 align-items-center">
-  {/* <strong className='fw-semibold'>GST:</strong> */}
-  <CFormCheck
-    type="radio"
-    className='fw-semibold'
-    label="With GST"
-    name="gstToggle"
-    checked={showGST}
-    onChange={() => setShowGST(true)}
-  />
-  <CFormCheck
-    type="radio"
-    className='fw-semibold'
-    label="Without GST"
-    name="gstToggle"
-    checked={!showGST}
-    onChange={() => setShowGST(false)}
-  />
+<div className="d-flex justify-content-between align-items-center mb-3">
+  <span className="fw-semibold fs-5" style={{ color: '#944C1F' }}>
+    💰 Billing Information
+  </span>
+
+  <div className="d-flex gap-2">
+    <CButton
+      color="warning"
+      variant={showGST ? 'solid' : 'outline'}
+      className="fw-semibold"
+      onClick={() => setShowGST(true)}
+      style={{ borderRadius: '10px', minWidth: '120px' }}
+    >
+      With Tax
+    </CButton>
+
+    <CButton
+      color="warning"
+      variant={!showGST ? 'solid' : 'outline'}
+      className="fw-semibold"
+      onClick={() => setShowGST(false)}
+      style={{ borderRadius: '10px', minWidth: '120px' }}
+    >
+      Without Tax
+    </CButton>
+  </div>
 </div>
 
 
 
-    <CRow>
+    {/* <CRow>
       <CTable hover responsive className='table-borderless' style={{ backgroundColor: 'transparent' }}>
         <CTableHead className="text-center text-sm font-semibold ">
-          {/* <CTableRow>
-            {['Description', 'Quantity', 'Fees', 'GST (%)', 'Total', 'Actions'].map((header, idx) => (
-              <CTableHeaderCell key={idx} className="px-2 py-2">{header}</CTableHeaderCell>
-            ))}
-          </CTableRow> */}
-
+          
 <>
   <CTableHeaderCell className="px-2 py-2 fw-semibold">Description</CTableHeaderCell>
   <CTableHeaderCell className="px-2 py-2 fw-semibold">Quantity</CTableHeaderCell>
@@ -3580,9 +3516,6 @@ style={{ backgroundColor: '	#F0F8FF' }}
   <CTableHeaderCell className="px-2 py-2 fw-semibold">Total</CTableHeaderCell>
   <CTableHeaderCell className="px-2 py-2 fw-semibold">Actions</CTableHeaderCell>
 </>
-
-
-
         </CTableHead>
         <CTableBody className=' rounded-4 no-bg' style={{   border: '2px solid #944C1F'  }}>
           {rows.map((row, index) => (
@@ -3598,32 +3531,7 @@ style={{ backgroundColor: '	#F0F8FF' }}
                   <option value="OPD">OPD</option>
                 </CFormSelect>
               </CTableDataCell>
-
-
               <CTableDataCell style={{ width: '16.66%' }}>
-                {/* <CFormInput
-                  type="text"
-                  className="text-center"
-                  value={row.description === 'Medicine' ? rowss.length : row.quantity}
-                 
-                  onChange={(e) => handleRowChange(index, 'quantity', Math.max(0, Number(e.target.value)))}
-                  onFocus={() => handleRowChange(index, 'quantity', '')}
-                /> */}
-
-
-
-                {/* <CFormInput
-  type="number"
-  className="text-center"
-  value={row.description === 'Medicine' ? rowss.length : row.quantity}
-  onChange={(e) => handleRowChange(index, 'quantity', e.target.value)}
-  readOnly={row.description === 'Medicine'}
-/>
-
-                {rowErrors[index]?.quantity && (
-                  <div className="text-danger small">{rowErrors[index].quantity}</div>
-                )} */}
-
 <CFormInput
   type="number"
   className="text-center"
@@ -3648,50 +3556,10 @@ style={{ backgroundColor: '	#F0F8FF' }}
   <div className="text-danger small">{rowErrors[index].quantity}</div>
 )}
 
+</CTableDataCell>
 
-              </CTableDataCell>
 
 
-              {/* <CTableDataCell style={{ width: '16.66%' }}>
-                <CFormInput
-                  type="number"
-                  className="text-center"
-                  value={row.price}
-                  onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
-                  onFocus={() => handleRowChange(index, 'price', '')}
-                />
-                
-                {rowErrors[index]?.price && (
-                  <div className="text-danger small">{rowErrors[index].price}</div>
-                )}
-              </CTableDataCell> */}
-
-              {/* <CTableDataCell style={{ width: '16.66%' }}>
-  {row.description === 'Medicine' ? (
-    <CFormInput
-      type="number"
-      className="text-center"
-      value={totalPrice || 0}
-   
-      plaintext
-       onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
-                  onFocus={() => handleRowChange(index, 'price', '')}
-    />
-  ) : (
-    <>
-      <CFormInput
-        type="number"
-        className="text-center"
-        value={row.price}
-        onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
-        onFocus={() => handleRowChange(index, 'price', '')}
-      />
-      {rowErrors[index]?.price && (
-        <div className="text-danger small">{rowErrors[index].price}</div>
-      )}
-    </>
-  )}
-</CTableDataCell> */}
 <CTableDataCell style={{ width: '16.66%' }}>
   {row.description === 'Medicine' ? (
   <CFormInput
@@ -3754,44 +3622,9 @@ style={{ backgroundColor: '	#F0F8FF' }}
     )}
   </>
 )}
-
 </CTableDataCell>
 
-              
-              {/* <CTableDataCell style={{ width: '16.66%' }}>
-                <CFormInput
-                  type="text"
-                  className="text-center"
-                  value={row.gst}
-                  onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
-                  onFocus={() => handleRowChange(index, 'gst', '')}
-                />
-              </CTableDataCell> */}
 
-              {/* {showGST && (
-  <CTableDataCell style={{ width: '16.66%' }}>
-    <CFormInput
-      type="text"
-      className="text-center"
-      value={row.gst}
-      onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
-      onFocus={() => handleRowChange(index, 'gst', '')}
-    />
-  </CTableDataCell>
-)} */}
-
-{/* {showGST && (
-  <CTableDataCell style={{ width: '16.66%' }}>
-    <CFormInput
-      type="text"
-      className="text-center"
-      value={row.gst}
-      onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
-      onFocus={() => handleRowChange(index, 'gst', '')}
-      disabled={row.description === 'Medicine'} // Disable if description is Medicine
-    />
-  </CTableDataCell>
-)} */}
 {showGST && (
   <CTableDataCell style={{ width: '16.66%' }}>
     <CFormInput
@@ -3818,20 +3651,9 @@ style={{ backgroundColor: '	#F0F8FF' }}
   </CTableDataCell>
 )}
 
-
-
-
-              {/* <CTableDataCell className="fw-bold" style={{ width: '16.66%' }}>₹ {row.total.toFixed(2)} </CTableDataCell>      */}
-{/* <CTableDataCell className="fw-bold" style={{ width: '16.66%' }}>
-  {row.description === 'Medicine'
-    ? `₹ ${totalPrice.toFixed(2)}`
-    : `₹ ${row.total.toFixed(2)}`}
-</CTableDataCell> */}
-<CTableDataCell className="fw-bold" style={{ width: '16.66%' }}>
+<CTableDataCell className="fw-semibold text-success" style={{ width: '16.66%' }}>
   ₹ {row.total.toFixed(2)}
 </CTableDataCell>
-
-
 
               <CTableDataCell style={{ width: '16.66%' }}>
                 <div className="d-flex justify-content-center gap-2">
@@ -3847,7 +3669,224 @@ style={{ backgroundColor: '	#F0F8FF' }}
           ))}
         </CTableBody>
       </CTable>
-    </CRow>
+    </CRow> */}
+
+
+<CRow>
+  <CTable hover responsive className='table-borderless' style={{ backgroundColor: 'transparent' }}>
+    <CTableHead className="text-center text-sm font-semibold">
+      <>
+        <CTableHeaderCell className="px-2 py-2 fw-semibold">Description</CTableHeaderCell>
+        <CTableHeaderCell className="px-2 py-2 fw-semibold">Quantity</CTableHeaderCell>
+        <CTableHeaderCell className="px-2 py-2 fw-semibold">Fees</CTableHeaderCell>
+        {showGST && (
+          <CTableHeaderCell className="px-2 py-2 fw-semibold">GST (%)</CTableHeaderCell>
+        )}
+        <CTableHeaderCell className="px-2 py-2 fw-semibold">Total</CTableHeaderCell>
+        <CTableHeaderCell className="px-2 py-2 fw-semibold">Actions</CTableHeaderCell>
+      </>
+    </CTableHead>
+    <CTableBody className='rounded-4 no-bg' style={{ border: '2px solid #944C1F' }}>
+      {rows.map((row, index) => (
+        <CTableRow key={index} className="align-middle text-center">
+          <CTableDataCell style={{ width: '16.66%' }}>
+            <CFormSelect
+              className="text-center"
+              value={row.description}
+              onChange={(e) => handleRowChange(index, 'description', e.target.value)}
+            >
+              <option value="Consulting">Consulting</option>
+              <option value="Medicine">Medicine</option>
+              <option value="OPD">OPD</option>
+            </CFormSelect>
+          </CTableDataCell>
+
+          <CTableDataCell style={{ width: '16.66%' }}>
+            <CFormInput
+              type="number"
+              className="text-center"
+              placeholder='Add Quantity Here'
+              value={
+                row.description === 'Medicine'
+                  ? rowss.length
+                  : row.quantity === 0
+                  ? ''
+                  : row.quantity
+              }
+              onChange={(e) => handleRowChange(index, 'quantity', Number(e.target.value))}
+              onFocus={(e) => {
+                if (row.description !== 'Medicine' && (row.quantity === 0 || row.quantity === null)) {
+                  handleRowChange(index, 'quantity', '');
+                }
+              }}
+              readOnly={row.description === 'Medicine'}
+            />
+            {rowErrors[index]?.quantity && (
+              <div className="text-danger small">{rowErrors[index].quantity}</div>
+            )}
+          </CTableDataCell>
+
+
+
+
+
+
+
+
+          {/* <CTableDataCell style={{ width: '16.66%' }}>
+            {row.description === 'Medicine' ? (
+              <CFormInput
+                type="number"
+                className="text-center"
+                value={calculateRowTotal(rowss[index]) === 0 ? '' : calculateRowTotal(rowss[index]).toFixed(2)}
+                readOnly
+              />
+            ) : (
+              <>
+                <CFormInput
+                  type="number"
+                  className="text-center"
+                  value={row.price === 0 ? '' : row.price}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (value >= 0) {
+                      handleRowChange(index, 'price', value);
+                    }
+                  }}
+                  onFocus={(e) => {
+                    if (row.price === 0) {
+                      e.target.value = '';
+                      handleRowChange(index, 'price', '');
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                      e.preventDefault();
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const value = Number(e.target.value);
+                    if (value < 0) {
+                      handleRowChange(index, 'price', 0);
+                    }
+                  }}
+                />
+                {rowErrors[index]?.price && (
+                  <div className="error">{rowErrors[index].price}</div>
+                )}
+              </>
+            )}
+          </CTableDataCell> */}
+          <CTableDataCell style={{ width: '16.66%' }}>
+  {row.description === 'Medicine' ? (
+  <CFormInput
+    type="number"
+    className="text-center"
+    value={row.price === 0 ? '' : row.price} // Display empty string when price is 0
+    onChange={(e) => {
+      const value = Number(e.target.value);
+      if (value >= 0) {
+        handleRowChange(index, 'price', value);
+      }
+    }}
+    onFocus={(e) => {
+      if (row.price === 0) {
+        e.target.value = ''; // Clear the input on focus if the value is 0
+        handleRowChange(index, 'price', ''); // Also update the state to empty string
+      }
+    }}
+    onKeyDown={(e) => {
+      // Prevent minus key, 'e', 'E', '+' keys
+      if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+        e.preventDefault();
+      }
+    }}
+  />
+) : (
+  <>
+    <CFormInput
+      type="number"
+      className="text-center"
+      value={row.price === 0 ? '' : row.price} // Display empty string when price is 0
+      onChange={(e) => {
+        const value = Number(e.target.value);
+        if (value >= 0) {
+          handleRowChange(index, 'price', value);
+        }
+      }}
+      onFocus={(e) => {
+        if (row.price === 0) {
+          e.target.value = ''; // Clear the input on focus if the value is 0
+          handleRowChange(index, 'price', ''); // Also update the state to empty string
+        }
+      }}
+      onKeyDown={(e) => {
+        // Prevent minus key, 'e', 'E', '+' keys
+        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+          e.preventDefault();
+        }
+      }}
+      onBlur={(e) => {
+        // Double check on blur - if somehow negative value got through
+        const value = Number(e.target.value);
+        if (value < 0) {
+          handleRowChange(index, 'price', 0);
+        }
+      }}
+    />
+    {rowErrors[index]?.price && (
+      <div className="error">{rowErrors[index].price}</div>
+    )}
+  </>
+)}
+</CTableDataCell>
+
+          {showGST && (
+            <CTableDataCell style={{ width: '16.66%' }}>
+              <CFormInput
+                type="text"
+                className="text-center"
+                value={(row.gst === 0 || row.gst === '') ? '' : row.gst}
+                onChange={(e) => handleRowChange(index, 'gst', e.target.value)}
+                onFocus={(e) => {
+                  if (row.gst === 0 || row.gst === '') {
+                    e.target.value = '';
+                    handleRowChange(index, 'gst', '');
+                  }
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === '') {
+                    handleRowChange(index, 'gst', 0);
+                  } else {
+                    handleRowChange(index, 'gst', Number(e.target.value));
+                  }
+                }}
+                placeholder="0"
+                disabled={row.description === 'Medicine'}
+              />
+            </CTableDataCell>
+          )}
+          <CTableDataCell className="fw-semibold text-success" style={{ width: '16.66%' }}>
+            {/* ₹ {row.total.toFixed(2)} */}  ₹ {(Number(row.total) || 0).toFixed(2)}
+          </CTableDataCell>
+          <CTableDataCell style={{ width: '16.66%' }}>
+            <div className="d-flex justify-content-center gap-2">
+              <CButton color="danger" size="sm" onClick={() => handleRemoveRow(index)} disabled={index === 0}>
+                <CIcon icon={cilDelete} />
+              </CButton>
+              <CButton color="success" size="sm" onClick={handleAddRow}>
+                <CIcon icon={cilPlus} />
+              </CButton>
+            </div>
+          </CTableDataCell>
+        </CTableRow>
+      ))}
+    </CTableBody>
+  </CTable>
+</CRow>
+
+
+
   </CCard>
 </div>
 
@@ -3964,7 +4003,7 @@ style={{ backgroundColor: '	#F0F8FF' }}
 
         {/* Total */}
         <div className="mb-2 fw-bold fs-5 text-end" style={{ color: '#944C1F' }}>
-          ₹ {row.total.toFixed(2)}
+          {/* ₹ {row.total.toFixed(2)} */}  ₹ {(Number(row.total) || 0).toFixed(2)}
         </div>
 
         {/* Actions */}
@@ -3980,11 +4019,6 @@ style={{ backgroundColor: '	#F0F8FF' }}
     ))}
   </CCard>
 </div>
-
-
-
-
-       
 
         <CCardBody>
 
@@ -4013,25 +4047,10 @@ style={{ backgroundColor: '	#F0F8FF' }}
       </CButton>
     </div>
   </CCol>
-</CRow>
-
-
-
-
-          {/* <CButton color="primary" className="mt-0" onClick={handleCreatePrescription}>
-           Create Prescription
-          </CButton> */}
+</CRow>    
         </CCardBody>
 
-        {/* <CCardBody>
-          <CButton color="primary" className="mt-0" onClick={handleCreatePrescription}>
-           Create Prescription
-          </CButton>
-        </CCardBody> */}
-
-        
-    
-        <CTableRow style={{display: 'none'}}>
+        {/* <CTableRow style={{display: 'none'}}>
           <CTableDataCell colSpan="4" className="text-end">
             <strong>Grand Total:</strong>
           </CTableDataCell>
@@ -4039,13 +4058,10 @@ style={{ backgroundColor: '	#F0F8FF' }}
             <strong>{grandTotal}</strong>
           </CTableDataCell>
           <CTableDataCell />
-        </CTableRow>
-
-      {/* </CCard> */}
+        </CTableRow> */}
     </>
   );
 };
-
 export default Typography;
 
 
@@ -4823,3 +4839,334 @@ export default Typography;
     //   setData(null); // Clear data on error
     //   setShowPatientCard(false); // Hide on error
     // }
+
+
+
+
+    //   try {
+//   let response, patientId;
+
+//   if (selectedOption === 'Appointment') {
+//     const endpoint = `/api/getAppointmentByToken/${inputValue}`;
+//     response = await getAPICall(endpoint); // use GET
+//     console.log(response.name);
+//     setAppointment
+
+//     console.log("📩 Appointment API Response:", response);
+
+//     // If patient_id exists => it's a registered patient
+//     patientId = response?.patient_id;
+
+//     setData(response);
+//     setTokanPatientID(patientId || null);
+
+//     if (patientId) {
+//       // ✅ Registered patient — fetch full details
+//       const res = await getAPICall(`/api/patient-details/${patientId}`);
+//       console.log("✅ Selected Patient:", res);
+
+//       setLastBill(res?.last_bill);
+//       sethealthdirectives(res?.health_directives || []);
+//       setpatientExaminations(res?.patient_examinations || []);
+//       setayurvedicExaminations(res?.ayurvedic_examintion || []);
+//     } else {
+//       // 🆕 New patient from appointment — just show basic info
+//       setLastBill(null);
+//       sethealthdirectives([]);
+//       setpatientExaminations([]);
+//       setayurvedicExaminations([]);
+//     }
+
+//     setShowPatientCard(true);
+
+//   } else {
+//     // Handle token patient (token flow remains the same)
+//     const endpoint = `/api/getPatientInfo`;
+//     response = await post(endpoint, { tokan_number: inputValue });
+
+//     patientId = response?.patient?.id;
+
+//     if (!patientId) {
+//       throw new Error("❌ Patient ID not found in token response.");
+//     }
+
+//     setData(response);
+//     setTokanPatientID(patientId);
+
+//     const res = await getAPICall(`/api/patient-details/${patientId}`);
+//     console.log("✅ Selected Token Patient:", res);
+
+//     setLastBill(res?.last_bill);
+//     sethealthdirectives(res?.health_directives || []);
+//     setpatientExaminations(res?.patient_examinations || []);
+//     setayurvedicExaminations(res?.ayurvedic_examintion || []);
+
+//     setShowPatientCard(true);
+//   }
+
+// } catch (error) {
+//   console.error('❌ Error fetching patient full details', error);
+//   showToast('Failed to fetch data. Please check the ID and try again.', 'Validation Error', '#d9534f');
+//   setData(null);
+//   setShowPatientCard(false);
+// }
+
+
+
+  
+
+ 
+// useEffect(() => {
+//   if (!userData?.user?.id) return;
+
+//   const fetchObservationSettings = async () => {
+//     try {
+//       const doctorId = userData.user.id;
+//       const res = await getAPICall(`/api/doctor-medical-observations/${doctorId}`);         //  ${doctorId}
+//       console.log("✅ Observation settings fetched:", res);
+
+//       const normalized = Object.fromEntries(
+//         Object.entries(res).map(([key, val]) => [key, Boolean(Number(val))])
+//       );
+
+//       setDoctorObservationSettings(normalized);
+//       setDoctorAyurvedicObservationSettings(normalized)
+//     } catch (error) {
+//       console.error("❌ Error fetching observation settings:", error);
+//     }
+//   };
+
+//   fetchObservationSettings();
+// }, [userData?.user?.id]); // 👈 Run only when doctorId is available
+
+
+
+ // console.log(user);
+
+  // const handleRowChange = (index, field, value) => {
+  //   const updatedRows = [...rows];
+
+  //   if (field === 'quantity' || field === 'price' || field === 'gst') {
+  //     // Check if the value is a valid number and integer
+  //     if (!Number.isInteger(Number(value)) || isNaN(value)) {
+  //       value = 0; // Reset to 0 if not a valid integer
+  //     }
+  //   }
+
+  //   updatedRows[index][field] = value;
+
+  //   const quantity = Number(updatedRows[index].quantity || 0);
+  //   const price = Number(updatedRows[index].price || 0);
+  //   const gst = Number(updatedRows[index].gst || 0);
+  //   updatedRows[index].total = (quantity * price) + ((quantity * price * gst) / 100);
+
+
+ 
+
+
+  //   setRows(updatedRows);
+
+
+  //   const errors = [...rowErrors];
+  //   if (field === 'quantity' || field === 'price' || field === 'gst') {
+  //     errors[index] = {
+  //       quantity: field === 'quantity' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
+  //       price: field === 'price' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : '',
+  //       gst: field === 'gst' && !Number.isInteger(Number(value)) ? 'Only integers allowed' : ''
+  //     };
+  //   }
+  //   setRowErrors(errors);
+
+  // };
+
+
+      // Validate Phone Number (Mandatory)
+//     const phoneRegex = /^\d{10}$/; // Ensures exactly 10 digits
+
+// if (!data?.patient?.phone && !phone.trim()) {
+//   formErrors["phone"] = "Contact number is required";
+//   isValid = false;
+// } else if (!phoneRegex.test(String(phone).trim())) {  // Convert phone to string explicitly
+//   formErrors["phone"] = "Phone number must have exactly 10 digits";
+//   isValid = false;
+// }
+
+
+// const descriptionData = rows.map(row => ({
+    //   bill_id: `${billno}`,
+    //   description: `${row.description}`,
+    //   quantity: `${row.quantity}`,
+    //   price:  `${row.price}`,        //`${row.price}` , 
+    //   gst: `${row.gst}`,
+    //   total: `${row.total}`
+    // }));
+    // await post('/api/descriptions', { descriptions: descriptionData });
+
+
+     
+
+//     if (bp || pulse || pastHistory || complaints || sysExGeneral || sysExPA || weight || height) {
+//       const patientExaminationData = {
+//         p_p_i_id: `${billno}`,
+//         patient_id: patientSuggestionId || data?.patient?.id  || manualPatientID ||'not get patient ID',
+//         bp,
+//         pulse,
+//         weight,
+//         height,
+//         past_history: pastHistory,
+//         complaints,
+//         systemic_exam_general: sysExGeneral,
+//         systemic_exam_pa: sysExPA,
+//       };
+
+
+//         const ayurvedicDiagnosisData = {
+//   p_p_i_id: `${billno}`,
+//   patient_id: patientSuggestionId || data?.patient?.id || manualPatientID || 'not get Patient ID',
+//   occupation: occupation || "",
+//   pincode: pincode || "",
+//   email: emaill || "", // corrected: match state variable `emaill`
+//   past_history: ayurPastHistory || "",
+//   prasavvedan_parikshayein: prasavvedanParikshayein || "",
+//   habits: habits || "",
+//   lab_investigation: labInvestigation || "",
+//   personal_history: personalHistory || "",
+//   food_and_drug_allergy: foodAndDrugAllergy || "",
+//   lmp: lmp || "",
+//   edd: edd || ""
+// };
+
+
+// const payload = {
+//   ...patientExaminationData,
+//   ...ayurvedicDiagnosisData,
+// };
+
+//       await post('/api/patientexaminations',payload );
+//     }
+
+
+ {/* <CFormInput
+                  type="text"
+                  className="text-center"
+                  value={row.description === 'Medicine' ? rowss.length : row.quantity}
+                 
+                  onChange={(e) => handleRowChange(index, 'quantity', Math.max(0, Number(e.target.value)))}
+                  onFocus={() => handleRowChange(index, 'quantity', '')}
+                /> */}
+
+
+
+                {/* <CFormInput
+  type="number"
+  className="text-center"
+  value={row.description === 'Medicine' ? rowss.length : row.quantity}
+  onChange={(e) => handleRowChange(index, 'quantity', e.target.value)}
+  readOnly={row.description === 'Medicine'}
+/>
+
+                {rowErrors[index]?.quantity && (
+                  <div className="text-danger small">{rowErrors[index].quantity}</div>
+                )} */}
+
+
+
+                {/* <CTableDataCell style={{ width: '16.66%' }}>
+                <CFormInput
+                  type="number"
+                  className="text-center"
+                  value={row.price}
+                  onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
+                  onFocus={() => handleRowChange(index, 'price', '')}
+                />
+                
+                {rowErrors[index]?.price && (
+                  <div className="text-danger small">{rowErrors[index].price}</div>
+                )}
+              </CTableDataCell> */}
+
+              {/* <CTableDataCell style={{ width: '16.66%' }}>
+  {row.description === 'Medicine' ? (
+    <CFormInput
+      type="number"
+      className="text-center"
+      value={totalPrice || 0}
+   
+      plaintext
+       onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
+                  onFocus={() => handleRowChange(index, 'price', '')}
+    />
+  ) : (
+    <>
+      <CFormInput
+        type="number"
+        className="text-center"
+        value={row.price}
+        onChange={(e) => handleRowChange(index, 'price', Number(e.target.value))}
+        onFocus={() => handleRowChange(index, 'price', '')}
+      />
+      {rowErrors[index]?.price && (
+        <div className="text-danger small">{rowErrors[index].price}</div>
+      )}
+    </>
+  )}
+</CTableDataCell> */}
+
+              {/* <CTableDataCell style={{ width: '16.66%' }}>
+                <CFormInput
+                  type="text"
+                  className="text-center"
+                  value={row.gst}
+                  onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
+                  onFocus={() => handleRowChange(index, 'gst', '')}
+                />
+              </CTableDataCell> */}
+
+              {/* {showGST && (
+  <CTableDataCell style={{ width: '16.66%' }}>
+    <CFormInput
+      type="text"
+      className="text-center"
+      value={row.gst}
+      onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
+      onFocus={() => handleRowChange(index, 'gst', '')}
+    />
+  </CTableDataCell>
+)} */}
+
+{/* {showGST && (
+  <CTableDataCell style={{ width: '16.66%' }}>
+    <CFormInput
+      type="text"
+      className="text-center"
+      value={row.gst}
+      onChange={(e) => handleRowChange(index, 'gst', Number(e.target.value))}
+      onFocus={() => handleRowChange(index, 'gst', '')}
+      disabled={row.description === 'Medicine'} // Disable if description is Medicine
+    />
+  </CTableDataCell>
+)} */}
+
+
+              {/* <CTableDataCell className="fw-bold" style={{ width: '16.66%' }}>₹ {row.total.toFixed(2)} </CTableDataCell>      */}
+{/* <CTableDataCell className="fw-bold" style={{ width: '16.66%' }}>
+  {row.description === 'Medicine'
+    ? `₹ ${totalPrice.toFixed(2)}`
+    : `₹ ${row.total.toFixed(2)}`}
+</CTableDataCell> */}
+
+
+
+// just checkin for demo perpose value
+// const [personalHistory, setPersonalHistory] = useState({
+//     diet: '',
+//     appetite: '',
+//     sleep: '',
+//     thirst: '',
+//     bowel: '',
+//     micturition: '',
+//   });
+
+//   const handleChange = (field, value) => {
+//     setPersonalHistory((prev) => ({ ...prev, [field]: value }));
+//   };
