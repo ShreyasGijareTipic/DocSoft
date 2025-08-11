@@ -6,6 +6,7 @@ use App\Models\PatientExamination;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\AyurvedicDiagnosis;
+use App\Models\BabyPediatricObservation;
 
 class PatientExaminationController extends Controller
 {
@@ -139,13 +140,24 @@ public function store(Request $request)
         'personal_history' => 'nullable|string',
         'food_and_drug_allergy' => 'nullable|string',
         'drug_allery' => 'nullable|string',
-       
         'lmp' => 'nullable|string',
         'edd' => 'nullable|string',
+
+        // Baby Pediatric
+        'weightBaby' => 'nullable|numeric',
+        'heightBaby' => 'nullable|numeric',
+        'head_circumference' => 'nullable|numeric',
+        'temperature' => 'nullable|numeric',
+        'heart_rate' => 'nullable|integer',
+        'respiratory_rate' => 'nullable|integer',
+        'vaccinations_given' => 'nullable|string',
+        'milestones_achieved' => 'nullable|string',
+        'remarks' => 'nullable|string',
     ]);
 
     $examination = null;
     $ayurvedicDiagnosis = null;
+    $babyPediatric = null;
 
     // Extract PatientExamination fields
     $examinationData = $request->only([
@@ -201,9 +213,34 @@ public function store(Request $request)
         $ayurvedicDiagnosis = AyurvedicDiagnosis::create($ayurvedicData);
     }
 
+
+       // Baby Padiatric fields
+    $babyPediatricData = $request->only([
+        'p_p_i_id',
+        'patient_id',
+        'doctor_id',
+        'weightBaby',
+        'heightBaby',
+        'head_circumference',
+        'temperature',
+        'heart_rate',
+        'respiratory_rate',
+        'vaccinations_given',
+        'milestones_achieved',
+        'remarks',
+    ]);
+
+    // Check if at least one field (excluding p_p_i_id and patient_id) is filled
+    $babyPediatricContent = collect($babyPediatricData)->except(['p_p_i_id', 'patient_id']);
+    if ($babyPediatricContent->filter()->isNotEmpty()) {
+        $babyPediatricExamination = BabyPediatricObservation::create($babyPediatricData);
+    }
+
+
     return response()->json([
         'examination' => $examination,
-        'ayurvedic_diagnosis' => $ayurvedicDiagnosis
+        'ayurvedic_diagnosis' => $ayurvedicDiagnosis,
+        'baby_pediatric' => $babyPediatricExamination,
     ], 201);
 }
 

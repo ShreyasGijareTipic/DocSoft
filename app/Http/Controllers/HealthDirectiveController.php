@@ -21,32 +21,71 @@ class HealthDirectiveController extends Controller
     /**
      * Store a new health directive.
      */
-    public function store(Request $request)
-{
-    \Log::info('Request Data:', $request->all()); // Log the incoming data
+//     public function store(Request $request)
+// {
+//     \Log::info('Request Data:', $request->all()); // Log the incoming data
 
-    // Validate the incoming request data
-    $validatedData = $request->validate([
-        'p_p_i_id' => 'exists:Bills,id',
-        'patient_id' => 'nullable|exists:patients,id', // <- NEW
-        'medicine' => 'nullable|string',
-        'strength' => 'nullable|string',
-        'dosage' => 'nullable|string',
-        'timing' => 'nullable|string',
-        'frequency' => 'nullable|string',
-        'duration' => 'nullable|string',
-    ]);
+//     // Validate the incoming request data
+//     $validatedData = $request->validate([
+//         'p_p_i_id' => 'exists:bills,id',
+//         'patient_id' => 'nullable|exists:patients,id', // <- NEW
+//         'medicine' => 'nullable|string',
+//         'strength' => 'nullable|string',
+//         'dosage' => 'nullable|string',
+//         'timing' => 'nullable|string',
+//         'frequency' => 'nullable|string',
+//         'duration' => 'nullable|string',
+//     ]);
 
-    \Log::info('Validated Data:', $validatedData); // Log validated data
+//     \Log::info('Validated Data:', $validatedData); // Log validated data
 
-    // Create the health directive
-    $healthDirective = HealthDirective::create($validatedData);
+//     // Create the health directive
+//     $healthDirective = HealthDirective::create($validatedData);
     
-    // Log the health directive created
-    \Log::info('Created Health Directive:', $healthDirective->toArray());
+//     // Log the health directive created
+//     \Log::info('Created Health Directive:', $healthDirective->toArray());
 
-    return response()->json($healthDirective, 201);
+//     return response()->json($healthDirective, 201);
+// }
+public function store(Request $request)
+{
+    \Log::info('Request Data:', $request->all());
+
+    // Expecting an array of prescriptions
+    $prescriptions = $request->input('prescriptions');
+
+    if (!is_array($prescriptions)) {
+        return response()->json(['message' => 'Prescriptions must be an array'], 400);
+    }
+
+    $created = [];
+
+    foreach ($prescriptions as $index => $prescription) {
+        $validated = \Validator::make($prescription, [
+            'p_p_i_id' => 'required|exists:bills,id',
+            'patient_id' => 'nullable|exists:patients,id',
+            'medicine' => 'nullable|string',
+            'strength' => 'nullable|string',
+            'dosage' => 'nullable|string',
+            'timing' => 'nullable|string',
+            'frequency' => 'nullable|string',
+            'duration' => 'nullable|string',
+        ]);
+
+        if ($validated->fails()) {
+            return response()->json([
+                'message' => 'Validation failed on prescription at index ' . $index,
+                'errors' => $validated->errors(),
+            ], 422);
+        }
+
+        $data = $validated->validated();
+        $created[] = HealthDirective::create($data);
+    }
+
+    return response()->json(['message' => 'Health directives created successfully', 'data' => $created], 201);
 }
+
 
 
     /**

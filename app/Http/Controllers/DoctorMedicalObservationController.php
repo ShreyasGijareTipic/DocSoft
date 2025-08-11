@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\DoctorAyurvedicObservation;
+use App\Models\doctorBabyPediatricObservation;
 
 class DoctorMedicalObservationController extends Controller
 {
@@ -51,6 +52,8 @@ class DoctorMedicalObservationController extends Controller
         $medical = $doctor->medicalObservations;
         // $ayurvedic = $doctor->ayurvedicObservations;
         $ayurvedic = DoctorAyurvedicObservation::where('doctor_id', $doctorId)->first();
+    
+        $babyPediatric = doctorBabyPediatricObservation::where('doctor_id', $doctorId)->first();
 
 
         // Default fields
@@ -79,6 +82,18 @@ class DoctorMedicalObservationController extends Controller
             'edd' => 0,
         ];
 
+        $babyPediatricDefaults =[
+            'weightBaby' => 0,
+            'heightBaby' => 0,
+            'head_circumference' => 0,
+            'temperature' => 0,
+            'heart_rate' => 0,
+            'respiratory_rate' => 0,
+            'vaccinations_given' => 0,
+            'milestones_achieved' => 0,
+            'remarks' => 0,
+        ];
+
         // Merge values with defaults and cast to boolean
         $medicalFinal = [];
         foreach ($medicalDefaults as $key => $default) {
@@ -90,9 +105,15 @@ class DoctorMedicalObservationController extends Controller
             $ayurvedicFinal[$key] = isset($ayurvedic->$key) ? (bool)$ayurvedic->$key : false;
         }
 
+        $babyPediatricFinal = [];
+        foreach ($babyPediatricDefaults as $key => $default) {
+            $babyPediatricFinal[$key] = isset($babyPediatric->$key) ? (bool)$babyPediatric->$key : false;
+        }            
+
         return response()->json([
             'medical_observations' => $medicalFinal,
             'ayurvedic_observations' => $ayurvedicFinal,
+            'baby_pediatric'=> $babyPediatricFinal,
         ]);
     } catch (\Exception $e) {
         return response()->json([

@@ -419,11 +419,11 @@ const handleMedicineSelect = (medicine, index) => {
     }
   
     // Validate Email (Optional but properly formatted)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email.trim() && !emailRegex.test(email.trim())) {
-      formErrors["email"] = "Enter a valid email address";
-      isValid = false;
-    }
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // if (email.trim() && !emailRegex.test(email.trim())) {
+    //   formErrors["email"] = "Enter a valid email address";
+    //   isValid = false;
+    // }
 
     // Validate DOB (Mandatory & Not a Future Date)
     if (!data?.patient?.dob && !dob) {
@@ -1460,10 +1460,6 @@ if (hasPatientExamData || hasAyurvedicDiagnosisData) {
 //   // Return total as a number (avoid toFixed here to prevent string return)
 //   return isNaN(total) ? 0 : total;
 // };
-
-
-
-
 
 
 
@@ -4065,7 +4061,7 @@ style={{ backgroundColor: '	#F0F8FF' }}
 export default Typography;
 
 
-// --------------------- 
+// -----------------------------------------------------------------------------------------------
 
 
 

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;;
 use App\Models\Clinic;
 use App\Models\DoctorAyurvedicObservation;
+use App\Models\doctorBabyPediatricObservation;
 
 
 class AuthController extends Controller
@@ -134,7 +135,24 @@ if ($request->has('ayurvedic_observations') && $request->type == 1) {
         'lmp' => $request->ayurvedic_observations['lmp'],
         'edd' => $request->ayurvedic_observations['edd'],
     ]);
+}   
+   
+
+if ($request->has('baby_pediatric') && $request->type == 1) {
+    doctorBabyPediatricObservation::create([
+        'doctor_id' => $user->id,
+        'weightBaby' => $request->baby_pediatric['weightBaby'],
+                'heightBaby' => $request->baby_pediatric['heightBaby'],
+                'head_circumference' => $request->baby_pediatric['head_circumference'],
+                'temperature' => $request->baby_pediatric['temperature'],
+                'heart_rate' => $request->baby_pediatric['heart_rate'],
+                'respiratory_rate' => $request->baby_pediatric['respiratory_rate'],
+                'vaccinations_given' => $request->baby_pediatric['vaccinations_given'],
+                'milestones_achieved' => $request->baby_pediatric['milestones_achieved'],
+                'remarks' => $request->baby_pediatric['remarks'],
+    ]);
 }
+
 
 
             return response()->json([

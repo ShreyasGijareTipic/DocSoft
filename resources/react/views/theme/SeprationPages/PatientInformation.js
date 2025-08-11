@@ -1,11 +1,14 @@
+
 import React, { useEffect, useState } from 'react';
 import { CRow, CCol, CFormLabel, CFormInput, CListGroup, CListGroupItem } from '@coreui/react';
 import { getAPICall } from '../../../util/api';
+import { showToast } from '../toastContainer/toastContainer';
 
 const PatientInformation = ({
   patientName, setPatientName, patientAddress, setPatientAddress, email, setEmail,
   phone, setContactNumber, dob, setDob, occupation, setOccupation, pincode, setPincode,
-  visitDate, setVisitDate, patientSuggestionId, setPatientSuggestionId, data, errors
+  visitDate, setVisitDate, patientSuggestionId, setPatientSuggestionId, data, errors,
+  setLastBill, setHealthDirectives, setPatientExaminations, setAyurvedicExaminations, setShowPatientCard
 }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -13,13 +16,14 @@ const PatientInformation = ({
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (patientName.length >= 2 && !isSuggestionClicked) {
+      if (patientName.length >= 2 && !isSuggestionClicked && !patientSuggestionId) {
         try {
           const response = await getAPICall(`/api/suggestionPatient?query=${patientName}`);
           const filtered = response.filter(p => p.id !== selectedPatient?.id);
           setSuggestions(filtered);
         } catch (error) {
           console.error('Error fetching suggestions:', error);
+          showToast('Failed to fetch patient suggestions.', 'Error', '#d9534f');
         }
       } else {
         setSuggestions([]);
@@ -28,19 +32,49 @@ const PatientInformation = ({
     };
 
     fetchSuggestions();
-  }, [patientName, isSuggestionClicked, selectedPatient]);
+  }, [patientName, isSuggestionClicked, selectedPatient, patientSuggestionId]);
+
+  useEffect(() => {
+    if (data?.patient || data?.appointment) {
+      setPatientName(data?.patient?.name || data?.appointment?.name || '');
+      setPatientAddress(data?.patient?.address || '');
+      setEmail(data?.patient?.email || '');
+      setContactNumber(data?.patient?.phone || data?.appointment?.phone || '');
+      setDob(data?.patient?.dob || '');
+      setOccupation(data?.patient?.occupation || '');
+      setPincode(data?.patient?.pincode || '');
+      setPatientSuggestionId(data?.patient?.id || null);
+    }
+  }, [data, setPatientName, setPatientAddress, setEmail, setContactNumber, setDob, setOccupation, setPincode, setPatientSuggestionId]);
 
   const handleSuggestionClick = async (patient) => {
     setPatientSuggestionId(patient.id);
-    setPatientName(patient.name);
-    setPatientAddress(patient.address);
-    setContactNumber(patient.phone);
-    setEmail(patient.email);
-    setOccupation(patient.occupation);
-    setPincode(patient.pincode);
-    setDob(patient.dob);
+    setPatientName(patient.name || '');
+    setPatientAddress(patient.address || '');
+    setContactNumber(patient.phone || '');
+    setEmail(patient.email || '');
+    setOccupation(patient.occupation || '');
+    setPincode(patient.pincode || '');
+    setDob(patient.dob || '');
     setIsSuggestionClicked(true);
     setSuggestions([]);
+    setSelectedPatient(patient);
+    try {
+      const res = await getAPICall(`/api/patient-details/${patient.id}`);
+      setLastBill(res?.last_bill || []);
+      setHealthDirectives(res?.health_directives || []);
+      setPatientExaminations(res?.patient_examinations || []);
+      setAyurvedicExaminations(res?.ayurvedic_examintion || []);
+      setShowPatientCard(true);
+    } catch (error) {
+      console.error('Error fetching patient details:', error);
+      showToast('Failed to fetch patient history.', 'Error', '#d9534f');
+      setShowPatientCard(false);
+      setLastBill([]);
+      setHealthDirectives([]);
+      setPatientExaminations([]);
+      setAyurvedicExaminations([]);
+    }
   };
 
   return (
@@ -51,7 +85,7 @@ const PatientInformation = ({
             <CFormLabel className="fw-semibold min-w-[120px]">👤 Patient Name</CFormLabel>
             <div className="w-full relative">
               <CFormInput
-                value={patientName || data?.patient?.name || data?.appointment?.name || ''}
+                value={patientName}
                 onChange={(e) => setPatientName(e.target.value)}
                 placeholder="Enter patient name"
                 required
@@ -80,10 +114,9 @@ const PatientInformation = ({
             <CFormLabel className="fw-semibold min-w-[120px]">💼 Occupation</CFormLabel>
             <div className="w-full">
               <CFormInput
-                value={occupation || data?.patient?.occupation || ''}
+                value={occupation}
                 onChange={(e) => setOccupation(e.target.value)}
                 placeholder="Occupation"
-                required
               />
               {errors.occupation && (
                 <div className="text-danger mt-1 text-sm">{errors.occupation}</div>
@@ -95,7 +128,7 @@ const PatientInformation = ({
           <CFormLabel className="fw-semibold">📱 Mobile Number</CFormLabel>
           <CFormInput
             type="tel"
-            value={phone || data?.patient?.phone || data?.appointment?.phone || ''}
+            value={phone}
             onChange={(e) => setContactNumber(e.target.value)}
             onInput={(e) => {
               if (e.target.value.length > 10) {
@@ -111,10 +144,9 @@ const PatientInformation = ({
           <CFormLabel className="fw-semibold">📧 Email</CFormLabel>
           <CFormInput
             type="email"
-            value={email || data?.patient?.email || ''}
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter email address"
-            required
           />
           {errors.email && <div className="text-danger mt-1 text-sm">{errors.email}</div>}
         </CCol>
@@ -122,7 +154,7 @@ const PatientInformation = ({
           <CFormLabel className="fw-semibold">🎂 Patient DOB</CFormLabel>
           <CFormInput
             type="date"
-            value={data?.patient?.dob ? new Date(data.patient.dob).toISOString().split('T')[0] : dob || ''}
+            value={dob ? new Date(dob).toISOString().split('T')[0] : ''}
             onChange={(e) => {
               const input = e.target.value;
               const selectedDate = new Date(input);
@@ -159,7 +191,7 @@ const PatientInformation = ({
             <CFormLabel className="fw-semibold min-w-[120px]">🏠 Patient Address</CFormLabel>
             <div className="w-full">
               <CFormInput
-                value={patientAddress || data?.patient?.address || ''}
+                value={patientAddress}
                 onChange={(e) => setPatientAddress(e.target.value)}
                 placeholder="Full Address / Pincode"
                 required
@@ -175,10 +207,9 @@ const PatientInformation = ({
             <CFormLabel className="fw-semibold min-w-[120px]">📮 Pincode</CFormLabel>
             <div className="w-full">
               <CFormInput
-                value={pincode || data?.patient?.pincode || ''}
+                value={pincode}
                 onChange={(e) => setPincode(e.target.value)}
                 placeholder="Pincode"
-                required
               />
               {errors.pincode && (
                 <div className="text-danger mt-1 text-sm">{errors.pincode}</div>

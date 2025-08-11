@@ -49,6 +49,8 @@ use App\Http\Controllers\PlanController;
 use App\Http\Controllers\RazorpayController;
 
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\BabyPediatricObservationController;
+
 
 
 Route::post('/reset-password-link', [MailController::class, 'sendEmail']);
@@ -263,6 +265,14 @@ Route::get('/user', function (Request $request) {
    
 Route::middleware('auth:sanctum')->get('/bills/doctor', [BillController::class, 'getBillsByDoctorId']);
 Route::middleware('auth:sanctum')->get('/drugs/doctor', [DrugController::class, 'getDrugsByDoctorId']);
+
+// Pediatric Doctor
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/baby-observations', [BabyPediatricObservationController::class, 'store']);
+    Route::get('/baby-observations/{id}', [BabyPediatricObservationController::class, 'getById']);
+    Route::get('/baby-observations/getByPpiId/{p_p_i_id}', [BabyPediatricObservationController::class, 'getByPpiId']);
+    Route::get('/baby-observations/patient/{patient_id}', [BabyPediatricObservationController::class, 'getByPatientId']);
+});
 
 
 // Route::post('/whatsapp/receiveMessage', [WhatsAppController::class, 'receiveMessage']);

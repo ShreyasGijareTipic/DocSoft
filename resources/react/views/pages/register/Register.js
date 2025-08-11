@@ -52,6 +52,19 @@ const Register = () => {
   edd: false,
 });
 
+const [babyPediatric, setBabyPediatric] = useState({
+  weightBaby: false,
+  heightBaby: false,
+  head_circumference: false,
+  temperature: false,
+  heart_rate: false,
+  respiratory_rate: false,
+  vaccinations_given: false,
+  milestones_achieved: false,
+  remarks: false,
+});
+
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -133,6 +146,15 @@ const handleImageUpload = (e) => {
     [e.target.name]: e.target.checked,
   });
 };
+
+const handleBabyPediatricChange = (e) => {
+  // const { name, checked } = e.target;
+  setBabyPediatric({
+    ...babyPediatric,
+    [e.target.name]: e.target.checked,
+  });
+};
+
 
   const validateForm = () => {
     const newErrors = {};
@@ -231,11 +253,17 @@ const handleSubmit = async (e) => {
       ayurvedicObsForSubmit[key] = ayurvedicObservations[key] ? 1 : 0;
     });
 
+    const babyPediatricSubmit = {};
+    Object.keys(babyPediatric).forEach(key =>{
+      babyPediatricSubmit[key] = babyPediatric[key] ? 1 : 0;
+    })
+
     // Since we're now storing base64 string, use regular POST
     const dataToSubmit = {
       ...formData,
       medical_observations: medicalObsForSubmit,
       ayurvedic_observations: ayurvedicObsForSubmit,
+      baby_pediatric: babyPediatricSubmit,
     };
 
     // Use regular post instead of postFormData
@@ -679,6 +707,107 @@ const handleSubmit = async (e) => {
     </CRow>
   </CCardBody>
 </CCard>
+
+
+
+<CCard className="mb-4">
+  <CCardHeader>
+    <strong>Baby Pediatric Observations</strong>
+    <small> (Select fields to display)</small>
+  </CCardHeader>
+  <CCardBody>
+    <CRow>
+      <CCol md={3}>
+        <CFormCheck
+          id="weight-check"
+          label="Weight"
+          name="weightBaby"
+          checked={babyPediatric.weightBaby}
+          onChange={handleBabyPediatricChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="height-check"
+          label="Height"
+          name="heightBaby"
+          checked={babyPediatric.heightBaby}
+          onChange={handleBabyPediatricChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="head_circumference-check"
+          label="Head Circumference"
+          name="head_circumference"
+          checked={babyPediatric.head_circumference}
+          onChange={handleBabyPediatricChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="temperature-check"
+          label="Temperature"
+          name="temperature"
+          checked={babyPediatric.temperature}
+          onChange={handleBabyPediatricChange}
+        />
+      </CCol>
+    </CRow>
+
+    <CRow className="mt-3">
+      <CCol md={3}>
+        <CFormCheck
+          id="heart_rate-check"
+          label="Heart Rate"
+          name="heart_rate"
+          checked={babyPediatric.heart_rate}
+          onChange={handleBabyPediatricChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="respiratory_rate-check"
+          label="Respiratory Rate"
+          name="respiratory_rate"
+          checked={babyPediatric.respiratory_rate}
+          onChange={handleBabyPediatricChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="vaccinations_given-check"
+          label="Vaccinations Given"
+          name="vaccinations_given"
+          checked={babyPediatric.vaccinations_given}
+          onChange={handleBabyPediatricChange}
+        />
+      </CCol>
+      <CCol md={3}>
+        <CFormCheck
+          id="milestones_achieved-check"
+          label="Milestones Achieved"
+          name="milestones_achieved"
+          checked={babyPediatric.milestones_achieved}
+          onChange={handleBabyPediatricChange}
+        />
+      </CCol>
+    </CRow>
+
+    <CRow className="mt-3">
+      <CCol md={3}>
+        <CFormCheck
+          id="remarks-check"
+          label="Remarks"
+          name="remarks"
+          checked={babyPediatric.remarks}
+          onChange={handleBabyPediatricChange}
+        />
+      </CCol>
+    </CRow>
+  </CCardBody>
+</CCard>
+
 
 
 
